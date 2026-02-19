@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AvantMoi Admin</title>
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+      body { font-family: Avenir Next, sans-serif; margin: 0; background: #0e1322; color: #f5f7fb; }
+      main { max-width: 980px; margin: 0 auto; padding: 24px; display: grid; gap: 16px; }
+      .card { background: #1a2135; border: 1px solid #334060; border-radius: 12px; padding: 16px; }
+      h1, h2 { margin: 0 0 12px; }
+      label { display: grid; gap: 6px; margin-bottom: 10px; }
+      input, select, textarea, button { font: inherit; }
+      input, select, textarea { width: 100%; background: #0f1728; color: #f5f7fb; border: 1px solid #334060; border-radius: 8px; padding: 8px; }
+      textarea { min-height: 120px; }
+      button { background: #fff; color: #111; border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { border-bottom: 1px solid #334060; padding: 8px; text-align: left; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .muted { color: #9dadcc; font-size: 14px; }
+      .preview { max-width: 280px; border-radius: 8px; border: 1px solid #334060; margin-top: 8px; display: none; }
+      .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+      .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+      .stat-card { background: #0f1728; border: 1px solid #334060; border-radius: 10px; padding: 10px; }
+      .stat-card .label { color: #9dadcc; font-size: 12px; margin-bottom: 6px; }
+      .stat-card .value { font-size: 22px; font-weight: 700; }
+      .status { min-height: 20px; margin-top: 8px; }
+      .status.error { color: #ff9d9d; }
+      #ga-panel { display: none; margin-top: 12px; }
+      #ga-panel h3 { margin: 16px 0 8px; font-size: 16px; }
+      @media (max-width: 760px) {
+        .row { grid-template-columns: 1fr; }
+        .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="card">
+        <h1>Admin AvantMoi</h1>
+        <label>
+          Token admin
+          <input id="token" type="password" placeholder="ADMIN_TOKEN" />
+        </label>
+        <p class="muted">Le token est requis pour modifier la pub et supprimer des fiches.</p>
+      </section>
+
+      <section class="card">
+        <h2>Stats de consultation (Google Analytics)</h2>
+        <p class="muted">Connexion simple a Google, style Site Kit. Tu peux ensuite charger les stats GA4.</p>
+        <div class="row">
+          <label>
+            Google OAuth Client ID
+            <input id="ga-client-id" type="text" placeholder="xxxxxx.apps.googleusercontent.com" />
+          </label>
+          <label>
+            GA4 Property ID
+            <input id="ga-property-id" type="text" placeholder="123456789" />
+          </label>
+        </div>
+        <div class="actions">
+          <button id="ga-connect" type="button">Connecter Google</button>
+          <button id="ga-refresh" type="button">Rafraichir les stats</button>
+        </div>
+        <p id="ga-status" class="muted status"></p>
+
+        <div id="ga-panel">
+          <div class="stats-grid">
+            <article class="stat-card">
+              <div class="label">Vues (7 jours)</div>
+              <div id="ga-views" class="value">-</div>
+            </article>
+            <article class="stat-card">
+              <div class="label">Sessions (7 jours)</div>
+              <div id="ga-sessions" class="value">-</div>
+            </article>
+            <article class="stat-card">
+              <div class="label">Utilisateurs actifs (7 jours)</div>
+              <div id="ga-users" class="value">-</div>
+            </article>
+            <article class="stat-card">
+              <div class="label">Duree moyenne session</div>
+              <div id="ga-duration" class="value">-</div>
+            </article>
+          </div>
+
+          <h3>Vues par jour (14 jours)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Jour</th>
+                <th>Vues</th>
+              </tr>
+            </thead>
+            <tbody id="ga-daily-body"></tbody>
+          </table>
+
+          <h3>Top pages (7 jours)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Page</th>
+                <th>Vues</th>
+              </tr>
+            </thead>
+            <tbody id="ga-pages-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Encart pub</h2>
+        <div class="row">
+          <label>
+            Mode
+            <select id="ad-mode">
+              <option value="label">Texte simple</option>
+              <option value="html">HTML (AdSense)</option>
+              <option value="image">Image + lien</option>
+            </select>
+          </label>
+          <label>
+            Texte
+            <input id="ad-label" type="text" placeholder="Proposé par AvantMoi.com" />
+          </label>
+        </div>
+        <label>
+          HTML
+          <textarea id="ad-html" placeholder="Code Adsense ou iframe"></textarea>
+        </label>
+        <div class="row">
+          <label>
+            Image URL
+            <input id="ad-image" type="url" placeholder="https://..." />
+          </label>
+          <label>
+            Lien URL
+            <input id="ad-link" type="url" placeholder="https://..." />
+          </label>
+        </div>
+        <label>
+          Televerser une image locale
+          <input id="ad-file" type="file" accept="image/*" />
+        </label>
+        <img id="ad-preview" class="preview" alt="Apercu visuel pub" />
+        <button id="save-ad" type="button">Enregistrer encart pub</button>
+      </section>
+
+      <section class="card">
+        <h2>Fiches par annee (France)</h2>
+        <div class="row">
+          <label>
+            Annee
+            <input id="year" type="number" value="1968" min="1800" max="2100" />
+          </label>
+          <div style="display:flex;align-items:end;gap:10px;">
+            <button id="load-events" type="button">Charger</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>QID</th>
+              <th>Titre</th>
+              <th>Fact</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="events-body"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script>
+      const GA_STORAGE_CLIENT_ID = 'beforeme.admin.gaClientId';
+      const GA_STORAGE_PROPERTY_ID = 'beforeme.admin.gaPropertyId';
+      const GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
+      let gaTokenClient = null;
+      let gaAccessToken = '';
+      let gaTokenExpiresAt = 0;
+
+      async function fetchJson(url, options = {}) {
+        const candidates = [url];
+        if (url.startsWith('/api/')) {
+          candidates.push(url.replace('/api/', '/.netlify/functions/'));
+        }
+
+        let lastError = new Error('Erreur API');
+
+        for (const candidate of candidates) {
+          const res = await fetch(candidate, options);
+          const contentType = (res.headers.get('content-type') || '').toLowerCase();
+          if (!contentType.includes('application/json')) {
+            continue;
+          }
+
+          const data = await res.json();
+          if (!res.ok) {
+            lastError = new Error(data.error || 'Erreur API');
+            continue;
+          }
+
+          return data;
+        }
+
+        throw lastError;
+      }
+
+      function gaClientInput() {
+        return document.getElementById('ga-client-id');
+      }
+
+      function gaPropertyInput() {
+        return document.getElementById('ga-property-id');
+      }
+
+      function setGaStatus(message, isError = false) {
+        const node = document.getElementById('ga-status');
+        node.textContent = message;
+        node.className = isError ? 'status error' : 'muted status';
+      }
+
+      function saveGaSettings() {
+        const clientId = gaClientInput().value.trim();
+        const propertyId = gaPropertyInput().value.trim();
+        localStorage.setItem(GA_STORAGE_CLIENT_ID, clientId);
+        localStorage.setItem(GA_STORAGE_PROPERTY_ID, propertyId);
+      }
+
+      function loadGaSettings() {
+        gaClientInput().value = localStorage.getItem(GA_STORAGE_CLIENT_ID) || '';
+        gaPropertyInput().value = localStorage.getItem(GA_STORAGE_PROPERTY_ID) || '';
+      }
+
+      function normalizePropertyId(value) {
+        const raw = String(value || '').trim();
+        const match = raw.match(/(\d{6,})/);
+        return match ? match[1] : '';
+      }
+
+      function formatNumber(value) {
+        return new Intl.NumberFormat('fr-FR').format(Number(value || 0));
+      }
+
+      function formatDuration(seconds) {
+        const total = Math.max(0, Math.round(Number(seconds || 0)));
+        const min = Math.floor(total / 60);
+        const sec = total % 60;
+        return `${min}m ${String(sec).padStart(2, '0')}s`;
+      }
+
+      function formatGaDate(raw) {
+        const value = String(raw || '');
+        if (!/^\d{8}$/.test(value)) return value;
+        const year = value.slice(0, 4);
+        const month = value.slice(4, 6);
+        const day = value.slice(6, 8);
+        return `${day}/${month}/${year}`;
+      }
+
+      function hasValidGaToken() {
+        return Boolean(gaAccessToken) && Date.now() < gaTokenExpiresAt;
+      }
+
+      function ensureGaClient() {
+        const clientId = gaClientInput().value.trim();
+        if (!clientId) {
+          setGaStatus('Ajoute ton Google OAuth Client ID.', true);
+          return false;
+        }
+
+        if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+          setGaStatus('Le script Google n est pas encore charge. Reessaie dans quelques secondes.', true);
+          return false;
+        }
+
+        gaTokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: GA_SCOPE,
+          callback: (response) => {
+            if (!response || !response.access_token) {
+              setGaStatus('Connexion Google refusee ou invalide.', true);
+              return;
+            }
+
+            gaAccessToken = response.access_token;
+            const expiresIn = Number(response.expires_in || 3600);
+            gaTokenExpiresAt = Date.now() + expiresIn * 1000 - 10000;
+            setGaStatus('Google connecte. Tu peux rafraichir les stats.');
+            loadGaStats().catch((error) => {
+              setGaStatus(error.message || 'Impossible de charger les stats.', true);
+            });
+          }
+        });
+
+        return true;
+      }
+
+      async function runGaReport(body) {
+        const propertyId = normalizePropertyId(gaPropertyInput().value);
+        if (!propertyId) {
+          throw new Error('Ajoute un GA4 Property ID valide.');
+        }
+
+        if (!hasValidGaToken()) {
+          throw new Error('Connecte Google puis recharge les stats.');
+        }
+
+        const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${gaAccessToken}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          const reason = data?.error?.message || 'Erreur Analytics Data API';
+          throw new Error(reason);
+        }
+
+        return data;
+      }
+
+      function fillRow(target, cells) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = cells.map((cell) => `<td>${cell}</td>`).join('');
+        target.appendChild(tr);
+      }
+
+      async function loadGaStats() {
+        const panel = document.getElementById('ga-panel');
+        panel.style.display = 'none';
+        setGaStatus('Chargement des stats...');
+        saveGaSettings();
+
+        const [summary, daily, topPages] = await Promise.all([
+          runGaReport({
+            dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+            metrics: [
+              { name: 'screenPageViews' },
+              { name: 'sessions' },
+              { name: 'activeUsers' },
+              { name: 'averageSessionDuration' }
+            ]
+          }),
+          runGaReport({
+            dateRanges: [{ startDate: '14daysAgo', endDate: 'today' }],
+            dimensions: [{ name: 'date' }],
+            metrics: [{ name: 'screenPageViews' }],
+            orderBys: [{ dimension: { dimensionName: 'date' } }],
+            keepEmptyRows: true
+          }),
+          runGaReport({
+            dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+            dimensions: [{ name: 'pagePath' }],
+            metrics: [{ name: 'screenPageViews' }],
+            orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
+            limit: 10
+          })
+        ]);
+
+        const summaryRow = summary?.rows?.[0];
+        const values = summaryRow?.metricValues || [];
+        document.getElementById('ga-views').textContent = formatNumber(values[0]?.value || 0);
+        document.getElementById('ga-sessions').textContent = formatNumber(values[1]?.value || 0);
+        document.getElementById('ga-users').textContent = formatNumber(values[2]?.value || 0);
+        document.getElementById('ga-duration').textContent = formatDuration(values[3]?.value || 0);
+
+        const dailyBody = document.getElementById('ga-daily-body');
+        dailyBody.innerHTML = '';
+        const dailyRows = daily?.rows || [];
+        if (!dailyRows.length) {
+          fillRow(dailyBody, ['Aucune donnee', '-']);
+        } else {
+          for (const row of dailyRows) {
+            const day = formatGaDate(row?.dimensionValues?.[0]?.value || '');
+            const views = formatNumber(row?.metricValues?.[0]?.value || 0);
+            fillRow(dailyBody, [day, views]);
+          }
+        }
+
+        const pagesBody = document.getElementById('ga-pages-body');
+        pagesBody.innerHTML = '';
+        const pageRows = topPages?.rows || [];
+        if (!pageRows.length) {
+          fillRow(pagesBody, ['Aucune donnee', '-']);
+        } else {
+          for (const row of pageRows) {
+            const path = row?.dimensionValues?.[0]?.value || '/';
+            const views = formatNumber(row?.metricValues?.[0]?.value || 0);
+            fillRow(pagesBody, [path, views]);
+          }
+        }
+
+        panel.style.display = 'block';
+        setGaStatus('Stats chargees avec succes.');
+      }
+
+      async function connectGoogle() {
+        saveGaSettings();
+
+        if (!ensureGaClient()) {
+          return;
+        }
+
+        setGaStatus('Ouverture de la connexion Google...');
+        gaTokenClient.requestAccessToken({ prompt: 'consent' });
+      }
+
+      async function refreshGaStats() {
+        saveGaSettings();
+
+        if (hasValidGaToken()) {
+          await loadGaStats();
+          return;
+        }
+
+        if (!ensureGaClient()) {
+          return;
+        }
+
+        setGaStatus('Renouvellement de session Google...');
+        gaTokenClient.requestAccessToken({ prompt: '' });
+      }
+
+      function adminHeaders() {
+        const token = document.getElementById('token').value.trim();
+        return token ? { 'x-admin-token': token } : {};
+      }
+
+      async function loadAdConfig() {
+        const data = await fetchJson('/api/ad-config');
+        document.getElementById('ad-mode').value = data.mode || 'label';
+        document.getElementById('ad-label').value = data.label || '';
+        document.getElementById('ad-html').value = data.html || '';
+        document.getElementById('ad-image').value = data.imageUrl || '';
+        document.getElementById('ad-link').value = data.linkUrl || '';
+        refreshPreview(data.imageUrl || '');
+      }
+
+      function refreshPreview(url) {
+        const preview = document.getElementById('ad-preview');
+        if (!url) {
+          preview.style.display = 'none';
+          preview.removeAttribute('src');
+          return;
+        }
+        preview.src = url;
+        preview.style.display = 'block';
+      }
+
+      async function saveAdConfig() {
+        const payload = {
+          mode: document.getElementById('ad-mode').value,
+          label: document.getElementById('ad-label').value,
+          html: document.getElementById('ad-html').value,
+          imageUrl: document.getElementById('ad-image').value,
+          linkUrl: document.getElementById('ad-link').value
+        };
+
+        await fetchJson('/api/ad-config', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...adminHeaders()
+          },
+          body: JSON.stringify(payload)
+        });
+
+        alert('Encart pub enregistre.');
+      }
+
+      async function loadEvents() {
+        const year = document.getElementById('year').value;
+        const data = await fetchJson(`/api/admin/events?year=${encodeURIComponent(year)}`, {
+          headers: adminHeaders()
+        });
+
+        const tbody = document.getElementById('events-body');
+        tbody.innerHTML = '';
+
+        for (const item of data.items || []) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${item.eventQid}</td>
+            <td>${item.title}</td>
+            <td>${item.fact}</td>
+            <td><button data-year="${item.year}" data-qid="${item.eventQid}">Supprimer</button></td>
+          `;
+          tbody.appendChild(tr);
+        }
+
+        tbody.querySelectorAll('button[data-qid]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const y = btn.getAttribute('data-year');
+            const q = btn.getAttribute('data-qid');
+            await fetchJson(`/api/admin/events?year=${encodeURIComponent(y)}&lang=fr&eventQid=${encodeURIComponent(q)}`, {
+              method: 'DELETE',
+              headers: adminHeaders()
+            });
+            await loadEvents();
+          });
+        });
+      }
+
+      function setupUpload() {
+        const fileInput = document.getElementById('ad-file');
+        const imageInput = document.getElementById('ad-image');
+        fileInput.addEventListener('change', () => {
+          const file = fileInput.files && fileInput.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = () => {
+            const dataUrl = String(reader.result || '');
+            imageInput.value = dataUrl;
+            refreshPreview(dataUrl);
+          };
+          reader.readAsDataURL(file);
+        });
+
+        imageInput.addEventListener('input', () => {
+          refreshPreview(imageInput.value.trim());
+        });
+      }
+
+      document.getElementById('save-ad').addEventListener('click', saveAdConfig);
+      document.getElementById('load-events').addEventListener('click', loadEvents);
+      document.getElementById('ga-connect').addEventListener('click', () => {
+        connectGoogle().catch((error) => {
+          setGaStatus(error.message || 'Connexion Google impossible.', true);
+        });
+      });
+      document.getElementById('ga-refresh').addEventListener('click', () => {
+        refreshGaStats().catch((error) => {
+          setGaStatus(error.message || 'Chargement des stats impossible.', true);
+        });
+      });
+      setupUpload();
+      loadGaSettings();
+
+      loadAdConfig().catch(() => {});
+    </script>
+  </body>
+</html>

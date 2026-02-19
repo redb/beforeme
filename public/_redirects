@@ -1,0 +1,9 @@
+/api/history /.netlify/functions/history 200
+/api/anecdote /.netlify/functions/anecdote 200
+/api/anecdotes /.netlify/functions/anecdotes 200
+/api/ad-config /.netlify/functions/ad-config 200
+/api/admin/events /.netlify/functions/admin-events 200
+/morgao /morgao/index.html 200
+/admin /morgao/ 301
+/admin.html /morgao/ 301
+/* /index.html 200

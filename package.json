@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:cf": "npm run build && node scripts/prepare_cloudflare_dist.mjs",
+    "cf:dev": "npm run build:cf && npx wrangler pages dev dist",
+    "cf:deploy": "npm run build:cf && npx wrangler pages deploy dist",
     "preview": "vite preview",
     "postinstall": "DATABASE_URL=postgresql://user:pass@localhost:5432/postgres prisma generate --no-engine"
   },
@@ -15,8 +18,9 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "@prisma/client": "6.16.0",
     "@netlify/blobs": "^10.7.0",
+    "@prisma/client": "6.16.0",
+    "@prisma/extension-accelerate": "^2.0.2",
     "@supabase/supabase-js": "^2.97.0"
   }
 }

@@ -2,128 +2,30 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BeforeMe | Voyage dans ton année miroir</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AvantMoi.com | ton annee miroir</title>
     <meta
       name="description"
-      content="Entre ton année de naissance ou ton âge et découvre ton année miroir, une anecdote historique et une image à partager."
+      content="AvantMoi te projette dans ton annee miroir avec des micro-scenes plausibles, sans backend."
     />
-    <meta property="og:title" content="BeforeMe | Voyage dans ton année miroir" />
+    <meta property="og:title" content="AvantMoi.com | ton annee miroir" />
     <meta
       property="og:description"
-      content="Découvre à quoi ressemblait le monde dans ton année miroir avec une anecdote et une image."
+      content="Entre ton age ou ton annee de naissance. Decouvre ton annee miroir et partage-la." 
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://beforeme.netlify.app" />
-    <meta property="og:image" content="https://beforeme.netlify.app/preview.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="page-noise" aria-hidden="true"></div>
-    <main class="app">
-      <header class="hero">
-        <p class="eyebrow">BeforeMe</p>
-        <h1>Remonte le temps jusqu'à ton année miroir</h1>
-        <p>
-          Donne ton année de naissance ou ton âge. On te propulse dans une époque qui te ressemble.
-        </p>
-      </header>
-
-      <section class="calculator card" aria-labelledby="calc-title">
-        <h2 id="calc-title">Ton point de départ</h2>
-        <form id="beforeme-form" novalidate>
-          <div class="fields">
-            <label class="input-group" for="birthYear">
-              <span>Année de naissance</span>
-              <input
-                id="birthYear"
-                name="birthYear"
-                type="number"
-                inputmode="numeric"
-                placeholder="1968"
-                min="1850"
-                max="2026"
-              />
-            </label>
-            <p class="or">ou</p>
-            <label class="input-group" for="age">
-              <span>Âge</span>
-              <input
-                id="age"
-                name="age"
-                type="number"
-                inputmode="numeric"
-                placeholder="57"
-                min="1"
-                max="120"
-                required
-              />
-            </label>
-          </div>
-
-          <p class="hint" id="assumption"></p>
-          <p class="error" id="form-error" role="alert" aria-live="assertive"></p>
-
-          <button type="submit" class="primary-btn">Découvrir mon année miroir</button>
-        </form>
-      </section>
-
-      <section class="result card" id="result" hidden aria-live="polite">
-        <div class="result-headline">
-          <p>Ton année miroir</p>
-          <h2 id="mirror-year">-</h2>
-        </div>
-
-        <article class="story" id="story">
-          <div class="story-image-wrap">
-            <img id="story-image" alt="Illustration historique" loading="lazy" />
-          </div>
-          <div class="story-content">
-            <h3 id="story-title">Anecdote historique</h3>
-            <p id="story-text"></p>
-            <p class="source" id="story-source"></p>
-          </div>
-        </article>
-
-        <div class="actions">
-          <button id="new-story" type="button" class="secondary-btn">Une autre anecdote</button>
-          <button id="share-main" type="button" class="secondary-btn">Partager</button>
-        </div>
-
-        <div class="share-block" id="share-block" hidden>
-          <p>Partage rapide:</p>
-          <div class="share-links">
-            <a id="share-fb" target="_blank" rel="noopener noreferrer">Facebook</a>
-            <a id="share-li" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-            <a id="share-pin" target="_blank" rel="noopener noreferrer">Pinterest</a>
-            <button id="copy-caption" type="button">Copier le texte (Insta/TikTok)</button>
-          </div>
-          <p class="hint" id="copy-feedback"></p>
-        </div>
-      </section>
-
-      <aside class="ad-card" aria-label="Espace sponsorisé">
-        <p class="ad-label">Espace sponsorisé</p>
-        <p>
-          Intégration Ads prête. Ajoute ton identifiant Google AdSense pour activer un encart discret ici.
-        </p>
-
-        <!--
-          Exemple d'intégration AdSense:
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
-          <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1234567890" data-ad-format="auto" data-full-width-responsive="true"></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        -->
-      </aside>
-    </main>
-
-    <script type="module" src="app.js"></script>
+    <div class="bgBase" aria-hidden="true"></div>
+    <div class="fxLayer" aria-hidden="true">
+      <div class="fxBlue"></div>
+      <div class="fxRing fxRingOne"></div>
+      <div class="fxRing fxRingTwo"></div>
+      <div class="fxRing fxRingThree"></div>
+    </div>
+    <div class="shadeOverlay" aria-hidden="true"></div>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

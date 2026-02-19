@@ -1,79 +1,75 @@
-# BeforeMe - ton annee miroir
+# AvantMoi
 
-BeforeMe est un front Vite (statique) avec des fonctions Netlify. Tu entres ton age ou ton annee de naissance, puis tu arrives dans ton annee miroir avec une anecdote a la fois.
+Site statique Vite + TS avec Netlify Functions.
 
-## Stack
+## Points cle
 
-- Vite
-- TypeScript (vanilla)
-- Netlify Functions
-- Prisma Postgres (cache persistent)
-- Query params: `/?year=YYYY&lang=fr|en&country=ISO2`
+- Calcul annee miroir:
+  - `currentYear = Math.floor(new Date().getFullYear())`
+  - si age: `birthYear = currentYear - age`, `mirrorYear = birthYear - age`
+  - si annee de naissance: `mirrorYear = 2 * birthYear - currentYear`
+- Une anecdote a la fois
+- Bloc pub non bloquant
+- Partage facultatif
+- Fond video fixe (`/public/tunnel-bg.mp4`)
+- Admin simple (`/morgao/`) pour pub + suppression de fiches cachees
 
-## Calcul annee miroir
-
-- `currentYear = Math.floor(new Date().getFullYear())`
-- Si age:
-  - `birthYear = currentYear - age`
-  - `mirrorYear = birthYear - age`
-- Si annee de naissance:
-  - `mirrorYear = 2 * birthYear - currentYear`
-
-## Experience
-
-- Une anecdote affichee a la fois
-- Bouton `continuer`
-- Ad break non bloquant toutes les 5 anecdotes
-- Partage facultatif apres le slot 3 (`navigator.share` puis fallback clipboard)
-- Source discrete: "inspire d un evenement reel"
-
-## API anecdotes
+## Pipeline France-only (fonction Netlify)
 
 Endpoint:
 
 ```txt
-/api/anecdote?year=YYYY&lang=fr&country=FR&scope=global|local&slot=1..20
+/api/anecdotes?year=1968&lang=fr
 ```
 
-Cache keys:
-
-- global: `g:{year}:{lang}`
-- local: `l:{year}:{country}:{lang}`
-
-Payload stocke en base:
+Retour:
 
 ```json
 {
-  "slots": [
-    { "slot": 1, "narrative": "...", "fact": "...", "url": "..." }
-  ],
-  "createdAt": "..."
+  "year": 1968,
+  "country": "FR",
+  "items": [
+    { "scene": "...", "fact": "...", "sourceUrl": "...", "eventQid": "Q...", "title": "..." }
+  ]
 }
 ```
 
-## Prisma
+Etapes:
 
-### 1) Schema
+1. Recupere des candidats Wikidata (France uniquement, annee exacte)
+2. Filtre/score dur via `netlify/functions/lib/filterEvents.js`
+3. Prend top 6 puis tente de produire 3 scenes
+4. Cache Prisma `EventCache` par `(year,country,lang,eventQid)`
+5. Si cache existe: ressert direct
+6. Sinon generation OpenAI + post-validation via `netlify/functions/lib/validateAnecdote.js` (max 3 tentatives)
 
-Le schema Prisma est dans `prisma/schema.prisma` (table `anecdote_cache`).
+## Schema Prisma
 
-### 2) Variables d environnement
+Fichier: `prisma/schema.prisma`
 
-Configurer dans Netlify (et local):
+- `AnecdoteCache`
+- `EventCache` (unique: `year,country,lang,eventQid`)
+- `Vote` (unique: `year,country,lang,eventQid`)
+- `AppConfig` (config encart pub)
+
+Migration SQL:
+
+- `prisma/migrations/20260219_pipeline_france_only/migration.sql`
+
+## Variables d environnement
+
+Configurer en local et Netlify:
 
 ```bash
-DATABASE_URL=prisma+postgres://...
+DATABASE_URL=postgresql://...
+DIRECT_URL=postgresql://... # optionnel selon setup Prisma
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o
+WIKIDATA_ENDPOINT=https://query.wikidata.org/sparql
+ADMIN_TOKEN=... # requis pour /api/admin/events et PUT /api/ad-config
 ```
 
-### 3) Migration depuis Supabase (optionnel)
-
-```bash
-SOURCE_DB_URL=postgresql://... \
-TARGET_PRISMA_URL=prisma+postgres://... \
-node scripts/migrate_cache_to_prisma_accelerate.mjs
-```
-
-## Developpement
+## Developpement local
 
 ```bash
 npm install
@@ -87,34 +83,41 @@ npm run build
 npm run preview
 ```
 
-## Deploiement Netlify
+## Cloudflare Pages (etape 1: preparation)
 
-Le projet inclut:
+- Config Pages: `wrangler.jsonc`
+- Build Cloudflare: `npm run build:cf`
+- Lancer local Cloudflare Pages: `npm run cf:dev`
+- Deploy direct (quand on passera a l etape deploy): `npm run cf:deploy`
 
-- `netlify.toml`
-  - build command: `npm run build`
-  - publish dir: `dist`
-  - functions dir: `netlify/functions`
-  - redirects:
-    - `/api/anecdote -> /.netlify/functions/anecdote`
-    - `/api/history -> /.netlify/functions/history`
-- `public/_redirects`
-  - fallback SPA
+Notes:
+- `build:cf` garde le build Vite standard puis remplace `dist/_redirects` par la version Cloudflare.
+- Les routes API `/api/*` sont encore sur Netlify Functions a ce stade (migration API en etapes suivantes).
 
-Commandes:
+## Netlify
+
+- Build command: `npm run build`
+- Publish dir: `dist`
+- Functions dir: `netlify/functions`
+- Redirections:
+  - `/api/anecdote -> /.netlify/functions/anecdote`
+  - `/api/anecdotes -> /.netlify/functions/anecdotes`
+  - `/api/history -> /.netlify/functions/history`
+  - `/api/ad-config -> /.netlify/functions/ad-config`
+  - `/api/admin/events -> /.netlify/functions/admin-events`
+  - `/morgao -> /morgao/index.html`
+
+Deploy:
 
 ```bash
-npx netlify login
-npx netlify init
 npx netlify deploy
 npx netlify deploy --prod
 ```
 
-## Cloudflare (DNS only)
+## DNS Cloudflare (DNS only)
 
-1. Ajoute le domaine custom dans Netlify.
-2. Dans Cloudflare DNS:
-   - `CNAME` pour `www` vers `<site>.netlify.app`
-   - `CNAME` (ou flattening) pour `@` selon la reco Netlify
-3. Attends la propagation DNS.
-4. Verifie le certificat TLS dans Netlify.
+1. Ajouter le domaine dans Netlify.
+2. Dans Cloudflare:
+   - `CNAME` `www` vers `<site>.netlify.app`
+   - `CNAME` `@` (flattening) selon recommandation Netlify
+3. Attendre propagation, puis verifier TLS sur Netlify.

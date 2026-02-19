@@ -19,3 +19,44 @@ model AnecdoteCache {
 
   @@map("anecdote_cache")
 }
+
+model EventCache {
+  id        String   @id @default(cuid())
+  year      Int
+  country   String
+  lang      String
+  eventQid  String   @map("event_qid")
+  title     String
+  fact      String
+  sourceUrl String   @map("source_url")
+  scene     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([year, country, lang, eventQid])
+  @@map("event_cache")
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  year      Int
+  country   String
+  lang      String
+  eventQid  String   @map("event_qid")
+  up        Int      @default(0)
+  down      Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([year, country, lang, eventQid])
+  @@map("vote")
+}
+
+model AppConfig {
+  key       String   @id
+  value     Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("app_config")
+}
