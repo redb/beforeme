@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AnecdoteCache {
+  cacheKey  String   @id @map("cache_key")
+  scope     String
+  year      Int
+  lang      String
+  country   String?
+  payload   Json
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  @@map("anecdote_cache")
+}
