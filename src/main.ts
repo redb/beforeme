@@ -23,7 +23,7 @@ const app = (() => {
 })();
 
 const CURRENT_YEAR = Math.floor(new Date().getFullYear());
-const APP_VERSION = 'V0.17';
+const APP_VERSION = `V${__APP_VERSION__.split('.').slice(0, 2).join('.')}`;
 
 interface StorySession {
   key: string;
@@ -776,7 +776,7 @@ function renderFooterAd(lang: Lang) {
     linkUrl: ''
   };
 
-  let content = `<p class="ad-main"><a class="ad-brand-link" href="https://avantmoi.com" target="_blank" rel="noopener noreferrer">${escapeHtml(config.label || fallbackLabel)}</a></p>`;
+  let content = `<p class="ad-main"><a class="ad-brand-link" href="https://morgao.com" target="_blank" rel="noopener noreferrer">${escapeHtml(config.label || fallbackLabel)}</a></p>`;
 
   if (config.mode === 'html' && config.html.trim()) {
     content = `<div class="ad-html">${config.html}</div>`;

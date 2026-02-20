@@ -23,7 +23,7 @@ function json(status, payload) {
 function defaultConfig() {
   return {
     mode: 'label',
-    label: 'Propose par AvantMoi.com',
+    label: 'Proposé par morgao.com',
     html: '',
     imageUrl: '',
     linkUrl: ''
@@ -78,7 +78,7 @@ export async function onRequestPut(context) {
     const body = await parseBody(context.request);
     const value = {
       mode: String(body.mode || 'label'),
-      label: String(body.label || 'Propose par AvantMoi.com'),
+      label: String(body.label || 'Proposé par morgao.com'),
       html: String(body.html || ''),
       imageUrl: String(body.imageUrl || ''),
       linkUrl: String(body.linkUrl || '')

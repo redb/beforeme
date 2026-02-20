@@ -23,9 +23,9 @@ interface HistoricalResponse {
 const historicalCache = new Map<string, HistoricalItem[]>();
 const historicalPending = new Map<string, Promise<HistoricalItem[]>>();
 const historicalEmptyUntil = new Map<string, number>();
-const HISTORICAL_QUICK_WAIT_MS = 350;
+const HISTORICAL_PREFETCH_SLOTS = 20;
 const HISTORICAL_EMPTY_COOLDOWN_MS = 10 * 60 * 1000;
-const HISTORICAL_FETCH_TIMEOUT_MS = 5000;
+const HISTORICAL_FETCH_TIMEOUT_MS = 65000;
 
 async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
   const controller = new AbortController();
@@ -153,24 +153,16 @@ export async function fetchAnecdoteSlot(input: {
   scope: AnecdoteScope;
   slot: number;
 }): Promise<AnecdoteSlot | null> {
-  if (input.slot >= 1 && input.slot <= 3) {
-    const quickHistorical = await Promise.race<HistoricalItem[] | null>([
-      fetchHistoricalItems({ year: input.year, lang: input.lang, country: input.country }),
-      new Promise<null>((resolve) => {
-        window.setTimeout(() => resolve(null), HISTORICAL_QUICK_WAIT_MS);
-      })
-    ]);
-
-    if (quickHistorical) {
-      const item = quickHistorical[input.slot - 1];
-      if (item) {
-        return {
-          slot: input.slot,
-          narrative: item.scene,
-          fact: item.fact,
-          url: item.sourceUrl
-        };
-      }
+  if (input.slot >= 1 && input.slot <= HISTORICAL_PREFETCH_SLOTS) {
+    const historical = await fetchHistoricalItems({ year: input.year, lang: input.lang, country: input.country });
+    const item = historical[input.slot - 1];
+    if (item) {
+      return {
+        slot: input.slot,
+        narrative: item.scene,
+        fact: item.fact,
+        url: item.sourceUrl
+      };
     }
   }
 
