@@ -47,7 +47,7 @@ async function fetchJsonWithRetry(url, retries = 1) {
         signal: controller.signal,
         headers: {
           Accept: 'application/json',
-          'User-Agent': 'BeforeMe/1.0 (contact: info@morgao.com)'
+          'User-Agent': 'AvantMoi/1.0 (contact: contact@avantmoi.com)'
         }
       });
       if (!response.ok) {

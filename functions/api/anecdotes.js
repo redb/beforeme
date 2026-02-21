@@ -19,7 +19,8 @@ const CONFIG = {
   rateLimitWindowMs: 60_000,
   rateLimitMax: 30,
   disableCache: true,
-  enableFallbackNarratives: false
+  enableFallbackNarratives: false,
+  enableNarrativeFilters: false
 };
 
 const OVERSEAS_QIDS = [
@@ -71,7 +72,33 @@ const HARD_BAN_CATEGORY_KEYWORDS = [
 const BANNED_SCENE_WORDS = [
   'chose', 'phénomène', 'phenomene', 'quelque chose', 'atmosphère', 'atmosphere', 'symbole', 'contexte', 'impact',
   'société', 'societe', 'modernité', 'modernite', 'système', 'systeme', 'dynamique', 'processus', 'transformation',
-  'événement', 'evenement'
+  'événement', 'evenement', 'objet', 'innovation', 'dispositif', 'appareil'
+];
+const BANNED_EMOTION_WORDS = [
+  'espoir', 'peur', 'tension', 'incertitude', 'fragile', 'hésitant', 'hesitant',
+  'scepticisme', 'angoisse', 'anxieux', 'anxieuse'
+];
+const BANNED_METAPHOR_PATTERNS = [
+  'comme si',
+  'tel un',
+  'telle une',
+  'dans une danse',
+  'poids du possible',
+  'au bord de'
+];
+const BANNED_PSYCH_WORDS = ['tu sens', 'tu comprends', 'tu réalises', 'tu realises', 'impression', 'intuition'];
+const REQUIRED_OBJECT_WORDS = [
+  'affiche', 'ticket', 'panneau', 'barrière', 'barriere', 'micro', 'journal', 'pavé', 'pave',
+  'vitrine', 'guichet', 'tribune', 'casque', 'rideau', 'urne', 'combiné', 'combine', 'radio',
+  'téléviseur', 'televiseur', 'badge', 'banderole'
+];
+const REQUIRED_ACTION_WORDS = [
+  'court', 'courent', 'lit', 'lisent', 'applaudit', 'applaudissent', 'colle', 'collent',
+  'pointe', 'pointent', 'ouvre', 'ouvrent', 'ferme', 'ferment', 'grimpe', 'grimpent',
+  'change', 'changent', 'marche', 'marchent', 'arrête', 'arrêtent', 'arrete', 'arretent'
+];
+const REQUIRED_PRECISE_LOCATIONS = [
+  'gare', 'station', 'quai', 'place', 'marché', 'marche', 'boulevard', 'rue', 'tribune', 'palais'
 ];
 const BANNED_TEMPLATE_PATTERNS = [
   "apparait devant toi",
@@ -291,7 +318,7 @@ LIMIT 1
       method: 'GET',
       headers: {
         Accept: 'application/sparql-results+json',
-        'User-Agent': 'BeforeMe/1.0 (contact: info@morgao.com)'
+        'User-Agent': 'AvantMoi/1.0 (contact: contact@avantmoi.com)'
       }
     },
     { timeoutMs: CONFIG.sparqlTimeoutMs, retries: CONFIG.retries }
@@ -360,7 +387,7 @@ async function fetchSparqlRows(query) {
       method: 'GET',
       headers: {
         Accept: 'application/sparql-results+json',
-        'User-Agent': 'BeforeMe/1.0 (contact: info@morgao.com)'
+        'User-Agent': 'AvantMoi/1.0 (contact: contact@avantmoi.com)'
       }
     },
     { timeoutMs: CONFIG.sparqlTimeoutMs, retries: CONFIG.retries }
@@ -415,7 +442,7 @@ async function fetchEntityBundle(ids, lang) {
         method: 'GET',
         headers: {
           Accept: 'application/json',
-          'User-Agent': 'BeforeMe/1.0 (contact: info@morgao.com)'
+          'User-Agent': 'AvantMoi/1.0 (contact: contact@avantmoi.com)'
         }
       },
       { timeoutMs: CONFIG.entityTimeoutMs, retries: CONFIG.retries }
@@ -534,7 +561,7 @@ async function fetchWikipediaSummary(frTitle, debugOptions = null) {
         method: 'GET',
         headers: {
           Accept: 'application/json',
-          'User-Agent': 'BeforeMe/1.0 (contact: info@morgao.com)'
+          'User-Agent': 'AvantMoi/1.0 (contact: contact@avantmoi.com)'
         }
       },
       { timeoutMs: debugOptions?.noTimeout ? 8000 : 2200, retries: debugOptions?.noTimeout ? 1 : 0 }
@@ -698,11 +725,15 @@ async function generateSceneWithAI(candidate, anchors, summaryExtract, context, 
   if (!apiKey || anchors.length < 2) return null;
 
   const prompt = [
-    'Écris une micro-scène immersive en français.',
-    'Contraintes STRICTES: 3 à 4 phrases, 55-90 mots, narration à la 2e personne, présent.',
+    'Écris UNE micro-scène immersive en français (pas un résumé).',
+    'Contraintes STRICTES: exactement 4 phrases, 50-80 mots, narration à la 2e personne, présent.',
     'Inclure explicitement le lieu fourni, une action visible, une réaction humaine, une conséquence immédiate.',
     'Inclure EXACTEMENT les deux ancres textuelles fournies (sans les modifier).',
     'Interdits: analyse historique, morale, politique, guerre, style générique.',
+    'Ne pas insérer émotion, métaphore, interprétation psychologique.',
+    'Aucune phrase commençant par "tu sens", "tu comprends", "tu réalises".',
+    'Interdits lexicaux: objet, chose, phénomène, événement, innovation, dispositif, quelque chose, système, appareil.',
+    'La scène contient au moins 2 objets matériels, 1 action physique observable et 1 lieu précis.',
     `Titre: ${candidate.title}`,
     `Description: ${candidate.description || 'n/a'}`,
     `Lieu France: ${candidate.placeLabel}`,
@@ -734,7 +765,19 @@ async function generateSceneWithAI(candidate, anchors, summaryExtract, context, 
     );
 
     const payload = await response.json();
-    return String(payload?.output_text || '').replace(/\s+/g, ' ').trim();
+    const direct = String(payload?.output_text || '').replace(/\s+/g, ' ').trim();
+    if (direct) return direct;
+
+    const chunks = [];
+    const output = Array.isArray(payload?.output) ? payload.output : [];
+    for (const item of output) {
+      const content = Array.isArray(item?.content) ? item.content : [];
+      for (const part of content) {
+        const text = String(part?.text || '').trim();
+        if (text) chunks.push(text);
+      }
+    }
+    return chunks.join(' ').replace(/\s+/g, ' ').trim();
   } catch {
     return null;
   }
@@ -772,13 +815,17 @@ function sentenceCount(text) {
 }
 
 function validateScene(scene, placeLabel, anchors) {
+  if (!CONFIG.enableNarrativeFilters) {
+    return Boolean(String(scene || '').trim());
+  }
+
   if (!scene) return false;
   if (!String(placeLabel || '').trim()) return false;
   const sentences = sentenceCount(scene);
-  if (sentences < 3 || sentences > 4) return false;
+  if (sentences !== 4) return false;
 
   const words = countWords(scene);
-  if (words < CONFIG.minWords || words > CONFIG.maxWords) return false;
+  if (words < 50 || words > 80) return false;
 
   const lower = normalizeText(scene);
   if (!lower.includes('tu')) return false;
@@ -792,6 +839,15 @@ function validateScene(scene, placeLabel, anchors) {
   for (const banned of BANNED_SCENE_WORDS) {
     if (lower.includes(normalizeText(banned))) return false;
   }
+  for (const banned of BANNED_EMOTION_WORDS) {
+    if (lower.includes(normalizeText(banned))) return false;
+  }
+  for (const banned of BANNED_METAPHOR_PATTERNS) {
+    if (lower.includes(normalizeText(banned))) return false;
+  }
+  for (const banned of BANNED_PSYCH_WORDS) {
+    if (lower.includes(normalizeText(banned))) return false;
+  }
   for (const pattern of BANNED_TEMPLATE_PATTERNS) {
     if (lower.includes(normalizeText(pattern))) return false;
   }
@@ -803,6 +859,14 @@ function validateScene(scene, placeLabel, anchors) {
   if (/\s\./.test(scene)) return false;
   if (/\bCette\b/.test(scene)) return false;
   if (/Coupe apparaît/i.test(scene)) return false;
+  if (/(^|[.!?]\s*)tu\s+(sens|comprends|realises|réalises)\b/i.test(scene)) return false;
+
+  const objectHits = REQUIRED_OBJECT_WORDS
+    .filter((word) => new RegExp(`\\b${normalizeText(word)}\\b`, 'i').test(lower))
+    .length;
+  if (objectHits < 2) return false;
+  if (!REQUIRED_ACTION_WORDS.some((word) => new RegExp(`\\b${normalizeText(word)}\\b`, 'i').test(lower))) return false;
+  if (!REQUIRED_PRECISE_LOCATIONS.some((loc) => lower.includes(normalizeText(loc)))) return false;
 
   return true;
 }

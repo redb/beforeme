@@ -1,7 +1,7 @@
-import type { Lang } from './i18n';
-import type { CountryCode } from './locale';
+import type { Lang } from "./i18n";
+import type { CountryCode } from "./locale";
 
-export type AnecdoteScope = 'global' | 'local';
+export type AnecdoteScope = "global" | "local";
 
 export interface AnecdoteSlot {
   slot: number;
@@ -10,27 +10,30 @@ export interface AnecdoteSlot {
   url: string;
 }
 
-interface HistoricalItem {
-  scene: string;
-  fact: string;
-  sourceUrl: string;
+interface BatchCandidate {
+  qid: string;
 }
 
-interface HistoricalResponse {
-  items?: HistoricalItem[];
+interface SceneApiResponse {
+  slot?: number;
+  scene?: string;
+  fact?: string;
+  sourceUrl?: string;
 }
 
-const historicalCache = new Map<string, HistoricalItem[]>();
-const historicalPending = new Map<string, Promise<HistoricalItem[]>>();
-const historicalEmptyUntil = new Map<string, number>();
-const HISTORICAL_PREFETCH_SLOTS = 20;
-const HISTORICAL_EMPTY_COOLDOWN_MS = 10 * 60 * 1000;
-const HISTORICAL_FETCH_TIMEOUT_MS = 65000;
+interface LegacyAnecdoteResponse {
+  slot?: number;
+  narrative?: string;
+  fact?: string;
+  url?: string;
+}
+
+const batchCache = new Map<string, BatchCandidate[]>();
+const batchPending = new Map<string, Promise<BatchCandidate[]>>();
 
 async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), timeoutMs);
-
   try {
     return await fetch(url, { signal: controller.signal });
   } finally {
@@ -38,132 +41,94 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Respons
   }
 }
 
-function isAnecdoteSlot(value: unknown): value is AnecdoteSlot {
-  if (!value || typeof value !== 'object') {
-    return false;
+function parseFromSceneApi(payload: unknown): AnecdoteSlot | null {
+  if (!payload || typeof payload !== "object") return null;
+  const data = payload as SceneApiResponse;
+  if (
+    typeof data.slot !== "number" ||
+    typeof data.scene !== "string" ||
+    typeof data.fact !== "string" ||
+    typeof data.sourceUrl !== "string"
+  ) {
+    return null;
+  }
+  if (!data.scene.trim() || !data.fact.trim() || !data.sourceUrl.trim()) {
+    return null;
   }
 
-  const candidate = value as Record<string, unknown>;
-  const narrative = String(candidate.narrative || '');
-  const fact = String(candidate.fact || '');
-  const url = String(candidate.url || '');
-  const normalized = narrative.toLowerCase();
-  const blockedFragments = [
-    'tu t’arrêtes devant une cabine vitrée',
-    "tu t'arrêtes devant une cabine vitrée",
-    'tu entres dans une bibliothèque',
-    'tu avances dans un couloir d’administration',
-    "tu avances dans un couloir d'administration",
-    'voix peut maintenant traverser la rue entière',
-    'espace public devient modulable au quotidien',
-    'franchir une étape dépend désormais d’un document',
-    "franchir une étape dépend désormais d'un document"
-  ];
-  const hasBlockedFragment = blockedFragments.some((fragment) => normalized.includes(fragment));
-  const hasSourcedUrl = /wikipedia\.org\/wiki\//i.test(url);
-  const hasFallbackFact = /scene plausible|scène plausible|generated locally/i.test(fact);
-
-  return (
-    typeof candidate.slot === 'number' &&
-    typeof candidate.narrative === 'string' &&
-    typeof candidate.fact === 'string' &&
-    typeof candidate.url === 'string' &&
-    candidate.narrative.length > 0 &&
-    candidate.fact.length > 0 &&
-    candidate.url.length > 0 &&
-    !hasBlockedFragment &&
-    hasSourcedUrl &&
-    !hasFallbackFact
-  );
+  return {
+    slot: data.slot,
+    narrative: data.scene,
+    fact: data.fact,
+    url: data.sourceUrl
+  };
 }
 
-function isHistoricalItem(value: unknown): value is HistoricalItem {
-  if (!value || typeof value !== 'object') {
-    return false;
+function parseFromLegacyApi(payload: unknown): AnecdoteSlot | null {
+  if (!payload || typeof payload !== "object") return null;
+  const data = payload as LegacyAnecdoteResponse;
+  if (
+    typeof data.slot !== "number" ||
+    typeof data.narrative !== "string" ||
+    typeof data.fact !== "string" ||
+    typeof data.url !== "string"
+  ) {
+    return null;
   }
-
-  const candidate = value as Record<string, unknown>;
-  return (
-    typeof candidate.scene === 'string' &&
-    typeof candidate.fact === 'string' &&
-    typeof candidate.sourceUrl === 'string' &&
-    candidate.scene.length > 0 &&
-    candidate.fact.length > 0 &&
-    candidate.sourceUrl.length > 0
-  );
+  if (!data.narrative.trim() || !data.fact.trim() || !data.url.trim()) {
+    return null;
+  }
+  return {
+    slot: data.slot,
+    narrative: data.narrative,
+    fact: data.fact,
+    url: data.url
+  };
 }
 
-function isHistoricalResponse(value: unknown): value is HistoricalResponse {
-  if (!value || typeof value !== 'object') {
-    return false;
+function parseBatchCandidates(payload: unknown): BatchCandidate[] {
+  if (!Array.isArray(payload)) return [];
+  const out: BatchCandidate[] = [];
+  for (const item of payload) {
+    if (!item || typeof item !== "object") continue;
+    const qid = String((item as Record<string, unknown>).qid || "").toUpperCase();
+    if (/^Q\d+$/.test(qid)) out.push({ qid });
   }
-
-  const payload = value as HistoricalResponse;
-  if (!Array.isArray(payload.items)) {
-    return false;
-  }
-
-  return payload.items.every(isHistoricalItem);
+  return out;
 }
 
-async function fetchHistoricalItems(input: { year: number; lang: Lang; country: CountryCode }): Promise<HistoricalItem[]> {
-  const key = `${input.year}|${input.country}|${input.lang}`;
-  const fromCache = historicalCache.get(key);
-  if (fromCache) {
-    return fromCache;
-  }
-  const emptyUntil = historicalEmptyUntil.get(key) || 0;
-  if (Date.now() < emptyUntil) {
-    return [];
-  }
+async function fetchBatchCandidates(input: {
+  year: number;
+  country: CountryCode;
+}): Promise<BatchCandidate[]> {
+  const key = `${input.year}|${input.country}|fast`;
+  const fromCache = batchCache.get(key);
+  if (fromCache) return fromCache;
 
-  const pending = historicalPending.get(key);
-  if (pending) {
-    return pending;
-  }
+  const pending = batchPending.get(key);
+  if (pending) return pending;
 
   const task = (async () => {
     const params = new URLSearchParams({
       year: String(input.year),
-      lang: input.lang,
-      country: input.country
+      country: input.country,
+      mode: "fast"
     });
-    const paths = ['/api/anecdotes'];
-
-    for (const path of paths) {
-      let response: Response;
-      try {
-        response = await fetchWithTimeout(`${path}?${params.toString()}`, HISTORICAL_FETCH_TIMEOUT_MS);
-      } catch {
-        continue;
-      }
-
-      if (!response.ok) {
-        continue;
-      }
-
-      const payload = (await response.json()) as unknown;
-      if (!isHistoricalResponse(payload)) {
-        continue;
-      }
-
-      const items = payload.items || [];
-      if (items.length > 0) {
-        historicalCache.set(key, items);
-        historicalEmptyUntil.delete(key);
-      }
-      return items;
-    }
-
-    historicalEmptyUntil.set(key, Date.now() + HISTORICAL_EMPTY_COOLDOWN_MS);
-    return [];
+    const response = await fetchWithTimeout(`/api/batch?${params.toString()}`, 70000);
+    if (!response.ok) return [];
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.toLowerCase().includes("application/json")) return [];
+    const payload = (await response.json()) as unknown;
+    const candidates = parseBatchCandidates(payload);
+    if (candidates.length) batchCache.set(key, candidates);
+    return candidates;
   })()
     .catch(() => [])
     .finally(() => {
-      historicalPending.delete(key);
+      batchPending.delete(key);
     });
 
-  historicalPending.set(key, task);
+  batchPending.set(key, task);
   return task;
 }
 
@@ -174,45 +139,48 @@ export async function fetchAnecdoteSlot(input: {
   scope: AnecdoteScope;
   slot: number;
 }): Promise<AnecdoteSlot | null> {
-  if (input.slot >= 1 && input.slot <= HISTORICAL_PREFETCH_SLOTS) {
-    const historical = await fetchHistoricalItems({ year: input.year, lang: input.lang, country: input.country });
-    const item = historical[input.slot - 1];
-    if (item) {
-      return {
-        slot: input.slot,
-        narrative: item.scene,
-        fact: item.fact,
-        url: item.sourceUrl
-      };
-    }
-  }
-
-  const params = new URLSearchParams({
-    year: String(input.year),
-    lang: input.lang,
-    country: input.country,
-    scope: input.scope,
-    slot: String(input.slot)
-  });
-
-  const paths = ['/api/anecdote'];
-
   try {
+    const candidates = await fetchBatchCandidates({
+      year: input.year,
+      country: input.country
+    });
+    const candidate = candidates[(input.slot - 1) % Math.max(candidates.length, 1)];
+    if (!candidate?.qid) {
+      return null;
+    }
+
+    const params = new URLSearchParams({
+      year: String(input.year),
+      lang: input.lang,
+      country: input.country,
+      slot: String(input.slot),
+      qid: candidate.qid,
+      mode: "fast"
+    });
+
+    const paths = ["/api/scene", "/api/anecdote"];
     for (const path of paths) {
-      const response = await fetch(`${path}?${params.toString()}`);
+      const response = await fetchWithTimeout(`${path}?${params.toString()}`, 70000);
+      if (!response.ok) continue;
 
-      if (!response.ok) {
-        continue;
-      }
-
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.toLowerCase().includes('application/json')) {
-        continue;
-      }
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.toLowerCase().includes("application/json")) continue;
 
       const payload = (await response.json()) as unknown;
-      if (isAnecdoteSlot(payload)) {
-        return payload;
+      const fromScene = parseFromSceneApi(payload);
+      if (fromScene) {
+        return {
+          ...fromScene,
+          slot: input.slot
+        };
+      }
+
+      const fromLegacy = parseFromLegacyApi(payload);
+      if (fromLegacy) {
+        return {
+          ...fromLegacy,
+          slot: input.slot
+        };
       }
     }
 

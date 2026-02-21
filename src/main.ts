@@ -23,7 +23,7 @@ const app = (() => {
 })();
 
 const CURRENT_YEAR = Math.floor(new Date().getFullYear());
-const APP_VERSION = `V${__APP_VERSION__}`;
+const APP_VERSION = `V${__APP_VERSION__} (${__APP_BUILD_ID__})`;
 
 interface StorySession {
   key: string;
@@ -559,17 +559,28 @@ function renderHome(lang: Lang, country: CountryCode) {
     ageOrBirthYearInput.value = ageOrBirthYearInput.value.replace(/[^\d]/g, '');
   });
 
-  locateButton.addEventListener('click', async () => {
+  locateButton.addEventListener('click', async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     locateFeedback.textContent = '';
+    const preservedAgeOrBirthYear = ageOrBirthYearInput.value;
+    const preservedLocation = locationInput.value;
+    locateButton.disabled = true;
 
-    const detected = await detectCountryFromGeolocation();
-    if (!detected) {
-      locateFeedback.textContent = t(lang, 'locateFailed');
-      return;
+    try {
+      const detected = await detectCountryFromGeolocation();
+      ageOrBirthYearInput.value = preservedAgeOrBirthYear;
+      if (!detected) {
+        locationInput.value = preservedLocation;
+        locateFeedback.textContent = t(lang, 'locateFailed');
+        return;
+      }
+
+      locationInput.value = detected;
+      locateFeedback.textContent = `${t(lang, 'locateSuccess')} (${countryLabel(lang, detected)})`;
+    } finally {
+      locateButton.disabled = false;
     }
-
-    locationInput.value = detected;
-    locateFeedback.textContent = `${t(lang, 'locateSuccess')} (${countryLabel(lang, detected)})`;
   });
 
   form.addEventListener('submit', (event) => {
@@ -840,7 +851,7 @@ function renderFooterAd(lang: Lang) {
     linkUrl: ''
   };
 
-  let content = `<p class="ad-main"><a class="ad-brand-link" href="https://morgao.com" target="_blank" rel="noopener noreferrer">${escapeHtml(config.label || fallbackLabel)}</a></p>`;
+  let content = `<p class="ad-main"><a class="ad-brand-link" href="https://avantmoi.com" target="_blank" rel="noopener noreferrer">${escapeHtml(config.label || fallbackLabel)}</a></p>`;
 
   if (config.mode === 'html' && config.html.trim()) {
     content = `<div class="ad-html">${config.html}</div>`;
@@ -862,7 +873,8 @@ function renderSiteFooter(lang: Lang) {
   return `
     <footer class="site-footer">
       <p>
-        <a href="https://avantmoi.com" target="_blank" rel="noopener noreferrer">©avantmoi.com ${APP_VERSION}</a>
+        <a href="https://avantmoi.com" target="_blank" rel="noopener noreferrer">©avantmoi.com</a>
+        <strong> ${APP_VERSION}</strong>
         — ${escapeHtml(t(lang, 'legalLine'))}
         <a href="/mentions-legales.html">${escapeHtml(t(lang, 'legalLink'))}</a>
       </p>

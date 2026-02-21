@@ -1,0 +1,1 @@
+exports.getWikiLead = async function getWikiLead(url){ const u = new URL(url); u.pathname = '/w/api.php'; u.search = '?action=query&format=json&prop=extracts&explaintext=1&exintro=1&redirects=1&titles=Test&origin=*'; const res = await fetch(u.toString()); const json = await res.json(); const page = Object.values(json.query.pages)[0]; return String(page.extract || '').trim(); };

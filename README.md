@@ -76,7 +76,7 @@ ADMIN_SESSION_SECRET=une-cle-longue-et-secrete
 - Créer un OAuth Client ID Web dans Google Cloud.
 - Ajouter les origines autorisées:
   - `https://avantmoi.com`
-  - `https://avantmoi.morgao.com` (si utilisé)
+  - `https://www.avantmoi.com` (si utilisé)
   - URL preview Cloudflare si besoin
 - Mettre le client ID dans `ADMIN_GOOGLE_CLIENT_ID`.
 - Mettre l email admin dans `ADMIN_GOOGLE_EMAILS` (liste CSV possible).

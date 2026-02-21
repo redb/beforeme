@@ -571,6 +571,11 @@ a:focus-visible {
   text-decoration: underline;
 }
 
+.site-footer strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
 @keyframes enter {
   from {
     opacity: 0;

@@ -1,0 +1,237 @@
+{
+  "routes": [
+    {
+      "routePath": "/api/admin/events",
+      "mountPath": "/api/admin",
+      "method": "DELETE",
+      "module": [
+        "api/admin/events.js:onRequestDelete"
+      ]
+    },
+    {
+      "routePath": "/api/admin/events",
+      "mountPath": "/api/admin",
+      "method": "GET",
+      "module": [
+        "api/admin/events.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/admin/events",
+      "mountPath": "/api/admin",
+      "method": "OPTIONS",
+      "module": [
+        "api/admin/events.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/admin/purge-cache",
+      "mountPath": "/api/admin",
+      "method": "OPTIONS",
+      "module": [
+        "api/admin/purge-cache.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/admin/purge-cache",
+      "mountPath": "/api/admin",
+      "method": "POST",
+      "module": [
+        "api/admin/purge-cache.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/admin/session",
+      "mountPath": "/api/admin",
+      "method": "DELETE",
+      "module": [
+        "api/admin/session.js:onRequestDelete"
+      ]
+    },
+    {
+      "routePath": "/api/admin/session",
+      "mountPath": "/api/admin",
+      "method": "GET",
+      "module": [
+        "api/admin/session.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/admin/session",
+      "mountPath": "/api/admin",
+      "method": "OPTIONS",
+      "module": [
+        "api/admin/session.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/admin/session",
+      "mountPath": "/api/admin",
+      "method": "POST",
+      "module": [
+        "api/admin/session.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/anecdotes/strict-editor",
+      "mountPath": "/api/anecdotes",
+      "method": "OPTIONS",
+      "module": [
+        "api/anecdotes/strict-editor.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/anecdotes/strict-editor",
+      "mountPath": "/api/anecdotes",
+      "method": "POST",
+      "module": [
+        "api/anecdotes/strict-editor.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/ad-config",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/ad-config.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/ad-config",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/ad-config.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/ad-config",
+      "mountPath": "/api",
+      "method": "PUT",
+      "module": [
+        "api/ad-config.js:onRequestPut"
+      ]
+    },
+    {
+      "routePath": "/api/anecdote",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/anecdote.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/anecdote",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/anecdote.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/anecdotes",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/anecdotes.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/anecdotes",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/anecdotes.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/anecdotes",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/anecdotes.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/batch",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/batch.ts:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/batch",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/batch.ts:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/debug-env",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/debug-env.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/debug-env",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/debug-env.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/enrich-wikileads",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/enrich-wikileads.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/enrich-wikileads",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/enrich-wikileads.js:onRequestPost"
+      ]
+    },
+    {
+      "routePath": "/api/history",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/history.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/history",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/history.js:onRequestOptions"
+      ]
+    },
+    {
+      "routePath": "/api/scene",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/scene.ts:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/scene",
+      "mountPath": "/api",
+      "method": "OPTIONS",
+      "module": [
+        "api/scene.ts:onRequestOptions"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}
