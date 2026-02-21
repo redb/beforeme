@@ -1,4 +1,3 @@
-const DEFAULT_NETLIFY_ORIGIN = 'https://beforeme-test-20260219-091055.netlify.app';
 const DEFAULT_URL = 'https://avantmoi.com';
 
 const FALLBACK_EVENTS = {
@@ -23,12 +22,6 @@ const FALLBACK_EVENTS = {
     { label: 'Spread of a new street-level habit', summary: 'A new habit appears in public and quickly feels familiar.', url: DEFAULT_URL }
   ]
 };
-
-function sanitizeOrigin(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return DEFAULT_NETLIFY_ORIGIN;
-  return raw.endsWith('/') ? raw.slice(0, -1) : raw;
-}
 
 function parseYear(raw) {
   const year = Number(raw);
@@ -134,44 +127,15 @@ export async function onRequestGet(context) {
   }
 
   const fallback = pickFallbackEvents(year, lang);
-  const upstreamOrigin = sanitizeOrigin(context.env?.NETLIFY_ORIGIN);
-  const upstream = new URL('/api/history', upstreamOrigin);
-  upstream.searchParams.set('year', String(year));
-  upstream.searchParams.set('lang', lang);
-
-  try {
-    const upstreamResponse = await fetchWithTimeout(upstream.toString(), 7000);
-    if (!upstreamResponse.ok) {
-      return new Response(JSON.stringify(fallback), {
-        status: 200,
-        headers: responseHeaders()
-      });
-    }
-
-    const contentType = upstreamResponse.headers.get('content-type') || '';
-    if (!contentType.toLowerCase().includes('application/json')) {
-      return new Response(JSON.stringify(fallback), {
-        status: 200,
-        headers: responseHeaders()
-      });
-    }
-
-    const payload = await upstreamResponse.json();
-    if (!isHistoryPayload(payload)) {
-      return new Response(JSON.stringify(fallback), {
-        status: 200,
-        headers: responseHeaders()
-      });
-    }
-
-    return new Response(JSON.stringify(payload.slice(0, 5)), {
-      status: 200,
-      headers: responseHeaders()
-    });
-  } catch {
-    return new Response(JSON.stringify(fallback), {
+  if (!isHistoryPayload(fallback)) {
+    return new Response(JSON.stringify([]), {
       status: 200,
       headers: responseHeaders()
     });
   }
+
+  return new Response(JSON.stringify(fallback.slice(0, 5)), {
+    status: 200,
+    headers: responseHeaders()
+  });
 }

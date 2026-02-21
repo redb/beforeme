@@ -1,4 +1,5 @@
 import { getPrismaClient } from '../../lib/prisma.js';
+import { requireAdminSession } from '../../lib/admin-auth.js';
 
 function responseHeaders() {
   return {
@@ -6,7 +7,7 @@ function responseHeaders() {
     'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET,DELETE,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type,x-admin-token'
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization'
   };
 }
 
@@ -15,13 +16,6 @@ function json(status, payload) {
     status,
     headers: responseHeaders()
   });
-}
-
-function isAuthorized(request, env) {
-  const expected = String(env?.ADMIN_TOKEN || '').trim();
-  if (!expected) return false;
-  const token = String(request.headers.get('x-admin-token') || request.headers.get('X-Admin-Token') || '').trim();
-  return token === expected;
 }
 
 function parseYear(raw) {
@@ -40,8 +34,9 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestGet(context) {
-  if (!isAuthorized(context.request, context.env)) {
-    return json(401, { error: 'Unauthorized' });
+  const auth = await requireAdminSession(context.request, context.env);
+  if (!auth.ok) {
+    return json(auth.status || 401, { error: auth.error || 'unauthorized' });
   }
 
   try {
@@ -75,8 +70,9 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestDelete(context) {
-  if (!isAuthorized(context.request, context.env)) {
-    return json(401, { error: 'Unauthorized' });
+  const auth = await requireAdminSession(context.request, context.env);
+  if (!auth.ok) {
+    return json(auth.status || 401, { error: auth.error || 'unauthorized' });
   }
 
   try {

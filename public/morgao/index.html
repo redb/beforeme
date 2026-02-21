@@ -28,6 +28,7 @@
       .stat-card .value { font-size: 22px; font-weight: 700; }
       .status { min-height: 20px; margin-top: 8px; }
       .status.error { color: #ff9d9d; }
+      #google-login-button { min-height: 40px; }
       #ga-panel { display: none; margin-top: 12px; }
       #ga-panel h3 { margin: 16px 0 8px; font-size: 16px; }
       @media (max-width: 760px) {
@@ -40,11 +41,12 @@
     <main>
       <section class="card">
         <h1>Admin AvantMoi</h1>
-        <label>
-          Token admin
-          <input id="token" type="password" placeholder="ADMIN_TOKEN" />
-        </label>
-        <p class="muted">Le token est requis pour modifier la pub et supprimer des fiches.</p>
+        <p class="muted">Connexion admin via ton compte Google autorisé.</p>
+        <div class="actions">
+          <div id="google-login-button"></div>
+          <button id="admin-logout" type="button" style="display:none;">Se deconnecter</button>
+        </div>
+        <p id="admin-auth-status" class="muted status">Connexion requise.</p>
       </section>
 
       <section class="card">
@@ -146,6 +148,7 @@
         </label>
         <img id="ad-preview" class="preview" alt="Apercu visuel pub" />
         <button id="save-ad" type="button">Enregistrer encart pub</button>
+        <p id="ad-status" class="muted status"></p>
       </section>
 
       <section class="card">
@@ -174,23 +177,51 @@
     </main>
 
     <script>
+      const ADMIN_SESSION_STORAGE = 'beforeme.admin.sessionToken';
       const GA_STORAGE_CLIENT_ID = 'beforeme.admin.gaClientId';
       const GA_STORAGE_PROPERTY_ID = 'beforeme.admin.gaPropertyId';
       const GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
+      let adminSessionToken = localStorage.getItem(ADMIN_SESSION_STORAGE) || '';
+      let adminGoogleClientId = '';
+      let isAdminAuthenticated = false;
       let gaTokenClient = null;
       let gaAccessToken = '';
       let gaTokenExpiresAt = 0;
 
+      function authHeaders() {
+        return adminSessionToken ? { Authorization: `Bearer ${adminSessionToken}` } : {};
+      }
+
+      function setAdminStatus(message, isError = false) {
+        const node = document.getElementById('admin-auth-status');
+        node.textContent = message;
+        node.className = isError ? 'status error' : 'muted status';
+      }
+
+      function setAdminLocked(locked) {
+        const saveBtn = document.getElementById('save-ad');
+        const loadBtn = document.getElementById('load-events');
+        saveBtn.disabled = locked;
+        loadBtn.disabled = locked;
+      }
+
+      function updateAuthUi() {
+        const logoutBtn = document.getElementById('admin-logout');
+        logoutBtn.style.display = isAdminAuthenticated ? 'inline-flex' : 'none';
+        setAdminLocked(!isAdminAuthenticated);
+      }
+
       async function fetchJson(url, options = {}) {
         const candidates = [url];
-        if (url.startsWith('/api/')) {
-          candidates.push(url.replace('/api/', '/.netlify/functions/'));
-        }
 
         let lastError = new Error('Erreur API');
 
         for (const candidate of candidates) {
-          const res = await fetch(candidate, options);
+          const mergedHeaders = {
+            ...(options.headers || {}),
+            ...authHeaders()
+          };
+          const res = await fetch(candidate, { ...options, headers: mergedHeaders });
           const contentType = (res.headers.get('content-type') || '').toLowerCase();
           if (!contentType.includes('application/json')) {
             continue;
@@ -206,6 +237,88 @@
         }
 
         throw lastError;
+      }
+
+      function applyAdminSession(email, token) {
+        isAdminAuthenticated = true;
+        setAdminStatus(`Connecte: ${email}`);
+        if (token) {
+          adminSessionToken = token;
+          localStorage.setItem(ADMIN_SESSION_STORAGE, token);
+        }
+        updateAuthUi();
+      }
+
+      function clearAdminSession(message = 'Connexion requise.') {
+        isAdminAuthenticated = false;
+        adminSessionToken = '';
+        localStorage.removeItem(ADMIN_SESSION_STORAGE);
+        setAdminStatus(message);
+        updateAuthUi();
+      }
+
+      async function verifyAdminSession() {
+        try {
+          const data = await fetchJson('/api/admin/session');
+          adminGoogleClientId = String(data.googleClientId || '');
+          if (data.authenticated) {
+            applyAdminSession(String(data.email || ''), '');
+            return;
+          }
+          clearAdminSession('Connecte-toi avec Google pour utiliser l admin.');
+        } catch (error) {
+          clearAdminSession('Impossible de verifier la session admin.');
+        }
+      }
+
+      function initGoogleAdminLogin() {
+        if (!adminGoogleClientId) {
+          setAdminStatus('ADMIN_GOOGLE_CLIENT_ID manquant cote serveur.', true);
+          return;
+        }
+        if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+          setAdminStatus('Le script Google n est pas encore charge.', true);
+          return;
+        }
+
+        const container = document.getElementById('google-login-button');
+        container.innerHTML = '';
+
+        window.google.accounts.id.initialize({
+          client_id: adminGoogleClientId,
+          callback: async (response) => {
+            const idToken = String(response?.credential || '').trim();
+            if (!idToken) {
+              setAdminStatus('Jeton Google invalide.', true);
+              return;
+            }
+
+            try {
+              setAdminStatus('Verification de ton compte Google...');
+              const result = await fetchJson('/api/admin/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken })
+              });
+
+              if (!result.sessionToken || !result.email) {
+                throw new Error('Session admin invalide');
+              }
+
+              applyAdminSession(result.email, result.sessionToken);
+            } catch (error) {
+              const message = error instanceof Error ? error.message : 'Connexion Google refusee.';
+              clearAdminSession(message);
+            }
+          }
+        });
+
+        window.google.accounts.id.renderButton(container, {
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'pill'
+        });
       }
 
       function gaClientInput() {
@@ -428,9 +541,10 @@
         gaTokenClient.requestAccessToken({ prompt: '' });
       }
 
-      function adminHeaders() {
-        const token = document.getElementById('token').value.trim();
-        return token ? { 'x-admin-token': token } : {};
+      function setAdStatus(message, isError = false) {
+        const node = document.getElementById('ad-status');
+        node.textContent = message;
+        node.className = isError ? 'status error' : 'muted status';
       }
 
       async function loadAdConfig() {
@@ -441,6 +555,7 @@
         document.getElementById('ad-image').value = data.imageUrl || '';
         document.getElementById('ad-link').value = data.linkUrl || '';
         refreshPreview(data.imageUrl || '');
+        setAdStatus('Config pub chargée.');
       }
 
       function refreshPreview(url) {
@@ -455,6 +570,11 @@
       }
 
       async function saveAdConfig() {
+        if (!isAdminAuthenticated) {
+          setAdStatus('Connecte-toi avec Google pour enregistrer.', true);
+          return;
+        }
+
         const payload = {
           mode: document.getElementById('ad-mode').value,
           label: document.getElementById('ad-label').value,
@@ -466,20 +586,23 @@
         await fetchJson('/api/ad-config', {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json',
-            ...adminHeaders()
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify(payload)
         });
 
-        alert('Encart pub enregistre.');
+        await loadAdConfig();
+        setAdStatus('Encart pub enregistré.');
       }
 
       async function loadEvents() {
+        if (!isAdminAuthenticated) {
+          setAdminStatus('Connecte-toi avec Google pour charger les fiches.', true);
+          return;
+        }
+
         const year = document.getElementById('year').value;
-        const data = await fetchJson(`/api/admin/events?year=${encodeURIComponent(year)}`, {
-          headers: adminHeaders()
-        });
+        const data = await fetchJson(`/api/admin/events?year=${encodeURIComponent(year)}`);
 
         const tbody = document.getElementById('events-body');
         tbody.innerHTML = '';
@@ -500,8 +623,7 @@
             const y = btn.getAttribute('data-year');
             const q = btn.getAttribute('data-qid');
             await fetchJson(`/api/admin/events?year=${encodeURIComponent(y)}&lang=fr&eventQid=${encodeURIComponent(q)}`, {
-              method: 'DELETE',
-              headers: adminHeaders()
+              method: 'DELETE'
             });
             await loadEvents();
           });
@@ -529,7 +651,17 @@
         });
       }
 
-      document.getElementById('save-ad').addEventListener('click', saveAdConfig);
+      document.getElementById('save-ad').addEventListener('click', () => {
+        saveAdConfig().catch((error) => {
+          setAdStatus(error.message || 'Impossible d’enregistrer la pub.', true);
+        });
+      });
+      document.getElementById('admin-logout').addEventListener('click', async () => {
+        clearAdminSession('Session admin fermee.');
+        try {
+          await fetchJson('/api/admin/session', { method: 'DELETE' });
+        } catch {}
+      });
       document.getElementById('load-events').addEventListener('click', loadEvents);
       document.getElementById('ga-connect').addEventListener('click', () => {
         connectGoogle().catch((error) => {
@@ -543,8 +675,17 @@
       });
       setupUpload();
       loadGaSettings();
-
-      loadAdConfig().catch(() => {});
+      updateAuthUi();
+      loadAdConfig().catch((error) => {
+        setAdStatus(error.message || 'Impossible de charger la config pub.', true);
+      });
+      verifyAdminSession()
+        .then(() => {
+          initGoogleAdminLogin();
+        })
+        .catch(() => {
+          setAdminStatus('Erreur d initialisation de la connexion Google.', true);
+        });
     </script>
   </body>
 </html>

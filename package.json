@@ -10,6 +10,7 @@
     "cf:dev": "npm run build:cf && npx wrangler pages dev dist",
     "cf:deploy": "npm run build:cf && npx wrangler pages deploy dist",
     "preview": "vite preview",
+    "enrich:wikileads": "node scripts/enrich_wikileads.mjs",
     "postinstall": "DATABASE_URL=postgresql://user:pass@localhost:5432/postgres prisma generate --no-engine"
   },
   "devDependencies": {
@@ -18,7 +19,6 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "@netlify/blobs": "^10.7.0",
     "@prisma/client": "6.16.0",
     "@prisma/extension-accelerate": "^2.0.2",
     "@supabase/supabase-js": "^2.97.0"

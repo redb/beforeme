@@ -3,7 +3,7 @@
 ## 1. Objet
 BeforeMe est une application web orientee partage social qui projette un utilisateur dans une "annee miroir" et affiche des micro-scenes historiques immersives.
 
-Le produit est deploye en front statique (Vite) avec fonctions serverless (Netlify Functions) et cache persistant en base PostgreSQL via Prisma.
+Le produit est deploye en front statique (Vite) avec fonctions serverless (Cloudflare Functions) et cache persistant en base PostgreSQL via Prisma.
 
 ## 2. Perimetre fonctionnel
 1. Saisie utilisateur:
@@ -43,7 +43,7 @@ Le produit est deploye en front statique (Vite) avec fonctions serverless (Netli
   - `/Users/jean-brunoricard/dev/BeforeMe/src/lib/i18n.ts`
 
 ## 4.2 Backend serverless
-- Plateforme: Netlify Functions.
+- Plateforme: Cloudflare Functions.
 - Runtime: Node.js.
 - Endpoints exposes:
   - `/api/anecdote`
@@ -158,18 +158,17 @@ Retour multi-scenes par annee/pays/langue (pipeline FR prioritaire).
 - Commande: `npm run build`
 - Output: `dist`
 
-## 11.2 Netlify
-- Config: `/Users/jean-brunoricard/dev/BeforeMe/netlify.toml`
+## 11.2 Cloudflare
+- Config: `/Users/jean-brunoricard/dev/BeforeMe/wrangler.jsonc`
 - Redirect SPA: `public/_redirects`
 - Deploy:
-  - `npx netlify deploy`
-  - `npx netlify deploy --prod`
+  - `npm run cf:deploy`
 
 ## 11.3 DNS Cloudflare
-1. Domaine ajoute dans Netlify.
+1. Domaine ajoute dans Cloudflare.
 2. DNS Cloudflare en mode DNS only.
-3. CNAME `www` vers `<site>.netlify.app`.
-4. Apex selon recommandation Netlify (flattening/CNAME).
+3. CNAME `www` vers `<site>.pages.dev`.
+4. Apex selon recommandation Cloudflare (flattening/CNAME).
 
 ## 12. Variables d environnement
 - `DATABASE_URL`
@@ -198,4 +197,3 @@ Retour multi-scenes par annee/pays/langue (pipeline FR prioritaire).
 3. Format final du module publicitaire (Adsense puis regie ethique).
 4. Priorite FR-only vs multi-pays complet.
 5. Politique de purge/rotation cache.
-

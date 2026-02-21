@@ -20,6 +20,7 @@ export type UiKey =
   | 'resultYearLine'
   | 'resultBeforeBirthLine'
   | 'storyLabel'
+  | 'storyWaiting'
   | 'continue'
   | 'restart'
   | 'disclaimer'
@@ -61,6 +62,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     resultYearLine: 'Tu es en {year}',
     resultBeforeBirthLine: '{age} ans avant ta naissance',
     storyLabel: 'scene',
+    storyWaiting: "Personne n'a demandé cette année dans ce pays avant toi, un peu de patience !",
     continue: 'continuer',
     restart: 'recommencer',
     disclaimer: 'scenes plausibles, pas une archive historique.',
@@ -101,6 +103,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     resultYearLine: 'You are in {year}',
     resultBeforeBirthLine: '{age} years before your birth',
     storyLabel: 'scene',
+    storyWaiting: 'Nobody requested this year in this country before you, please wait a bit!',
     continue: 'continue',
     restart: 'start again',
     disclaimer: 'plausible scenes, not a historical archive.',

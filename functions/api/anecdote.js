@@ -1,134 +1,230 @@
-import { buildFallbackSlots } from '../lib/fallback-scenes.js';
-const DEFAULT_NETLIFY_ORIGIN = 'https://beforeme-test-20260219-091055.netlify.app';
+import { getWikiLead } from '../lib/wiki-lead.js';
+
 const MAX_SLOT = 20;
+const OPENAI_ENDPOINT = 'https://api.openai.com/v1/responses';
+const poolCache = new Map();
 
-function sanitizeOrigin(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return DEFAULT_NETLIFY_ORIGIN;
-  return raw.endsWith('/') ? raw.slice(0, -1) : raw;
-}
-
-function buildUpstreamUrl(request, env) {
-  const upstreamOrigin = sanitizeOrigin(env?.NETLIFY_ORIGIN);
-  const incoming = new URL(request.url);
-  const upstream = new URL('/api/anecdote', upstreamOrigin);
-
-  for (const [key, value] of incoming.searchParams.entries()) {
-    upstream.searchParams.set(key, value);
-  }
-
-  return upstream;
-}
+const SOURCE_POOL = {
+  'FR:1968': [
+    {
+      title: 'Accords de Grenelle',
+      sourceUrl: 'https://fr.wikipedia.org/wiki/Accords_de_Grenelle'
+    },
+    {
+      title: "Jeux olympiques d'hiver de 1968",
+      sourceUrl: "https://fr.wikipedia.org/wiki/Jeux_olympiques_d%27hiver_de_1968"
+    },
+    {
+      title: 'Festival de Cannes 1968',
+      sourceUrl: 'https://fr.wikipedia.org/wiki/Festival_de_Cannes_1968'
+    },
+    {
+      title: 'Mai 68',
+      sourceUrl: 'https://fr.wikipedia.org/wiki/Mai_68'
+    },
+    {
+      title: 'Manifestations de mai 1968 en France',
+      sourceUrl: 'https://fr.wikipedia.org/wiki/Manifestations_de_mai_1968_en_France'
+    }
+  ]
+};
 
 function responseHeaders(contentType = 'application/json; charset=utf-8') {
   return {
     'Content-Type': contentType,
-    'Cache-Control': 'public, max-age=60',
+    'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
   };
 }
 
-function normalizeLang(raw) {
-  return String(raw || '').toLowerCase().startsWith('fr') ? 'fr' : 'en';
-}
-
-function normalizeScope(raw) {
-  return String(raw || '').toLowerCase() === 'local' ? 'local' : 'global';
+function json(status, payload) {
+  return new Response(JSON.stringify(payload), { status, headers: responseHeaders() });
 }
 
 function parseSlot(raw) {
-  const slot = Number(raw);
-  if (!Number.isInteger(slot) || slot < 1 || slot > MAX_SLOT) return null;
-  return slot;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1 || value > MAX_SLOT) return null;
+  return value;
 }
 
 function parseYear(raw) {
-  const year = Number(raw);
-  if (!Number.isInteger(year) || year < 1 || year > 2100) return null;
-  return year;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1 || value > 2100) return null;
+  return value;
 }
 
-function isAnecdoteSlot(payload) {
-  return Boolean(
-    payload &&
-      typeof payload === 'object' &&
-      typeof payload.slot === 'number' &&
-      typeof payload.narrative === 'string' &&
-      typeof payload.fact === 'string' &&
-      typeof payload.url === 'string'
-  );
+function sourceForSlot({ year, country, slot }) {
+  const pool = SOURCE_POOL[`${country}:${year}`] || [];
+  if (!pool.length) return null;
+  return pool[(slot - 1) % pool.length];
 }
 
-function buildFallbackSlot(query) {
-  const year = parseYear(query.get('year'));
-  const slot = parseSlot(query.get('slot'));
-  if (!year || !slot) return null;
+function countWords(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
 
-  const lang = normalizeLang(query.get('lang'));
-  const scope = normalizeScope(query.get('scope'));
-  const country = String(query.get('country') || 'US').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2) || 'US';
-  const slots = buildFallbackSlots({ year, country, lang, scope });
-  return slots[slot - 1] || null;
+function sentenceCount(text) {
+  return String(text || '')
+    .split(/[.!?]/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean).length;
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '');
+}
+
+function isValidNarrative(text) {
+  const words = countWords(text);
+  if (words < 30 || words > 130) return false;
+  const sentences = sentenceCount(text);
+  if (sentences < 2 || sentences > 6) return false;
+  if (!/\btu\b/i.test(text)) return false;
+  const lowered = normalizeText(text);
+  const blocked = ['se repand sur le trottoir', 'entree marquee', 'tout le quartier s organise autour de ce repere'];
+  if (blocked.some((item) => lowered.includes(item))) return false;
+  return true;
+}
+
+async function fetchWithRetry(url, init, { timeoutMs, retries }) {
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { ...init, signal: controller.signal });
+      if (!response.ok) {
+        throw new Error(`HTTP_${response.status}`);
+      }
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  throw lastError || new Error('request_failed');
+}
+
+async function generateSceneWithAI({ year, title, wikiLead, env }) {
+  const apiKey = String(env?.OPENAI_API_KEY || '').trim();
+  if (!apiKey) return '';
+
+  const prompt = [
+    'Écris une micro-scène immersive en français.',
+    'Règles: 3 ou 4 phrases, 45 à 90 mots, présent, 2e personne.',
+    'Aucune analyse historique. Aucune morale.',
+    `Année: ${year}`,
+    `Titre: ${title}`,
+    `Lead source: ${wikiLead}`
+  ].join('\n');
+
+  try {
+    const response = await fetchWithRetry(
+      OPENAI_ENDPOINT,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: String(env?.OPENAI_MODEL || 'gpt-4.1-mini'),
+          input: prompt,
+          max_output_tokens: 220
+        })
+      },
+      { timeoutMs: 18000, retries: 2 }
+    );
+    const payload = await response.json();
+    const direct = String(payload?.output_text || '').replace(/\s+/g, ' ').trim();
+    if (direct) return direct;
+
+    const chunks = [];
+    const output = Array.isArray(payload?.output) ? payload.output : [];
+    for (const item of output) {
+      const content = Array.isArray(item?.content) ? item.content : [];
+      for (const part of content) {
+        const text = String(part?.text || '').trim();
+        if (text) chunks.push(text);
+      }
+    }
+    return chunks.join(' ').replace(/\s+/g, ' ').trim();
+  } catch {
+    return '';
+  }
+}
+
+function shortFactFromLead(lead, fallbackTitle) {
+  const firstSentence = String(lead || '').split(/(?<=[.!?])\s+/)[0]?.trim() || '';
+  if (!firstSentence) {
+    return `${fallbackTitle}.`;
+  }
+  const trimmed = firstSentence.split(/\s+/).slice(0, 20).join(' ');
+  return trimmed.endsWith('.') ? trimmed : `${trimmed}.`;
 }
 
 export async function onRequestOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: responseHeaders()
-  });
+  return new Response(null, { status: 204, headers: responseHeaders() });
 }
 
 export async function onRequestGet(context) {
-  try {
-    const incomingUrl = new URL(context.request.url);
-    const fallback = buildFallbackSlot(incomingUrl.searchParams);
-    if (!fallback) {
-      return new Response(JSON.stringify({ error: 'Invalid parameters. Expected year and slot.' }), {
-        status: 400,
-        headers: responseHeaders()
-      });
-    }
+  const requestUrl = new URL(context.request.url);
+  const year = parseYear(requestUrl.searchParams.get('year'));
+  const slot = parseSlot(requestUrl.searchParams.get('slot'));
+  const country = String(requestUrl.searchParams.get('country') || 'FR').trim().toUpperCase();
+  const lang = String(requestUrl.searchParams.get('lang') || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en';
 
-    const upstream = buildUpstreamUrl(context.request, context.env);
-    const upstreamResponse = await fetch(upstream.toString(), {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json'
-      }
-    });
-
-    if (upstreamResponse.ok) {
-      const contentType = upstreamResponse.headers.get('content-type') || '';
-      if (contentType.toLowerCase().includes('application/json')) {
-        const payload = await upstreamResponse.json();
-        if (isAnecdoteSlot(payload)) {
-          return new Response(JSON.stringify(payload), {
-            status: 200,
-            headers: responseHeaders()
-          });
-        }
-      }
-    }
-
-    return new Response(JSON.stringify(fallback), {
-      status: 200,
-      headers: responseHeaders()
-    });
-  } catch {
-    const incomingUrl = new URL(context.request.url);
-    const fallback = buildFallbackSlot(incomingUrl.searchParams);
-    if (fallback) {
-      return new Response(JSON.stringify(fallback), {
-        status: 200,
-        headers: responseHeaders()
-      });
-    }
-
-    return new Response(JSON.stringify({ error: 'Cloudflare anecdote upstream is unavailable.' }), {
-      status: 502,
-      headers: responseHeaders()
-    });
+  if (!year || !slot) {
+    return json(400, { error: 'Invalid parameters. Expected year and slot.' });
   }
+  if (country !== 'FR' || lang !== 'fr') {
+    return json(404, { error: 'Mode one-by-one currently available for FR/fr only.' });
+  }
+
+  const source = sourceForSlot({ year, country, slot });
+  if (!source) {
+    return json(404, { error: 'No source pool configured for this year/country yet.' });
+  }
+
+  const cacheKey = `${year}|${country}|${slot}`;
+  const cached = poolCache.get(cacheKey);
+  if (cached) {
+    return json(200, cached);
+  }
+
+  const wikiLead = await getWikiLead(source.sourceUrl);
+  if (!wikiLead || wikiLead.length < 200) {
+    return json(502, { error: 'Wikipedia lead unavailable for selected source.' });
+  }
+
+  const narrative = await generateSceneWithAI({
+    year,
+    title: source.title,
+    wikiLead,
+    env: context.env
+  });
+
+  if (!isValidNarrative(narrative)) {
+    return json(502, { error: 'AI scene did not pass minimal narrative checks.' });
+  }
+
+  const payload = {
+    slot,
+    narrative,
+    fact: shortFactFromLead(wikiLead, source.title),
+    url: source.sourceUrl
+  };
+  poolCache.set(cacheKey, payload);
+  return json(200, payload);
 }

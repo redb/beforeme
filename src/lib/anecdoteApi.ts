@@ -44,6 +44,24 @@ function isAnecdoteSlot(value: unknown): value is AnecdoteSlot {
   }
 
   const candidate = value as Record<string, unknown>;
+  const narrative = String(candidate.narrative || '');
+  const fact = String(candidate.fact || '');
+  const url = String(candidate.url || '');
+  const normalized = narrative.toLowerCase();
+  const blockedFragments = [
+    'tu t’arrêtes devant une cabine vitrée',
+    "tu t'arrêtes devant une cabine vitrée",
+    'tu entres dans une bibliothèque',
+    'tu avances dans un couloir d’administration',
+    "tu avances dans un couloir d'administration",
+    'voix peut maintenant traverser la rue entière',
+    'espace public devient modulable au quotidien',
+    'franchir une étape dépend désormais d’un document',
+    "franchir une étape dépend désormais d'un document"
+  ];
+  const hasBlockedFragment = blockedFragments.some((fragment) => normalized.includes(fragment));
+  const hasSourcedUrl = /wikipedia\.org\/wiki\//i.test(url);
+  const hasFallbackFact = /scene plausible|scène plausible|generated locally/i.test(fact);
 
   return (
     typeof candidate.slot === 'number' &&
@@ -52,7 +70,10 @@ function isAnecdoteSlot(value: unknown): value is AnecdoteSlot {
     typeof candidate.url === 'string' &&
     candidate.narrative.length > 0 &&
     candidate.fact.length > 0 &&
-    candidate.url.length > 0
+    candidate.url.length > 0 &&
+    !hasBlockedFragment &&
+    hasSourcedUrl &&
+    !hasFallbackFact
   );
 }
 
@@ -107,7 +128,7 @@ async function fetchHistoricalItems(input: { year: number; lang: Lang; country: 
       lang: input.lang,
       country: input.country
     });
-    const paths = ['/api/anecdotes', '/.netlify/functions/anecdotes'];
+    const paths = ['/api/anecdotes'];
 
     for (const path of paths) {
       let response: Response;
@@ -174,7 +195,7 @@ export async function fetchAnecdoteSlot(input: {
     slot: String(input.slot)
   });
 
-  const paths = ['/api/anecdote', '/.netlify/functions/anecdote'];
+  const paths = ['/api/anecdote'];
 
   try {
     for (const path of paths) {

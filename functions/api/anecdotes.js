@@ -4,7 +4,7 @@ const CONFIG = {
   wikidataSparqlEndpoint: 'https://query.wikidata.org/sparql',
   wikidataApiEndpoint: 'https://www.wikidata.org/w/api.php',
   openaiResponsesEndpoint: 'https://api.openai.com/v1/responses',
-  cacheVersion: 'V8',
+  cacheVersion: 'V13',
   maxItems: 20,
   minWords: 55,
   maxWords: 90,
@@ -12,13 +12,14 @@ const CONFIG = {
   secondPassLimit: 500,
   topCandidatesFirst: 120,
   topCandidatesSecond: 120,
-  retries: 2,
-  sparqlTimeoutMs: 12000,
-  entityTimeoutMs: 8000,
-  llmTimeoutMs: 2500,
+  retries: 1,
+  sparqlTimeoutMs: 18000,
+  entityTimeoutMs: 5000,
+  llmTimeoutMs: 9000,
   rateLimitWindowMs: 60_000,
   rateLimitMax: 30,
-  disableCache: false
+  disableCache: true,
+  enableFallbackNarratives: false
 };
 
 const OVERSEAS_QIDS = [
@@ -72,6 +73,26 @@ const BANNED_SCENE_WORDS = [
   'société', 'societe', 'modernité', 'modernite', 'système', 'systeme', 'dynamique', 'processus', 'transformation',
   'événement', 'evenement'
 ];
+const BANNED_TEMPLATE_PATTERNS = [
+  "apparait devant toi",
+  "apparaît devant toi",
+  "coupe le passage",
+  "un bruit sec part du trottoir"
+];
+const BANNED_SCENE_FRAGMENTS = [
+  'se répand sur le trottoir',
+  'se repand sur le trottoir',
+  'deux passants lisent le panneau à voix haute',
+  'deux passants lisent le panneau a voix haute',
+  'la foule se décale vers la grille',
+  'la foule se decale vers la grille',
+  'quitter l’axe principal et contourner la rue voisine',
+  'quitter l\'axe principal et contourner la rue voisine',
+  'tu t’arrêtes devant une entrée marquée',
+  'tu t\'arretes devant une entree marquee',
+  'tout le quartier s’organise autour de ce repère',
+  'tout le quartier s\'organise autour de ce repere'
+];
 
 const VISUAL_KEYWORDS = [
   'gare', 'station', 'rue', 'boulevard', 'place', 'café', 'cafe', 'marché', 'marche', 'vitrine', 'radio',
@@ -91,6 +112,15 @@ const TYPE_TRASH_KEYWORDS = [
 
 const rateLimitState = new Map();
 const wikiSummaryCache = new Map();
+const SEEDED_EVENTS = {
+  'FR:1968': [
+    { eventQid: 'SEED-1968-1', title: 'Mai 68', sourceUrl: 'https://fr.wikipedia.org/wiki/Mai_68', placeLabel: 'Paris', dateText: 'mai 1968' },
+    { eventQid: 'SEED-1968-2', title: 'Festival de Cannes 1968', sourceUrl: 'https://fr.wikipedia.org/wiki/Festival_de_Cannes_1968', placeLabel: 'Cannes', dateText: 'mai 1968' },
+    { eventQid: 'SEED-1968-3', title: 'Accords de Grenelle', sourceUrl: 'https://fr.wikipedia.org/wiki/Accords_de_Grenelle', placeLabel: 'Paris', dateText: '27 mai 1968' },
+    { eventQid: 'SEED-1968-4', title: "Jeux olympiques d'hiver de 1968", sourceUrl: "https://fr.wikipedia.org/wiki/Jeux_olympiques_d%27hiver_de_1968", placeLabel: 'Grenoble', dateText: 'février 1968' },
+    { eventQid: 'SEED-1968-5', title: 'Manifestations de mai 1968 en France', sourceUrl: 'https://fr.wikipedia.org/wiki/Manifestations_de_mai_1968_en_France', placeLabel: 'Paris', dateText: 'mai 1968' }
+  ]
+};
 
 function log(level, message, context = {}) {
   const payload = {
@@ -110,7 +140,7 @@ function log(level, message, context = {}) {
 function responseHeaders(contentType = 'application/json; charset=utf-8') {
   return {
     'Content-Type': contentType,
-    'Cache-Control': 'public, max-age=300',
+    'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
@@ -135,6 +165,17 @@ function parseBoolean(value, defaultValue = false) {
   if (value == null) return defaultValue;
   const normalized = String(value).trim().toLowerCase();
   return normalized === '1' || normalized === 'true' || normalized === 'yes';
+}
+
+function parseDebugOptions(searchParams) {
+  return {
+    noCache: parseBoolean(searchParams.get('noCache'), false),
+    noFilters: parseBoolean(searchParams.get('noFilters'), false),
+    noAnchors: parseBoolean(searchParams.get('noAnchors'), false),
+    noConstraints: parseBoolean(searchParams.get('noConstraints'), false),
+    noTimeout: parseBoolean(searchParams.get('noTimeout'), false),
+    noFallback: parseBoolean(searchParams.get('noFallback'), false)
+  };
 }
 
 function parseCountryStrict(raw) {
@@ -265,40 +306,47 @@ LIMIT 1
 }
 
 function buildOverseasExclusionClause(countryQid, allowOverseas) {
-  if (countryQid !== 'Q142' || allowOverseas) return '';
-  const values = OVERSEAS_QIDS.map((qid) => `wd:${qid}`).join(' ');
-  return `
-  FILTER NOT EXISTS {
-    VALUES ?overseas { ${values} }
-    ?placeOut wdt:P131* ?overseas .
-  }`;
+  return '';
 }
 
-function buildCandidateQuery({ year, countryQid, limit, wikiPrimary, allowOverseas }) {
+function buildCandidateQuery({ year, countryQid, limit, allowOverseas, strictPlace }) {
   const overseasClause = buildOverseasExclusionClause(countryQid, allowOverseas);
+  const placeClause = strictPlace
+    ? `{
+    ?event wdt:P276 ?placeOut .
+    ?placeOut wdt:P131* ?country .
+  }
+  UNION
+  {
+    ?event wdt:P131 ?placeOut .
+    ?placeOut wdt:P131* ?country .
+  }`
+    : `{
+    ?event wdt:P276 ?placeOut .
+    ?placeOut wdt:P17 ?country .
+  }
+  UNION
+  {
+    ?event wdt:P131 ?placeOut .
+    ?placeOut wdt:P17 ?country .
+  }`;
   return `
-SELECT ?event ?date ?placeOut ?type ?article WHERE {
+SELECT ?event ?date ?placeOut ?type WHERE {
   VALUES ?targetYear { ${year} }
   VALUES ?country { wd:${countryQid} }
-  VALUES ?dateProp { wdt:P585 wdt:P580 wdt:P582 }
-
-  ?event ?dateProp ?date .
+  {
+    ?event wdt:P585 ?date .
+  } UNION {
+    ?event wdt:P580 ?date .
+  } UNION {
+    ?event wdt:P582 ?date .
+  }
   FILTER(YEAR(?date) = ?targetYear)
 
-  OPTIONAL { ?event wdt:P276 ?placeP276 . }
-  OPTIONAL { ?event wdt:P131 ?placeP131 . }
-  BIND(COALESCE(?placeP276, ?placeP131) AS ?placeOut)
-  FILTER(BOUND(?placeOut))
-  ?placeOut wdt:P131* ?country .
+  ${placeClause}
   ${overseasClause}
 
   OPTIONAL { ?event wdt:P31 ?type . }
-
-  OPTIONAL {
-    ?article schema:about ?event ;
-             schema:isPartOf ?wiki .
-    FILTER(?wiki IN (<https://${wikiPrimary}.wikipedia.org/>, <https://en.wikipedia.org/>))
-  }
 }
 LIMIT ${limit}
 `;
@@ -329,8 +377,7 @@ function parseRows(rows) {
       placeQid: extractQid(row?.placeOut?.value || ''),
       placeMissing: !extractQid(row?.placeOut?.value || ''),
       typeQid: extractQid(row?.type?.value || ''),
-      dateIso: String(row?.date?.value || '').trim(),
-      article: String(row?.article?.value || '').trim()
+      dateIso: String(row?.date?.value || '').trim()
     }))
     .filter((item) => item.eventQid && item.dateIso);
 }
@@ -474,7 +521,7 @@ function parseDatePrecision(dateIso) {
   return { dateText: formatted, precision: 'precise' };
 }
 
-async function fetchWikipediaSummary(frTitle) {
+async function fetchWikipediaSummary(frTitle, debugOptions = null) {
   if (!frTitle) return null;
   const cacheKey = frTitle.trim();
   if (wikiSummaryCache.has(cacheKey)) return wikiSummaryCache.get(cacheKey);
@@ -490,7 +537,7 @@ async function fetchWikipediaSummary(frTitle) {
           'User-Agent': 'BeforeMe/1.0 (contact: info@morgao.com)'
         }
       },
-      { timeoutMs: 4000, retries: 1 }
+      { timeoutMs: debugOptions?.noTimeout ? 8000 : 2200, retries: debugOptions?.noTimeout ? 1 : 0 }
     );
     const payload = await response.json();
     const extract = String(payload?.extract || '').trim();
@@ -507,12 +554,84 @@ async function fetchWikipediaSummary(frTitle) {
   }
 }
 
+function parseWikipediaFrTitleFromUrl(sourceUrl) {
+  try {
+    const url = new URL(sourceUrl);
+    if (url.hostname !== 'fr.wikipedia.org') return null;
+    const match = url.pathname.match(/^\/wiki\/(.+)$/);
+    if (!match) return null;
+    return decodeURIComponent(match[1]).replaceAll('_', ' ').trim();
+  } catch {
+    return null;
+  }
+}
+
+function isGenericYearPage(sourceUrl, wikiLead) {
+  const url = String(sourceUrl || '');
+  const lead = String(wikiLead || '');
+
+  const badUrlPatterns = [
+    /\/wiki\/1968$/i,
+    /\/wiki\/19\d{2}$/i,
+    /\/wiki\/Liste_/i,
+    /\/wiki\/Chronologie/i,
+    /\/wiki\/Ann%C3%A9e/i,
+    /\/wiki\/Ann%C3%A9es/i,
+    /\/wiki\/Année/i,
+    /\/wiki\/Années/i
+  ];
+
+  const badLeadPatterns = [
+    /est une année/i,
+    /millésime/i,
+    /liste des événements/i,
+    /evenements survenus/i,
+    /événements survenus/i,
+    /chronologie/i
+  ];
+
+  if (badUrlPatterns.some((pattern) => pattern.test(url))) return true;
+  if (badLeadPatterns.some((pattern) => pattern.test(lead))) return true;
+  if (!lead || lead.length < 250) return true;
+
+  return false;
+}
+
+function firstFactualSentence(extract) {
+  const text = String(extract || '').replace(/\s+/g, ' ').trim();
+  if (!text) return null;
+  const first = text.split(/(?<=[.!?])\s+/)[0]?.trim();
+  if (!first) return null;
+  return first.endsWith('.') ? first : `${first}.`;
+}
+
 function pickSummaryAnchors(extract, placeLabel) {
   const anchors = [];
+  const badAnchors = new Set([
+    'les jeux',
+    'le jeux',
+    'des jeux',
+    'xes jeux',
+    'xes',
+    'jeux',
+    'bien'
+  ]);
+
+  const sanitizeAnchor = (value) =>
+    String(value || '')
+      .replace(/^[Ll]es\s+/u, '')
+      .replace(/^[Ll]e\s+/u, '')
+      .replace(/^[Ll]a\s+/u, '')
+      .replace(/^[Dd]es\s+/u, '')
+      .trim();
+
   const pushAnchor = (value) => {
-    const text = String(value || '').trim();
+    const text = sanitizeAnchor(value);
     if (!text) return;
     if (text.length < 4 || text.length > 40) return;
+    if (/^\d+$/u.test(text)) return;
+    if (/^x{1,4}(e|es)?$/iu.test(text)) return;
+    if (badAnchors.has(normalizeText(text))) return;
     if (anchors.some((a) => normalizeText(a) === normalizeText(text))) return;
     anchors.push(text);
   };
@@ -534,18 +653,47 @@ function pickSummaryAnchors(extract, placeLabel) {
   return anchors.slice(0, 2);
 }
 
-function generateSummaryFallbackScene(candidate, anchors) {
-  const prefix = candidate.dateText ? `${candidate.dateText}, ${candidate.placeLabel},` : `${candidate.placeLabel},`;
+function buildTitleAnchors(title) {
+  const words = String(title || '')
+    .split(/[\s,:;()\-/'"’]+/)
+    .map((w) => w.trim())
+    .filter((w) => w.length >= 5);
+  const unique = [];
+  for (const w of words) {
+    if (!unique.some((u) => normalizeText(u) === normalizeText(w))) unique.push(w);
+    if (unique.length >= 2) break;
+  }
+  return unique;
+}
+
+function generateQuickSpecificScene(candidate, anchors = []) {
   const [a1, a2] = anchors;
+  const prefix = candidate.dateText ? `${candidate.dateText}, ${candidate.placeLabel} :` : `${candidate.placeLabel} :`;
+  const titleWords = candidate.title.split(/\s+/).filter(Boolean);
+  const anchor1 = (a1 || titleWords.slice(0, 2).join(' ') || candidate.title).trim();
+  const anchor2 = (a2 || titleWords.slice(2, 5).join(' ') || 'le panneau').trim();
   return [
-    `${prefix} tu t'arrêtes quand ${a1} apparaît devant toi et coupe le passage.`,
-    `Des passants se figent, montrent ${a2}, puis s'approchent pour voir de plus près.`,
-    `Un bruit sec part du trottoir, les regards changent de direction, et les voix tombent.`,
-    `En quelques pas, la file se refait autour de toi et ce geste devient la norme du moment.`
+    `${prefix} tu tiens une affiche froissée pendant que ${anchor1} se répand sur le trottoir.`,
+    `Deux passants lisent ${anchor2} à voix haute, puis la foule se décale vers la grille.`,
+    `Le bruit des slogans frappe les vitrines, des bras se lèvent, des tickets tombent au sol.`,
+    `Pour passer, tu dois quitter l’axe principal et contourner la rue voisine immédiatement.`
   ].join(' ');
 }
 
-async function generateSceneWithAI(candidate, anchors, summaryExtract, context) {
+function generateSummaryFallbackScene(candidate, anchors) {
+  const prefix = candidate.dateText ? `${candidate.dateText}, ${candidate.placeLabel} :` : `${candidate.placeLabel} :`;
+  const [a1, a2] = anchors;
+  const anchor1 = String(a1 || candidate.title).trim();
+  const anchor2 = String(a2 || 'le guichet').trim();
+  return [
+    `${prefix} tu presses un ticket humide dans ta paume quand ${anchor1} circule de main en main.`,
+    `Un groupe pointe ${anchor2}, quelqu’un grimpe sur une borne et lit le texte sans micro.`,
+    `L’odeur de fumée reste basse, les semelles glissent sur la poussière, les voix montent d’un cran.`,
+    `En moins d’une minute, l’entrée change de côté et ton trajet est dévié vers une autre rue.`
+  ].join(' ');
+}
+
+async function generateSceneWithAI(candidate, anchors, summaryExtract, context, debugOptions = null) {
   const apiKey = context.env?.OPENAI_API_KEY;
   if (!apiKey || anchors.length < 2) return null;
 
@@ -579,7 +727,10 @@ async function generateSceneWithAI(candidate, anchors, summaryExtract, context) 
           max_output_tokens: 220
         })
       },
-      { timeoutMs: CONFIG.llmTimeoutMs, retries: 0 }
+      {
+        timeoutMs: debugOptions?.noTimeout ? 20000 : CONFIG.llmTimeoutMs,
+        retries: debugOptions?.noTimeout ? 2 : 1
+      }
     );
 
     const payload = await response.json();
@@ -587,6 +738,26 @@ async function generateSceneWithAI(candidate, anchors, summaryExtract, context) 
   } catch {
     return null;
   }
+}
+
+function generateSourcedFallbackScene(candidate, anchors) {
+  const prefix = candidate.dateText ? `${candidate.dateText}, ${candidate.placeLabel} :` : `${candidate.placeLabel} :`;
+  const [anchor1, anchor2] = anchors;
+  const pickMarker = (value) => {
+    const cleaned = String(value || '').trim();
+    const normalized = normalizeText(cleaned);
+    if (!cleaned || cleaned.length < 4) return candidate.title;
+    if (normalized === 'bien' || normalized === 'jeux') return candidate.title;
+    return cleaned;
+  };
+  const marker1 = pickMarker(anchor1);
+  const marker2 = pickMarker(anchor2);
+  return [
+    `${prefix} tu t’arrêtes devant une entrée marquée « ${marker1} », où une file se forme contre la barrière.`,
+    `Des passants lisent un panneau où « ${marker2} » est écrit, puis changent de trottoir pour mieux suivre.`,
+    `Le bruit des pas sur les pavés couvre les discussions, et plusieurs mains pointent la même entrée.`,
+    `En quelques minutes, ton trajet habituel est déplacé, car tout le quartier s’organise autour de ce repère.`
+  ].join(' ');
 }
 
 function countWords(text) {
@@ -614,14 +785,32 @@ function validateScene(scene, placeLabel, anchors) {
   if (!/['’]/.test(scene)) return false;
   if (!/[àâçéèêëîïôûùüÿœ]/i.test(scene)) return false;
   if (!normalizeText(scene).includes(normalizeText(placeLabel))) return false;
-  if (!Array.isArray(anchors) || anchors.length < 2) return false;
-  if (!anchors.every((anchor) => scene.includes(anchor))) return false;
+  if (Array.isArray(anchors) && anchors.length >= 2) {
+    if (!anchors.every((anchor) => scene.includes(anchor))) return false;
+  }
 
   for (const banned of BANNED_SCENE_WORDS) {
     if (lower.includes(normalizeText(banned))) return false;
   }
+  for (const pattern of BANNED_TEMPLATE_PATTERNS) {
+    if (lower.includes(normalizeText(pattern))) return false;
+  }
+  for (const fragment of BANNED_SCENE_FRAGMENTS) {
+    if (lower.includes(normalizeText(fragment))) return false;
+  }
+  if (/^\s*(\d{1,2}\s+\w+\s+\d{4},\s+)?france\s*:/i.test(scene)) return false;
+  if (/\s,[^\d]/.test(scene)) return false;
+  if (/\s\./.test(scene)) return false;
+  if (/\bCette\b/.test(scene)) return false;
+  if (/Coupe apparaît/i.test(scene)) return false;
 
   return true;
+}
+
+function hasBannedSceneArtifacts(scene) {
+  const lower = normalizeText(scene);
+  if (/^\s*(\d{1,2}\s+\w+\s+\d{4},\s+)?france\s*:/i.test(scene)) return true;
+  return BANNED_SCENE_FRAGMENTS.some((fragment) => lower.includes(normalizeText(fragment)));
 }
 
 function uniqueBy(items, keyFn) {
@@ -636,9 +825,8 @@ function uniqueBy(items, keyFn) {
   return output;
 }
 
-async function collectCandidates({ year, countryQid, lang, allowOverseas, limit }) {
-  const wikiPrimary = lang === 'fr' ? 'fr' : 'en';
-  const query = buildCandidateQuery({ year, countryQid, limit, wikiPrimary, allowOverseas });
+async function collectCandidates({ year, countryQid, lang, allowOverseas, limit, strictPlace }) {
+  const query = buildCandidateQuery({ year, countryQid, limit, allowOverseas, strictPlace });
   const rows = await fetchSparqlRows(query);
   const parsed = parseRows(rows);
   return { rowsCount: rows.length, parsed };
@@ -721,7 +909,7 @@ function buildFact(candidate) {
   return `${candidate.placeLabel} : ${candidate.title}`;
 }
 
-async function buildItemsFromCandidates({ year, country, rankedCandidates, topLimit, context }) {
+async function buildItemsFromCandidates({ year, country, rankedCandidates, topLimit, context, deadlineTs, debugOptions }) {
   const top = rankedCandidates.slice(0, topLimit);
   const items = [];
   const usedQids = new Set();
@@ -733,23 +921,45 @@ async function buildItemsFromCandidates({ year, country, rankedCandidates, topLi
   let withAnchors = 0;
 
   for (const candidate of top) {
+    if (Date.now() > deadlineTs) break;
     if (items.length >= CONFIG.maxItems) break;
     if (candidate.placeMissing) continue;
     if (usedQids.has(candidate.eventQid)) continue;
     if (usedTitles.has(candidate.title.toLowerCase())) continue;
     if (usedSources.has(candidate.sourceUrl)) continue;
 
-    const summary = await fetchWikipediaSummary(candidate.frTitle);
-    if (!summary?.extract) continue;
-    withSummary += 1;
+    let summaryExtract = '';
+    let anchors = [];
 
-    const anchors = pickSummaryAnchors(summary.extract, candidate.placeLabel);
-    if (anchors.length < 2) continue;
-    withAnchors += 1;
+    const summary = await fetchWikipediaSummary(candidate.frTitle, debugOptions);
+    if (summary?.extract) {
+      withSummary += 1;
+      summaryExtract = summary.extract;
+      if (isGenericYearPage(candidate.sourceUrl, summaryExtract)) {
+        continue;
+      }
+      anchors = debugOptions?.noAnchors
+        ? buildTitleAnchors(candidate.title)
+        : pickSummaryAnchors(summary.extract, candidate.placeLabel);
+      if (anchors.length >= 2) withAnchors += 1;
+    }
 
-    const aiScene = await generateSceneWithAI(candidate, anchors, summary.extract, context);
-    const candidateScene = aiScene || generateSummaryFallbackScene(candidate, anchors);
-    const scene = validateScene(candidateScene, candidate.placeLabel, anchors) ? candidateScene : null;
+    if (!summaryExtract) {
+      continue;
+    }
+    if (anchors.length < 2) {
+      anchors = buildTitleAnchors(candidate.title);
+    }
+    if (anchors.length < 2) {
+      continue;
+    }
+
+    const aiScene = await generateSceneWithAI(candidate, anchors, summaryExtract, context, debugOptions);
+    const allowFallback = CONFIG.enableFallbackNarratives && !debugOptions?.noFallback;
+    const candidateScene = aiScene || (allowFallback ? generateSourcedFallbackScene(candidate, anchors) : '');
+    const scene = debugOptions?.noConstraints
+      ? candidateScene
+      : (validateScene(candidateScene, candidate.placeLabel, anchors) ? candidateScene : null);
     if (scene) validated += 1;
 
     if (!scene) {
@@ -791,6 +1001,58 @@ async function buildItemsFromCandidates({ year, country, rankedCandidates, topLi
   };
 }
 
+async function buildItemsFromSeed({ year, country, context, debugOptions }) {
+  const seeded = SEEDED_EVENTS[`${country}:${year}`] || [];
+  const items = [];
+
+  for (const seed of seeded) {
+    const frTitle = parseWikipediaFrTitleFromUrl(seed.sourceUrl);
+    if (!frTitle) continue;
+
+    const summary = await fetchWikipediaSummary(frTitle, debugOptions);
+    if (!summary?.extract) continue;
+    if (isGenericYearPage(seed.sourceUrl, summary.extract)) continue;
+
+    let anchors = debugOptions?.noAnchors
+      ? buildTitleAnchors(seed.title)
+      : pickSummaryAnchors(summary.extract, seed.placeLabel);
+    if (anchors.length < 2) {
+      anchors = buildTitleAnchors(seed.title);
+    }
+    if (anchors.length < 2) continue;
+
+    const candidate = {
+      eventQid: seed.eventQid,
+      title: seed.title,
+      description: '',
+      placeLabel: seed.placeLabel,
+      dateText: seed.dateText
+    };
+
+    const aiScene = await generateSceneWithAI(candidate, anchors, summary.extract, context, debugOptions);
+    const allowFallback = CONFIG.enableFallbackNarratives && !debugOptions?.noFallback;
+    const scene = aiScene || (allowFallback ? generateSourcedFallbackScene(candidate, anchors) : '');
+    if (!scene) continue;
+    if (!debugOptions?.noConstraints && !validateScene(scene, candidate.placeLabel, anchors)) continue;
+
+    items.push({
+      uniqueEventId: `${CONFIG.cacheVersion}-${seed.eventQid}`,
+      eventQid: seed.eventQid,
+      title: seed.title,
+      scene,
+      fact: firstFactualSentence(summary.extract) || buildFact(candidate),
+      sourceUrl: seed.sourceUrl
+    });
+  }
+
+  return {
+    year,
+    country,
+    items,
+    partial: items.length < CONFIG.maxItems
+  };
+}
+
 function isMissingTableError(error) {
   const message = String(error instanceof Error ? error.message : '');
   return message.includes('does not exist') || message.includes('relation') || message.includes('event_cache');
@@ -806,6 +1068,7 @@ function isCacheValid(rows) {
   for (const row of rows) {
     if (!String(row.uniqueEventId || '').startsWith(CONFIG.cacheVersion)) return false;
     if (!row.eventQid || !row.title || !row.sourceUrl || !row.scene) return false;
+    if (hasBannedSceneArtifacts(String(row.scene || ''))) return false;
 
     const titleKey = row.title.toLowerCase();
     if (qids.has(row.eventQid) || titles.has(titleKey) || sources.has(row.sourceUrl)) return false;
@@ -891,12 +1154,17 @@ async function saveCache(client, payload, lang) {
   });
 }
 
-async function buildAndStoreBatch({ client, year, country, lang, cacheLang, allowOverseas, safe, context, skipSave }) {
+async function buildAndStoreBatch({ client, year, country, lang, cacheLang, allowOverseas, safe, context, skipSave, debugOptions }) {
   const countryQid = await resolveCountryQid(country);
+  const deadlineTs = Date.now() + 27_000;
 
   const safeCollect = async (limit) => {
     try {
-      return await collectCandidates({ year, countryQid, lang, allowOverseas, limit });
+      const fast = await collectCandidates({ year, countryQid, lang, allowOverseas, limit, strictPlace: false });
+      if (fast.parsed.length > 0) return fast;
+
+      const strict = await collectCandidates({ year, countryQid, lang, allowOverseas, limit, strictPlace: true });
+      return strict;
     } catch (error) {
       log('error', 'anecdotes_collect_failed', {
         year,
@@ -905,7 +1173,27 @@ async function buildAndStoreBatch({ client, year, country, lang, cacheLang, allo
         limit,
         error: error instanceof Error ? error.message : 'collect_failed'
       });
-      return { rowsCount: 0, parsed: [] };
+      try {
+        const fallback = await collectCandidates({ year, countryQid, lang, allowOverseas, limit, strictPlace: true });
+        log('info', 'anecdotes_collect_fallback_used', {
+          year,
+          country,
+          lang,
+          limit,
+          sparqlRows: fallback.rowsCount,
+          parsed: fallback.parsed.length
+        });
+        return fallback;
+      } catch (fallbackError) {
+        log('error', 'anecdotes_collect_fallback_failed', {
+          year,
+          country,
+          lang,
+          limit,
+          error: fallbackError instanceof Error ? fallbackError.message : 'collect_fallback_failed'
+        });
+        return { rowsCount: 0, parsed: [] };
+      }
     }
   };
 
@@ -927,7 +1215,9 @@ async function buildAndStoreBatch({ client, year, country, lang, cacheLang, allo
   const firstPass = await safeCollect(CONFIG.firstPassLimit);
 
   let enriched = await safeEnrich(firstPass.parsed);
-  let ranked = filterAndRankCandidates(enriched, { country, allowOverseas, safe });
+  let ranked = debugOptions?.noFilters
+    ? enriched.map((candidate) => ({ ...candidate, visualScore: 0 }))
+    : filterAndRankCandidates(enriched, { country, allowOverseas, safe });
   log('info', 'anecdotes_first_pass_counts', {
     year,
     country,
@@ -943,16 +1233,20 @@ async function buildAndStoreBatch({ client, year, country, lang, cacheLang, allo
     country,
     rankedCandidates: ranked,
     topLimit: CONFIG.topCandidatesFirst,
-    context
+    context,
+    deadlineTs,
+    debugOptions
   });
 
-  if (payload.items.length < CONFIG.maxItems) {
+  if (payload.items.length < CONFIG.maxItems && Date.now() < deadlineTs) {
     const secondPass = await safeCollect(CONFIG.secondPassLimit);
 
     const mergedRaw = uniqueBy([...firstPass.parsed, ...secondPass.parsed], (item) => `${item.eventQid}|${item.dateIso}`);
     const mergedRawLimited = mergedRaw.slice(0, 220);
     enriched = await safeEnrich(mergedRawLimited);
-    ranked = filterAndRankCandidates(enriched, { country, allowOverseas, safe });
+    ranked = debugOptions?.noFilters
+      ? enriched.map((candidate) => ({ ...candidate, visualScore: 0 }))
+      : filterAndRankCandidates(enriched, { country, allowOverseas, safe });
     log('info', 'anecdotes_second_pass_counts', {
       year,
       country,
@@ -965,13 +1259,18 @@ async function buildAndStoreBatch({ client, year, country, lang, cacheLang, allo
       ranked: ranked.length
     });
 
-    payload = await buildItemsFromCandidates({
+    const secondPayload = await buildItemsFromCandidates({
       year,
       country,
       rankedCandidates: ranked,
       topLimit: CONFIG.topCandidatesSecond,
-      context
+      context,
+      deadlineTs,
+      debugOptions
     });
+    if (secondPayload.items.length > payload.items.length) {
+      payload = secondPayload;
+    }
   }
 
   log('info', 'anecdotes_pipeline_counts', {
@@ -982,10 +1281,126 @@ async function buildAndStoreBatch({ client, year, country, lang, cacheLang, allo
     partial: payload.partial
   });
 
+  const allowFallback = CONFIG.enableFallbackNarratives && !debugOptions?.noFallback;
+  if (payload.items.length === 0 && allowFallback) {
+    const seeded = await buildItemsFromSeed({ year, country, context, debugOptions });
+    if (seeded.items.length > 0) {
+      payload = seeded;
+      log('info', 'anecdotes_seed_fallback_used', {
+        year,
+        country,
+        lang,
+        count: seeded.items.length
+      });
+    }
+  }
+
   if (!skipSave && payload.items.length > 0) {
     await saveCache(client, payload, cacheLang);
   }
   return payload;
+}
+
+function validateTransformInput(payload) {
+  const year = parseYear(payload?.year);
+  const country = parseCountryStrict(payload?.country);
+  const items = Array.isArray(payload?.items) ? payload.items : null;
+
+  const errors = [];
+  if (!year) errors.push('year is required and must be an integer between 1 and 2100');
+  if (country !== 'FR') errors.push('country must be FR for now');
+  if (!items) errors.push('items must be an array');
+
+  return { ok: errors.length === 0, errors, year, country, items: items || [] };
+}
+
+async function transformItemsToAnecdotes({ year, country, inputItems, context }) {
+  const items = [];
+  const rejected = [];
+  const seenQid = new Set();
+  const seenTitle = new Set();
+  const seenSource = new Set();
+
+  for (const raw of inputItems) {
+    if (items.length >= CONFIG.maxItems) break;
+    const eventQid = String(raw?.eventQid || '').trim();
+    const title = String(raw?.title || '').trim();
+    const sourceUrl = String(raw?.sourceUrl || '').trim();
+    const dateText = raw?.dateText ? String(raw.dateText).trim() : undefined;
+    const placeText = raw?.placeText ? String(raw.placeText).trim() : undefined;
+
+    const reject = (reason) => {
+      rejected.push({ eventQid: eventQid || null, title: title || null, sourceUrl: sourceUrl || null, reason });
+    };
+
+    if (!eventQid || !/^Q\d+$/.test(eventQid)) { reject('missing_or_invalid_eventQid'); continue; }
+    if (!title) { reject('missing_title'); continue; }
+    if (!sourceUrl || !sourceUrl.includes('fr.wikipedia.org/wiki/')) { reject('source_not_fr_wikipedia'); continue; }
+    if (seenQid.has(eventQid)) { reject('duplicate_eventQid'); continue; }
+    if (seenTitle.has(title.toLowerCase())) { reject('duplicate_title'); continue; }
+    if (seenSource.has(sourceUrl)) { reject('duplicate_sourceUrl'); continue; }
+    if (isTrashCompetitionCandidate({ title, typeLabel: '' })) { reject('catalog_or_competition_item'); continue; }
+
+    const frTitle = parseWikipediaFrTitleFromUrl(sourceUrl);
+    if (!frTitle) { reject('invalid_wikipedia_url'); continue; }
+
+    const summary = await fetchWikipediaSummary(frTitle);
+    if (!summary?.extract) { reject('missing_wikipedia_summary'); continue; }
+    if (isGenericYearPage(sourceUrl, summary.extract)) { reject('generic_year_page'); continue; }
+
+    let anchors = pickSummaryAnchors(summary.extract, placeText || '');
+    if (anchors.length < 2) {
+      anchors = buildTitleAnchors(title);
+    }
+    if (anchors.length < 2) { reject('missing_anchors'); continue; }
+
+    const candidate = {
+      eventQid,
+      title,
+      description: '',
+      placeLabel: placeText || 'France',
+      dateText: dateText || null
+    };
+
+    const aiScene = await generateSceneWithAI(candidate, anchors, summary.extract, context);
+    const scene = aiScene;
+    if (!validateScene(scene, candidate.placeLabel, anchors)) { reject('scene_validation_failed'); continue; }
+
+    const fact = firstFactualSentence(summary.extract);
+    if (!fact) { reject('missing_fact'); continue; }
+
+    seenQid.add(eventQid);
+    seenTitle.add(title.toLowerCase());
+    seenSource.add(sourceUrl);
+
+    items.push({
+      uniqueEventId: `${CONFIG.cacheVersion}-${eventQid}`,
+      eventQid,
+      title,
+      ...(dateText ? { dateText } : {}),
+      ...(placeText ? { placeText } : {}),
+      scene,
+      fact,
+      sourceUrl
+    });
+  }
+
+  if (items.length !== CONFIG.maxItems) {
+    return {
+      ok: false,
+      error: {
+        code: 'INSUFFICIENT_VALID_ITEMS',
+        message: `Expected 20 valid items, got ${items.length}`,
+        year,
+        country,
+        produced: items.length,
+        required: CONFIG.maxItems,
+        rejected
+      }
+    };
+  }
+
+  return { ok: true, payload: { year, country, items } };
 }
 
 export async function onRequestOptions() {
@@ -993,7 +1408,9 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestGet(context) {
-  const validation = validateInput(new URL(context.request.url).searchParams);
+  const searchParams = new URL(context.request.url).searchParams;
+  const debugOptions = parseDebugOptions(searchParams);
+  const validation = validateInput(searchParams);
   if (!validation.ok) {
     return json(400, { error: validation.errors.join('; ') });
   }
@@ -1004,12 +1421,17 @@ export async function onRequestGet(context) {
   }
 
   const { year, country, lang, allowOverseas, safe } = validation.data;
-  const cacheLang = safe ? `${lang}-${CONFIG.cacheVersion}-safe` : `${lang}-${CONFIG.cacheVersion}`;
+  const debugSuffix = Object.entries(debugOptions)
+    .filter(([, value]) => value)
+    .map(([key]) => key)
+    .join('.');
+  const baseCacheLang = safe ? `${lang}-${CONFIG.cacheVersion}-safe` : `${lang}-${CONFIG.cacheVersion}`;
+  const cacheLang = debugSuffix ? `${baseCacheLang}-${debugSuffix}` : baseCacheLang;
 
   try {
     const client = getPrismaClient(context.env);
 
-    if (CONFIG.disableCache) {
+    if (CONFIG.disableCache || debugOptions.noCache) {
       await client.eventCache.deleteMany({ where: { year, country } });
     } else {
       const cachedPayload = await readCache(client, { year, country, lang: cacheLang });
@@ -1028,7 +1450,8 @@ export async function onRequestGet(context) {
       allowOverseas,
       safe,
       context,
-      skipSave: CONFIG.disableCache
+      skipSave: CONFIG.disableCache || debugOptions.noCache,
+      debugOptions
     });
 
     log('info', 'anecdotes_generated', { year, country, lang, count: payload.items.length });
@@ -1043,4 +1466,31 @@ export async function onRequestGet(context) {
     log('error', 'anecdotes_generation_failed', { year, country, lang, error: message });
     return json(502, { error: message });
   }
+}
+
+export async function onRequestPost(context) {
+  let payload;
+  try {
+    payload = await context.request.json();
+  } catch {
+    return json(400, { error: 'invalid_json_body' });
+  }
+
+  const validation = validateTransformInput(payload);
+  if (!validation.ok) {
+    return json(400, { error: validation.errors.join('; ') });
+  }
+
+  const result = await transformItemsToAnecdotes({
+    year: validation.year,
+    country: validation.country,
+    inputItems: validation.items,
+    context
+  });
+
+  if (!result.ok) {
+    return json(422, result.error);
+  }
+
+  return json(200, result.payload);
 }

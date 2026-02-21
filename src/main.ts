@@ -23,7 +23,7 @@ const app = (() => {
 })();
 
 const CURRENT_YEAR = Math.floor(new Date().getFullYear());
-const APP_VERSION = `V${__APP_VERSION__.split('.').slice(0, 2).join('.')}`;
+const APP_VERSION = `V${__APP_VERSION__}`;
 
 interface StorySession {
   key: string;
@@ -52,6 +52,8 @@ interface AdConfigPayload {
 let adConfig: AdConfigPayload | null = null;
 let adConfigLoading = false;
 let adConfigLoaded = false;
+let adConfigLoadedAt = 0;
+const AD_CONFIG_REFRESH_MS = 30_000;
 const prefetchedFirstSlots = new Map<string, AnecdoteSlot>();
 const pulseTimers: number[] = [];
 let revealOnNextResult = false;
@@ -184,14 +186,15 @@ function normalizeAdConfig(value: unknown): AdConfigPayload {
   };
 }
 
-function ensureAdConfigLoaded() {
-  if (adConfigLoaded || adConfigLoading) {
+function ensureAdConfigLoaded(force = false) {
+  const hasFreshConfig = adConfigLoaded && Date.now() - adConfigLoadedAt < AD_CONFIG_REFRESH_MS;
+  if ((!force && hasFreshConfig) || adConfigLoading) {
     return;
   }
 
   adConfigLoading = true;
 
-  const paths = ['/api/ad-config', '/.netlify/functions/ad-config'];
+  const paths = ['/api/ad-config'];
 
   (async () => {
     for (const path of paths) {
@@ -218,9 +221,44 @@ function ensureAdConfigLoaded() {
     })
     .finally(() => {
       adConfigLoaded = true;
+      adConfigLoadedAt = Date.now();
       adConfigLoading = false;
       render();
     });
+}
+
+function activateAdHtmlScripts(root: ParentNode = app) {
+  const scriptNodes = Array.from(root.querySelectorAll<HTMLScriptElement>('.ad-html script'));
+
+  for (const scriptNode of scriptNodes) {
+    let shouldSkipInjection = false;
+
+    if (scriptNode.src) {
+      let normalizedSrc = scriptNode.src;
+      try {
+        normalizedSrc = new URL(scriptNode.getAttribute('src') || scriptNode.src, window.location.href).href;
+      } catch {
+        // Keep browser-resolved src when URL normalization fails.
+      }
+
+      const alreadyLoaded = document.querySelector<HTMLScriptElement>(`script[src="${CSS.escape(normalizedSrc)}"]`);
+      if (alreadyLoaded) {
+        shouldSkipInjection = true;
+      }
+    }
+
+    if (shouldSkipInjection) {
+      scriptNode.remove();
+      continue;
+    }
+
+    const replacement = document.createElement('script');
+    for (const { name, value } of Array.from(scriptNode.attributes)) {
+      replacement.setAttribute(name, value);
+    }
+    replacement.text = scriptNode.text;
+    scriptNode.replaceWith(replacement);
+  }
 }
 
 function readRoute() {
@@ -252,6 +290,26 @@ function computeMirrorYearFromBirthYear(birthYear: number): number {
 
 function computeAgeBeforeBirth(mirrorYear: number): number {
   return Math.floor((CURRENT_YEAR - mirrorYear) / 2);
+}
+
+function countryWithPreposition(lang: Lang, country: CountryCode): string {
+  const label = countryLabel(lang, country);
+  if (lang !== 'fr') {
+    return `in ${label}`;
+  }
+
+  switch (country) {
+    case 'US':
+      return `aux ${label}`;
+    case 'MG':
+      return `à ${label}`;
+    case 'GB':
+    case 'CA':
+    case 'BR':
+      return `au ${label}`;
+    default:
+      return `en ${label}`;
+  }
 }
 
 function createSessionKey(mirrorYear: number, lang: Lang, country: CountryCode): string {
@@ -483,6 +541,7 @@ function renderHome(lang: Lang, country: CountryCode) {
       ${renderSiteFooter(lang)}
     </main>
   `;
+  activateAdHtmlScripts();
 
   const form = document.querySelector<HTMLFormElement>('#launch-form');
   const ageOrBirthYearInput = document.querySelector<HTMLInputElement>('#age-or-birth-year-input');
@@ -595,7 +654,10 @@ function renderResult(
   setViewMode('result');
   const storySession = ensureSession(mirrorYear, lang, country);
   const ageBeforeBirth = computeAgeBeforeBirth(mirrorYear);
-  const yearLine = t(lang, 'resultYearLine').replace('{year}', String(mirrorYear));
+  const countryLine = countryWithPreposition(lang, country);
+  const yearLine = lang === 'fr'
+    ? `Tu es en ${mirrorYear} ${countryLine}`
+    : `You are in ${mirrorYear} ${countryLine}`;
   const beforeBirthLine = t(lang, 'resultBeforeBirthLine').replace('{age}', String(ageBeforeBirth));
   document.title = yearLine;
 
@@ -621,6 +683,7 @@ function renderResult(
         ${renderSiteFooter(lang)}
       </main>
     `;
+    activateAdHtmlScripts();
 
     const adContinue = document.querySelector<HTMLButtonElement>('#ad-break-continue');
     const restartButton = document.querySelector<HTMLButtonElement>('#restart');
@@ -674,7 +737,7 @@ function renderResult(
 
       <section class="card story-card">
         <p class="story-label">${escapeHtml(t(lang, 'storyLabel'))} ${storySession.currentSlot}</p>
-        <p class="story-text">${escapeHtml(slotData?.narrative ?? '...')}</p>
+        <p class="story-text">${escapeHtml(slotData?.narrative ?? t(lang, 'storyWaiting'))}</p>
 
         ${
           slotData
@@ -710,6 +773,7 @@ function renderResult(
       ${renderSiteFooter(lang)}
     </main>
   `;
+  activateAdHtmlScripts();
 
   const continueButton = document.querySelector<HTMLButtonElement>('#continue');
   const restartButton = document.querySelector<HTMLButtonElement>('#restart');
@@ -810,6 +874,10 @@ window.addEventListener('popstate', () => {
   clearPulseState();
   session = null;
   render();
+});
+
+window.addEventListener('focus', () => {
+  ensureAdConfigLoaded(true);
 });
 
 render();

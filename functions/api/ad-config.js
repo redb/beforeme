@@ -1,4 +1,5 @@
 import { getPrismaClient } from '../lib/prisma.js';
+import { requireAdminSession } from '../lib/admin-auth.js';
 
 const CONFIG_KEY = 'ad_config';
 let transientValue = null;
@@ -9,7 +10,7 @@ function responseHeaders() {
     'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET,PUT,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type,x-admin-token'
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization'
   };
 }
 
@@ -33,13 +34,6 @@ function defaultConfig() {
 function isMissingTableError(error) {
   const message = String(error instanceof Error ? error.message : '');
   return message.includes('does not exist') || message.includes('relation') || message.includes('app_config');
-}
-
-function isAuthorized(request, env) {
-  const expected = String(env?.ADMIN_TOKEN || '').trim();
-  if (!expected) return false;
-  const token = String(request.headers.get('x-admin-token') || request.headers.get('X-Admin-Token') || '').trim();
-  return token === expected;
 }
 
 async function parseBody(request) {
@@ -70,8 +64,9 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestPut(context) {
-  if (!isAuthorized(context.request, context.env)) {
-    return json(401, { error: 'Unauthorized' });
+  const auth = await requireAdminSession(context.request, context.env);
+  if (!auth.ok) {
+    return json(auth.status || 401, { error: auth.error || 'unauthorized' });
   }
 
   try {

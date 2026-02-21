@@ -57,7 +57,7 @@ async function warmup(year, scope) {
     slot: String(slot)
   });
 
-  const response = await fetch(`${SITE_BASE_URL}/.netlify/functions/anecdote?${params.toString()}`);
+  const response = await fetch(`${SITE_BASE_URL}/api/anecdote?${params.toString()}`);
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Warmup failed for ${year}/${scope}: ${response.status} ${text}`);
