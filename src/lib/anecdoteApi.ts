@@ -1,5 +1,6 @@
 import type { Lang } from "./i18n";
 import type { CountryCode } from "./locale";
+import { countryToQid } from "./locale";
 
 export type AnecdoteScope = "global" | "local";
 
@@ -111,7 +112,7 @@ async function fetchBatchCandidates(input: {
   const task = (async () => {
     const params = new URLSearchParams({
       year: String(input.year),
-      country: input.country,
+      country: countryToQid(input.country),
       mode: "fast"
     });
     const response = await fetchWithTimeout(`/api/batch?${params.toString()}`, 70000);
@@ -152,7 +153,7 @@ export async function fetchAnecdoteSlot(input: {
     const params = new URLSearchParams({
       year: String(input.year),
       lang: input.lang,
-      country: input.country,
+      country: countryToQid(input.country),
       slot: String(input.slot),
       qid: candidate.qid,
       mode: "fast"

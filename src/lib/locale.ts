@@ -2,6 +2,23 @@ import type { Lang } from './i18n';
 
 export type CountryCode = 'FR' | 'US' | 'BR' | 'MG' | 'DE' | 'ES' | 'IT' | 'GB' | 'CA';
 
+/** Wikidata QID pour chaque pays (utilisé par les API batch / scene). */
+export const COUNTRY_TO_WIKIDATA_QID: Record<CountryCode, string> = {
+  FR: 'Q142',
+  US: 'Q30',
+  BR: 'Q155',
+  MG: 'Q1019',
+  DE: 'Q183',
+  ES: 'Q29',
+  IT: 'Q38',
+  GB: 'Q145',
+  CA: 'Q16'
+};
+
+export function countryToQid(code: CountryCode): string {
+  return COUNTRY_TO_WIKIDATA_QID[code];
+}
+
 const COUNTRY_CODES: CountryCode[] = ['FR', 'US', 'BR', 'MG', 'DE', 'ES', 'IT', 'GB', 'CA'];
 
 const COUNTRY_LABELS: Record<Lang, Record<CountryCode, string>> = {
