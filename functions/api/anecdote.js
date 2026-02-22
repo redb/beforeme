@@ -41,6 +41,26 @@ const ACTION_WORDS = [
 ];
 const PRECISE_LOCATIONS = ['gare', 'station', 'quai', 'place', 'marché', 'marche', 'boulevard', 'rue', 'tribune', 'palais'];
 
+/** Wikidata QID → code pays pour la lookup SOURCE_POOL (legacy). */
+const QID_TO_COUNTRY = {
+  Q142: 'FR',
+  Q30: 'US',
+  Q155: 'BR',
+  Q1019: 'MG',
+  Q183: 'DE',
+  Q29: 'ES',
+  Q38: 'IT',
+  Q145: 'GB',
+  Q16: 'CA'
+};
+
+function countryForPool(countryParam) {
+  const raw = String(countryParam || '').trim().toUpperCase();
+  if (QID_TO_COUNTRY[raw]) return QID_TO_COUNTRY[raw];
+  if (/^[A-Z]{2}$/.test(raw)) return raw;
+  return raw || 'FR';
+}
+
 const SOURCE_POOL = {
   'FR:1968': [
     {
@@ -309,7 +329,8 @@ export async function onRequestGet(context) {
   const requestUrl = new URL(context.request.url);
   const year = parseYear(requestUrl.searchParams.get('year'));
   const slot = parseSlot(requestUrl.searchParams.get('slot'));
-  const country = String(requestUrl.searchParams.get('country') || 'FR').trim().toUpperCase();
+  const countryParam = requestUrl.searchParams.get('country') || 'FR';
+  const country = countryForPool(countryParam);
   const lang = String(requestUrl.searchParams.get('lang') || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en';
 
   if (!year || !slot) {
