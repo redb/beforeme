@@ -1,19 +1,20 @@
 {
   "name": "beforeme",
   "private": true,
-  "version": "0.17.34",
+  "version": "0.17.40",
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/bump-version.mjs",
     "dev": "vite",
-    "build": "tsc && vite build",
-    "build:cf": "npm run build && node scripts/prepare_cloudflare_dist.mjs",
+    "build": "tsc && vite build && node scripts/prepare_cloudflare_dist.mjs",
+    "build:cf": "npm run build",
     "cf:dev": "npm run build:cf && npx wrangler pages dev dist",
     "cf:deploy": "npm run build:cf && npx wrangler pages deploy dist",
     "preview": "vite preview",
     "test:place": "node scripts/smoke_place_resolver.mjs",
     "test:scene": "node scripts/smoke_scene_hybrid.mjs",
     "test:scene-lock": "node scripts/smoke_scene_lock.mjs",
+    "test:scene-lock-ownership": "node scripts/smoke_scene_lock_ownership.mjs",
     "enrich:wikileads": "node scripts/enrich_wikileads.mjs",
     "postinstall": "DATABASE_URL=postgresql://user:pass@localhost:5432/postgres prisma generate --no-engine"
   },
