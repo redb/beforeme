@@ -326,68 +326,75 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestGet(context) {
-  const requestUrl = new URL(context.request.url);
-  const year = parseYear(requestUrl.searchParams.get('year'));
-  const slot = parseSlot(requestUrl.searchParams.get('slot'));
-  const countryParam = requestUrl.searchParams.get('country') || 'FR';
-  const country = countryForPool(countryParam);
-  const lang = String(requestUrl.searchParams.get('lang') || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en';
-
-  if (!year || !slot) {
-    return json(400, { error: 'Invalid parameters. Expected year and slot.' });
-  }
-  if (country !== 'FR' || lang !== 'fr') {
-    return json(404, { error: 'Mode one-by-one currently available for FR/fr only.' });
-  }
-
-  const source = sourceForSlot({ year, country, slot });
-  if (!source) {
-    return json(404, { error: 'No source pool configured for this year/country yet.' });
-  }
-
-  const cacheKey = `${year}|${country}|${slot}`;
-  const cached = poolCache.get(cacheKey);
-  if (cached) {
-    return json(200, cached);
-  }
-
-  const wikiLead = await getWikiLead(source.sourceUrl);
-  if (!wikiLead || wikiLead.length < 200) {
-    return json(502, { error: 'Wikipedia lead unavailable for selected source.' });
-  }
-
-  const narrative = await generateSceneWithAI({
-    year,
-    title: source.title,
-    sourceUrl: source.sourceUrl,
-    wikiLead,
-    env: context.env
-  });
-
-  let card = null;
   try {
-    card = JSON.parse(narrative);
-  } catch {
-    card = null;
+    const requestUrl = new URL(context.request.url);
+    const year = parseYear(requestUrl.searchParams.get('year'));
+    const slot = parseSlot(requestUrl.searchParams.get('slot'));
+    const countryParam = requestUrl.searchParams.get('country') || 'FR';
+    const country = countryForPool(countryParam);
+    const lang = String(requestUrl.searchParams.get('lang') || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en';
+
+    if (!year || !slot) {
+      return json(400, { error: 'Invalid parameters. Expected year and slot.' });
+    }
+    if (country !== 'FR' || lang !== 'fr') {
+      return json(404, { error: 'Mode one-by-one currently available for FR/fr only.' });
+    }
+
+    const source = sourceForSlot({ year, country, slot });
+    if (!source) {
+      return json(404, { error: 'No source pool configured for this year/country yet.' });
+    }
+
+    const cacheKey = `${year}|${country}|${slot}`;
+    const cached = poolCache.get(cacheKey);
+    if (cached) {
+      return json(200, cached);
+    }
+
+    const wikiLead = await getWikiLead(source.sourceUrl);
+    if (!wikiLead || wikiLead.length < 200) {
+      return json(502, { error: 'Wikipedia lead unavailable for selected source.' });
+    }
+
+    const narrative = await generateSceneWithAI({
+      year,
+      title: source.title,
+      sourceUrl: source.sourceUrl,
+      wikiLead,
+      env: context.env
+    });
+
+    let card = null;
+    try {
+      card = JSON.parse(narrative);
+    } catch {
+      card = null;
+    }
+
+    const renderedNarrative = String(card?.narrative || '').trim();
+    const renderedFact = String(card?.event_claim || '').trim();
+    const sourceFromCard = Array.isArray(card?.sources)
+      ? String(card.sources[0]?.url || '').trim()
+      : '';
+    const renderedUrl = sourceFromCard || source.sourceUrl;
+
+    if (!isValidNarrative(renderedNarrative) || !renderedFact || !renderedUrl) {
+      return json(502, { error: 'AI scene did not pass minimal narrative checks.' });
+    }
+
+    const payload = {
+      slot,
+      narrative: renderedNarrative,
+      fact: renderedFact || shortFactFromLead(wikiLead, source.title),
+      url: renderedUrl
+    };
+    poolCache.set(cacheKey, payload);
+    return json(200, payload);
+  } catch (err) {
+    return json(502, {
+      error: 'anecdote_generation_failed',
+      message: err?.message || String(err)
+    });
   }
-
-  const renderedNarrative = String(card?.narrative || '').trim();
-  const renderedFact = String(card?.event_claim || '').trim();
-  const sourceFromCard = Array.isArray(card?.sources)
-    ? String(card.sources[0]?.url || '').trim()
-    : '';
-  const renderedUrl = sourceFromCard || source.sourceUrl;
-
-  if (!isValidNarrative(renderedNarrative) || !renderedFact || !renderedUrl) {
-    return json(502, { error: 'AI scene did not pass minimal narrative checks.' });
-  }
-
-  const payload = {
-    slot,
-    narrative: renderedNarrative,
-    fact: renderedFact || shortFactFromLead(wikiLead, source.title),
-    url: renderedUrl
-  };
-  poolCache.set(cacheKey, payload);
-  return json(200, payload);
 }

@@ -7,6 +7,8 @@
   --accent: #175f56;
   --accent-soft: rgba(23, 95, 86, 0.12);
   --shadow: 0 16px 40px rgba(18, 22, 26, 0.08);
+  /* Bleu du fond (fxBlue) pour le titre résultat */
+  --year-display-blue: #5b9aff;
 }
 
 * {
@@ -35,6 +37,15 @@ body {
 
 body.view-result {
   --fx-center-y: 44%;
+}
+
+/* Garder le bleu du fond visible sur la page résultat */
+body.view-result .fxLayer {
+  opacity: 1;
+}
+
+body.view-result .fxBlue {
+  animation: blueDrift 920ms ease-in-out infinite;
 }
 
 .bgBase {
@@ -366,9 +377,10 @@ a:focus-visible {
   text-align: center;
 }
 
-.year-display {
+.year-display,
+.result-head .year-display {
   margin-top: 0.35rem;
-  color: var(--accent);
+  color: var(--year-display-blue, #5b9aff);
 }
 
 .year-subline {

@@ -29,6 +29,14 @@ interface LegacyAnecdoteResponse {
   url?: string;
 }
 
+/** Réponse de /api/scene (StableSceneJson). */
+interface StableSceneResponse {
+  fact?: string;
+  before_state?: string;
+  after_state?: string;
+  sources?: Array<{ label?: string; url?: string }>;
+}
+
 const batchCache = new Map<string, BatchCandidate[]>();
 const batchPending = new Map<string, Promise<BatchCandidate[]>>();
 
@@ -85,6 +93,21 @@ function parseFromLegacyApi(payload: unknown): AnecdoteSlot | null {
     fact: data.fact,
     url: data.url
   };
+}
+
+/** Parse la réponse /api/scene (StableSceneJson) : before_state, after_state, fact, sources. */
+function parseFromStableScene(payload: unknown, slot: number): AnecdoteSlot | null {
+  if (!payload || typeof payload !== "object") return null;
+  const data = payload as StableSceneResponse;
+  const fact = typeof data.fact === "string" ? data.fact.trim() : "";
+  const afterState = typeof data.after_state === "string" ? data.after_state.trim() : "";
+  const beforeState = typeof data.before_state === "string" ? data.before_state.trim() : "";
+  if (!fact) return null;
+  const narrative = afterState || beforeState || fact;
+  if (!narrative) return null;
+  const firstSource = Array.isArray(data.sources) ? data.sources[0] : undefined;
+  const url = typeof firstSource?.url === "string" ? firstSource.url.trim() : "";
+  return { slot, narrative, fact, url: url || "#" };
 }
 
 function parseBatchCandidates(payload: unknown): BatchCandidate[] {
@@ -170,18 +193,17 @@ export async function fetchAnecdoteSlot(input: {
       const payload = (await response.json()) as unknown;
       const fromScene = parseFromSceneApi(payload);
       if (fromScene) {
-        return {
-          ...fromScene,
-          slot: input.slot
-        };
+        return { ...fromScene, slot: input.slot };
       }
 
       const fromLegacy = parseFromLegacyApi(payload);
       if (fromLegacy) {
-        return {
-          ...fromLegacy,
-          slot: input.slot
-        };
+        return { ...fromLegacy, slot: input.slot };
+      }
+
+      const fromStable = parseFromStableScene(payload, input.slot);
+      if (fromStable) {
+        return fromStable;
       }
     }
 

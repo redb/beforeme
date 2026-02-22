@@ -569,17 +569,22 @@ function renderHome(lang: Lang, country: CountryCode) {
 
     try {
       const detected = await detectCountryFromGeolocation();
-      ageOrBirthYearInput.value = preservedAgeOrBirthYear;
+      // Re-query inputs au cas où render() a recréé le formulaire pendant l’attente
+      const ageInput = document.querySelector<HTMLInputElement>('#age-or-birth-year-input');
+      const locInput = document.querySelector<HTMLInputElement>('#location-input');
+      const feedbackEl = document.querySelector<HTMLParagraphElement>('#locate-feedback');
+      if (ageInput) ageInput.value = preservedAgeOrBirthYear;
       if (!detected) {
-        locationInput.value = preservedLocation;
-        locateFeedback.textContent = t(lang, 'locateFailed');
+        if (locInput) locInput.value = preservedLocation;
+        if (feedbackEl) feedbackEl.textContent = t(lang, 'locateFailed');
         return;
       }
 
-      locationInput.value = detected;
-      locateFeedback.textContent = `${t(lang, 'locateSuccess')} (${countryLabel(lang, detected)})`;
+      if (locInput) locInput.value = detected;
+      if (feedbackEl) feedbackEl.textContent = `${t(lang, 'locateSuccess')} (${countryLabel(lang, detected)})`;
     } finally {
-      locateButton.disabled = false;
+      const btn = document.querySelector<HTMLButtonElement>('#locate-btn');
+      if (btn) btn.disabled = false;
     }
   });
 

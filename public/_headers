@@ -1,3 +1,8 @@
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /morgao/*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
   Cache-Control: no-store
