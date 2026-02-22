@@ -39,11 +39,13 @@ body.view-result {
   --fx-center-y: 44%;
 }
 
-/* Garder le bleu du fond visible sur la page résultat */
+/* Bleu du fond visible sur accueil et résultat (éviter le fond tout noir) */
+body.view-home .fxLayer,
 body.view-result .fxLayer {
   opacity: 1;
 }
 
+body.view-home .fxBlue,
 body.view-result .fxBlue {
   animation: blueDrift 920ms ease-in-out infinite;
 }
