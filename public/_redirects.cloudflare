@@ -1,2 +1,4 @@
+# Servir les assets (CSS/JS) avant le catch-all SPA (sinon tout renvoie index.html)
+/assets/*  /assets/:splat  200
 /morgao /morgao/index.html 200
 /* /index.html 200
