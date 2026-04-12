@@ -36,12 +36,6 @@ interface RankedCandidatesResponse {
   items?: Array<{ qid?: string }>;
 }
 
-interface HistoryFallbackItem {
-  label: string;
-  summary: string;
-  url: string;
-}
-
 function familyForSlot(slot: number): SlotFamily {
   const cycleIndex = (slot - 1) % 4;
   if (cycleIndex === 0) return "daily_life";
@@ -250,46 +244,6 @@ function parseBatchCandidates(payload: unknown): BatchCandidate[] {
   }
 
   return out;
-}
-
-function parseHistoryFallback(payload: unknown): HistoryFallbackItem[] {
-  if (!Array.isArray(payload)) return [];
-  return payload
-    .map((entry) => {
-      const label = typeof (entry as any)?.label === "string" ? (entry as any).label.trim() : "";
-      const summary = typeof (entry as any)?.summary === "string" ? (entry as any).summary.trim() : "";
-      const url = typeof (entry as any)?.url === "string" ? (entry as any).url.trim() : "";
-      if (!label || !summary || !url) return null;
-      return { label, summary, url };
-    })
-    .filter((entry): entry is HistoryFallbackItem => entry !== null);
-}
-
-function buildHistoryFallbackSlot(input: { slot: number; year: number; lang: Lang; items: HistoryFallbackItem[] }): AnecdoteSlot | null {
-  if (!input.items.length) return null;
-  const item = input.items[(Math.max(1, input.slot) - 1) % input.items.length];
-  const narrative =
-    input.lang === "fr"
-      ? `En ${input.year}, ${item.summary}`
-      : `In ${input.year}, ${item.summary}`;
-  const fact =
-    input.lang === "fr"
-      ? `${item.label} (${input.year}).`
-      : `${item.label} (${input.year}).`;
-
-  return {
-    slot: input.slot,
-    narrative: cleanSentence(narrative),
-    fact: cleanSentence(fact),
-    url: item.url || "https://avantmoi.com",
-    eventQid: `HISTORY-${input.year}-${Math.max(1, input.slot)}`,
-    sources: [{ label: item.label || "Source", url: item.url || "https://avantmoi.com" }],
-    date: `${input.year}-01-01`,
-    placeName: "France",
-    theme: "loisirs",
-    gestureRoot: "fallback_history",
-    editorialScore: 30
-  };
 }
 
 function parseStableScene(payload: unknown, slot: number): AnecdoteSlot | null {
@@ -528,31 +482,6 @@ async function fetchBatchCandidates(input: {
   return task;
 }
 
-async function buildHistoryFallback(input: {
-  year: number;
-  lang: Lang;
-  slot: number;
-  country: CountryCode;
-}): Promise<AnecdoteSlot | null> {
-  const historyResponse = await fetchWithTimeout(
-    `/api/history?year=${encodeURIComponent(String(input.year))}&lang=${encodeURIComponent(input.lang)}`,
-    8_000
-  );
-  if (!historyResponse.ok) return null;
-  const contentType = historyResponse.headers.get("content-type") || "";
-  if (!contentType.toLowerCase().includes("application/json")) return null;
-  const historyItems = parseHistoryFallback((await historyResponse.json()) as unknown);
-  const historySlot = buildHistoryFallbackSlot({
-    slot: input.slot,
-    year: input.year,
-    lang: input.lang,
-    items: historyItems
-  });
-  if (!historySlot || isSlotAlreadySeen(historySlot)) return null;
-  rememberSlot({ ...input, slot: historySlot });
-  return historySlot;
-}
-
 export async function fetchAnecdoteSlot(input: {
   year: number;
   lang: Lang;
@@ -609,14 +538,58 @@ export async function fetchAnecdoteSlot(input: {
       seenGestureRoots: sessionMemory.seenGestureRoots.join(",")
     });
     const editorialResponse = await fetchWithTimeout(`${editorialPath}?${editorialParams.toString()}`, 10_000);
-    if (editorialResponse.ok) {
+    const editorialRaw = await editorialResponse.text();
+    const editorialFamily =
+      family === "invention" ? "invention" : family === "cultural" ? "cultural" : "daily_life";
+    if (!editorialResponse.ok) {
+      console.warn("[avantmoi] editorial_http_error", {
+        path: editorialPath,
+        status: editorialResponse.status,
+        year: input.year,
+        slot: input.slot,
+        family: editorialFamily,
+        body: editorialRaw.slice(0, 1200)
+      });
+    } else {
       const contentType = editorialResponse.headers.get("content-type") || "";
       if (contentType.toLowerCase().includes("application/json")) {
-        const editorialPayload = parseStableScene((await editorialResponse.json()) as unknown, input.slot);
-        if (editorialPayload && slotMatchesYear(editorialPayload, input.year) && !isSlotAlreadySeen(editorialPayload)) {
-          rememberSlot({ ...input, slot: editorialPayload });
-          return editorialPayload;
+        let data: unknown = null;
+        try {
+          data = editorialRaw ? (JSON.parse(editorialRaw) as unknown) : null;
+        } catch (e) {
+          console.warn("[avantmoi] editorial_json_parse_failed", {
+            path: editorialPath,
+            year: input.year,
+            slot: input.slot,
+            error: String(e)
+          });
         }
+        if (data !== null) {
+          const editorialPayload = parseStableScene(data, input.slot);
+          if (!editorialPayload) {
+            const errObj = data && typeof data === "object" ? (data as Record<string, unknown>) : {};
+            console.warn("[avantmoi] editorial_scene_rejected", {
+              path: editorialPath,
+              year: input.year,
+              slot: input.slot,
+              family: editorialFamily,
+              errorBody: errObj.error,
+              message: errObj.message,
+              sample: editorialRaw.slice(0, 1200)
+            });
+          }
+          if (editorialPayload && slotMatchesYear(editorialPayload, input.year) && !isSlotAlreadySeen(editorialPayload)) {
+            rememberSlot({ ...input, slot: editorialPayload });
+            return editorialPayload;
+          }
+        }
+      } else {
+        console.warn("[avantmoi] editorial_unexpected_content_type", {
+          path: editorialPath,
+          contentType,
+          year: input.year,
+          slot: input.slot
+        });
       }
     }
 
@@ -630,7 +603,7 @@ export async function fetchAnecdoteSlot(input: {
       lang: input.lang
     });
     if (!candidates.length) {
-      return await buildHistoryFallback(input);
+      return null;
     }
 
     const startIndex = Math.max(0, familyRank - 1);
@@ -639,7 +612,7 @@ export async function fetchAnecdoteSlot(input: {
     const filteredWindow = candidateWindow.filter((candidate) => !seenSet.has(`qid:${candidate.qid.toUpperCase()}`));
     const retryCandidates = filteredWindow.slice(0, 4);
     if (!retryCandidates.length) {
-      return await buildHistoryFallback(input);
+      return null;
     }
 
     const params = new URLSearchParams({
@@ -675,7 +648,7 @@ export async function fetchAnecdoteSlot(input: {
       }
     }
 
-    return await buildHistoryFallback(input);
+    return null;
   } catch {
     return null;
   }

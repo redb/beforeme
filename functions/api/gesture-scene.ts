@@ -3,7 +3,7 @@ import type { EditorialTheme } from "../../src/content/editorialTheme";
 import { normalizeEditorialTheme, parseSeenThemes } from "../../src/content/editorialTheme";
 import type { GestureRupture } from "../../src/content/gestures/types";
 import { parseCsvList } from "../../src/lib/parseCsv";
-import { buildShareBonusMap, incrementShareSignal } from "../lib/shareSignal";
+import { buildShareBonusMap } from "../lib/shareSignal";
 import type { Env as ShareEnv } from "../lib/shareSignal";
 
 type GestureScenePayload = {
@@ -119,7 +119,12 @@ function pickGesture(
   seenThemes: EditorialTheme[],
   seenGestureRoots: string[],
   shareBonus: Map<string, number>
-): GestureRupture | null {
+): {
+  entry: GestureRupture | null;
+  exactCount: number;
+  nearbyCount: number;
+  rankedLength: number;
+} {
   const selection = selectGesturesForYear({
     countryQid,
     lang,
@@ -133,7 +138,13 @@ function pickGesture(
     shareBonus
   });
   const ranked = [...selection.exact, ...selection.nearby];
-  return ranked[slot - 1] || null;
+  const entry = ranked[slot - 1] || null;
+  return {
+    entry,
+    exactCount: selection.exact.length,
+    nearbyCount: selection.nearby.length,
+    rankedLength: ranked.length
+  };
 }
 
 function buildPayload(entry: GestureRupture, params: { year: number; countryQid: string; lang: "fr" | "en"; slot: number }): GestureScenePayload {
@@ -197,10 +208,37 @@ export async function onRequestGet(context: { request: Request; env?: ShareEnv }
 
   const env = context.env || {};
   const shareBonus = await buildShareBonusMap(env, countryQid, year);
-  const entry = pickGesture(year, countryQid, lang, slot, previousTheme, previousGestureRoot, seenThemes, seenGestureRoots, shareBonus);
+  const { entry, exactCount, nearbyCount, rankedLength } = pickGesture(
+    year,
+    countryQid,
+    lang,
+    slot,
+    previousTheme,
+    previousGestureRoot,
+    seenThemes,
+    seenGestureRoots,
+    shareBonus
+  );
   if (!entry) {
-    log("gesture_scene_missing", { year, countryQid, lang, slot });
-    return json(404, { error: "gesture_not_found", message: "No editorial gesture scene found." });
+    log("gesture_scene_missing", {
+      year,
+      countryQid,
+      lang,
+      slot,
+      exactCount,
+      nearbyCount,
+      rankedLength,
+      reason:
+        rankedLength === 0
+          ? "no_exact_or_nearby_gesture"
+          : slot > rankedLength
+            ? "slot_out_of_range"
+            : "slot_filtered_or_empty"
+    });
+    return json(404, {
+      error: "gesture_not_found",
+      message: "No editorial gesture scene found."
+    });
   }
 
   const payload = buildPayload(entry, { year, countryQid, lang, slot });
