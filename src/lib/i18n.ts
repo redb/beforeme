@@ -68,7 +68,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     resultBeforeBirthLine: '{age} ans avant ta naissance',
     notableBirthLine: '{name} naît en {year}. {age} ans plus tard, c’est ton année de naissance.',
     storyLabel: 'scene',
-    storyWaiting: "Personne n'a demandé cette année dans ce pays avant toi, un peu de patience !",
+    storyWaiting: 'Un instant, la scène se prépare…',
     continue: 'continuer',
     restart: 'recommencer',
     disclaimer: 'scenes plausibles, pas une archive historique.',
@@ -90,7 +90,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     historicalSource: 'source',
     historicalMoreSources: '+ {count} autres sources',
     storyUnavailable: 'Cette scène n’a pas pu être créée pour le moment.',
-    storyExhausted: 'Il n’y a pas d’autre scène solide pour cette année.',
+    storyExhausted: 'Tu as vu toutes les scènes pour cette année.',
     storyRetry: 'Réessayer'
   },
   en: {
@@ -114,7 +114,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     resultBeforeBirthLine: '{age} years before your birth',
     notableBirthLine: '{name} is born in {year}. {age} years later, that is your birth year.',
     storyLabel: 'scene',
-    storyWaiting: 'Nobody requested this year in this country before you, please wait a bit!',
+    storyWaiting: 'One moment — the scene is loading…',
     continue: 'continue',
     restart: 'start again',
     disclaimer: 'plausible scenes, not a historical archive.',
@@ -136,7 +136,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     historicalSource: 'source',
     historicalMoreSources: '+ {count} more sources',
     storyUnavailable: 'This scene could not be created for now.',
-    storyExhausted: 'There is no other solid scene for this year.',
+    storyExhausted: 'You’ve seen all the scenes for this year.',
     storyRetry: 'Retry'
   }
 };

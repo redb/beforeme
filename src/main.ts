@@ -721,15 +721,20 @@ function renderResult(
   const isLoading = storySession.loadingSlots.has(storySession.currentSlot);
   const noScene = !slotData && !isLoading;
   const canShare = storySession.currentSlot >= 3;
-  const storyExhausted = noScene && canShare;
+  /** Échec de chargement : proposer Réessayer (toute scène). */
+  const showRetry = noScene && !isLoading && storySession.failedSlots.has(storySession.currentSlot);
+  /**
+   * Quatre scènes par parcours (slots 1–4) : après la 4e scène chargée, on ferme le cycle (message + pas de « continuer »).
+   * Ne pas confondre avec un échec API sur les slots 1–3 (sinon « continuer » reste disponible vers la scène 4).
+   */
+  const storyRoundComplete = Boolean(slotData) && storySession.currentSlot === 4;
+  const hideContinue = storyRoundComplete;
 
   const storyContent = slotData
     ? slotData.narrative
     : isLoading
       ? t(lang, 'storyWaiting')
-      : storyExhausted
-        ? t(lang, 'storyExhausted')
-        : t(lang, 'storyUnavailable');
+      : t(lang, 'storyUnavailable');
   const sourceLabel = t(lang, 'historicalSource');
   const sourceEntries = slotData
     ? (
@@ -759,9 +764,14 @@ function renderResult(
       <section class="card story-card">
         <p class="story-label">${escapeHtml(t(lang, 'storyLabel'))} ${storySession.currentSlot}</p>
         <p class="story-text">${escapeHtml(storyContent)}</p>
+        ${
+          storyRoundComplete
+            ? `<p class="story-footnote" style="margin-top:0.75rem;opacity:0.85;font-size:0.95em">${escapeHtml(t(lang, 'storyExhausted'))}</p>`
+            : ''
+        }
 
         ${
-          noScene && !storyExhausted
+          showRetry
             ? `<div class="result-actions-plain" style="margin-top:0.75rem">
                  <button id="retry-scene-btn" class="ghost" type="button">${escapeHtml(t(lang, 'storyRetry'))}</button>
                </div>`
@@ -801,7 +811,7 @@ function renderResult(
         <div class="buttons">
           <button id="restart" class="cta" type="button">${escapeHtml(t(lang, 'restart'))}</button>
           ${
-            storyExhausted
+            hideContinue
               ? ''
               : `<button id="continue" class="ghost" type="button">${escapeHtml(t(lang, 'continue'))}</button>`
           }
