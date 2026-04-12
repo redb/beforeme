@@ -195,7 +195,7 @@ export const FR_INVENTION_BACKFILL_1990_2009: InventionEntry[] = [
     itemLabel: "prendre l'Eurostar de Paris à Londres",
     theme: "transport", gestureRoot: "eurostar_paris_londres",
     editorialScore: 88,
-    objectType: "vehicle", category: "transport",
+    objectType: "infrastructure", category: "transport",
     releaseDate: "1994-11-14", releaseYear: 1995, datePrecision: "year",
     placeName: "Gare du Nord, Paris", placeType: "site", placeQid: "Q207708",
     triggerLabel: "Mise en service commerciale de l'Eurostar (Paris-Londres)",

@@ -616,7 +616,7 @@ export const FR_INVENTION_BACKFILL_1925_1949: InventionEntry[] = [
     countryQid: "Q142", lang: "fr",
     itemKey: "payer-son-electricite-a-edf",
     itemLabel: "payer son électricité à EDF après la nationalisation",
-    theme: "science", gestureRoot: "nationalisation_edf",
+    theme: "travail", gestureRoot: "nationalisation_edf",
     editorialScore: 86,
     objectType: "infrastructure", category: "service",
     releaseDate: "1946-04-08", releaseYear: 1946, datePrecision: "day",
