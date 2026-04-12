@@ -38,6 +38,9 @@ interface FetchBindingsOptions {
   retries?: number;
 }
 
+const BATCH_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const batchCache = new Map<string, { ts: number; payload: unknown }>();
+
 function headers(contentType = "application/json; charset=utf-8"): HeadersInit {
   return {
     "content-type": contentType,
@@ -333,7 +336,12 @@ export async function onRequestGet(context: { request: Request }): Promise<Respo
     requestUrl.hostname === "127.0.0.1" ||
     requestUrl.hostname === "localhost" ||
     requestUrl.hostname.endsWith(".local");
-  const timeoutMs = isLocal ? 25000 : 55000;
+  const timeoutMs = isLocal ? 12000 : 55000;
+  const cacheKey = `${year}|${country}|${mode}`;
+  const cached = batchCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < BATCH_CACHE_TTL_MS) {
+    return json(200, cached.payload);
+  }
 
   try {
     let bindings: SparqlBinding[] = [];
@@ -409,7 +417,11 @@ export async function onRequestGet(context: { request: Request }): Promise<Respo
     }
 
     const enriched = await enrichPlaceHints(ruptureEvents, timeoutMs).catch(() => ruptureEvents);
-    return json(200, enriched.slice(0, 20));
+    const payload = enriched.slice(0, 20);
+    if (payload.length > 0) {
+      batchCache.set(cacheKey, { ts: Date.now(), payload });
+    }
+    return json(200, payload);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "unknown_error";
     const statusMatch = errorMessage.match(/^sparql_http_(\d{3})$/);

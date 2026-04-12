@@ -53,6 +53,7 @@ model EventCache {
 
   @@unique([year, countryQid, lang, eventQid])
   @@index([status, updatedAt])
+  @@index([status, lockOwner])
   @@index([lockExpiresAt])
   @@index([countryQid, year, lang])
   @@map("event_cache")

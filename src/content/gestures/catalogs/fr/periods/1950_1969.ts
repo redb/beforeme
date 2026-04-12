@@ -1,0 +1,126 @@
+import type { GestureRupture } from "../../../types";
+
+export const FR_GESTURE_BACKFILL_1950_1969: GestureRupture[] = [
+  {
+    id: "fr-1955-refrigerateur",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "conserver-ses-aliments-au-refrigerateur",
+    gestureLabel: "conserver ses aliments au réfrigérateur",
+    theme: "maison", gestureRoot: "conserver_au_frigo",
+    editorialScore: 86,
+    category: "food", direction: "impossible_to_possible",
+    ruptureDate: "1955-01-01", ruptureYear: 1955, datePrecision: "year",
+    placeName: "Cuisine française", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Démocratisation du réfrigérateur ménager en France",
+    triggerType: "public_rollout",
+    beforeState: "Avant 1955, moins de 10 % des foyers français possèdent un réfrigérateur.",
+    afterState: "Dans les années 1950, le réfrigérateur entre progressivement dans les cuisines françaises.",
+    gestureChanged: "Tu peux poser tes restes du dîner dans le frigo au lieu de les jeter ou de courir au marché le matin.",
+    materialAnchor: "Réfrigérateur Frigidaire, poignée chromée et bac à glaçons",
+    sceneText: "Années 1950, cuisine. La viande du dimanche ne finit plus à la poubelle le lundi. Le frigo humme dans le coin, et pour la première fois, tu organises tes repas sur plusieurs jours.",
+    fact: "Dans les années 1950, le réfrigérateur se démocratise en France : de 10 % à plus de 50 % des foyers équipés en une décennie.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/R%C3%A9frig%C3%A9rateur", authority: false }
+    ],
+    tags: ["cuisine", "frigo", "alimentation", "electromenager"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1956-television-1-foyer-sur-10",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "regarder-le-journal-tele-le-soir",
+    gestureLabel: "regarder le journal télévisé le soir",
+    theme: "loisirs", gestureRoot: "regarder_le_jt",
+    editorialScore: 84,
+    category: "media", direction: "impossible_to_possible",
+    ruptureDate: "1956-01-01", ruptureYear: 1956, datePrecision: "year",
+    placeName: "Salon français", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Démocratisation de la télévision en France",
+    triggerType: "public_rollout",
+    beforeState: "Avant 1956, la télévision reste un objet rare dans les foyers français.",
+    afterState: "À partir de 1956, 1 foyer sur 10 possède un téléviseur, et le JT du soir entre dans les habitudes.",
+    gestureChanged: "Tu peux t'asseoir devant le poste le soir pour regarder les actualités au lieu d'allumer seulement la radio.",
+    materialAnchor: "Téléviseur en bois, antenne râteau et image en noir et blanc",
+    sceneText: "1956, salon. Le poste de télévision trône dans le coin. Le soir, la famille se rassemble devant l'écran pour le journal. L'image remplace la voix de la radio.",
+    fact: "En 1956, environ 10 % des foyers français possèdent un téléviseur ; le journal télévisé s'impose comme rendez-vous du soir.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/T%C3%A9l%C3%A9vision_fran%C3%A7aise", authority: false },
+      { label: "INA", url: "https://www.ina.fr/ina-eclaire-actu/la-television-en-france-une-histoire-de-chiffres", authority: true }
+    ],
+    tags: ["television", "jt", "salon", "medias"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1959-scolarite-16-ans",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "rester-a-l-ecole-jusqu-a-16-ans",
+    gestureLabel: "rester à l'école jusqu'à 16 ans",
+    theme: "école", gestureRoot: "rester_a_lecole_jusqua_16_ans",
+    editorialScore: 90,
+    category: "school", direction: "possible_to_impossible",
+    ruptureDate: "1959-01-06", ruptureYear: 1959, datePrecision: "day",
+    placeName: "École et collège", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Ordonnance prolongeant la scolarité obligatoire à 16 ans",
+    triggerType: "law",
+    beforeState: "Avant le 6 janvier 1959, quitter l'école à 14 ans reste la borne légale ordinaire.",
+    afterState: "Après le 6 janvier 1959, l'obligation scolaire est prolongée jusqu'à 16 ans.",
+    gestureChanged: "Tu ne peux plus quitter légalement l'école à 14 ans comme avant.",
+    materialAnchor: "Cartable, cahier et pupitre de collège",
+    sceneText: "6 janvier 1959, salle de classe. Le cartable te suit deux années de plus. À 14 ans, la sortie scolaire légale n'existe plus : le bureau de collège garde des adolescents qu'on aurait vus partir plus tôt.",
+    fact: "Le 6 janvier 1959, une ordonnance prolonge l'obligation scolaire jusqu'à 16 ans en France.",
+    sources: [
+      { label: "Éducation nationale", url: "https://www.education.gouv.fr", authority: true },
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Instruction_obligatoire_en_France", authority: false }
+    ],
+    tags: ["ecole", "college", "scolarite", "adolescence"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1960-lave-linge",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "laver-son-linge-a-la-machine",
+    gestureLabel: "laver son linge à la machine",
+    theme: "maison", gestureRoot: "laver_a_la_machine",
+    editorialScore: 88,
+    category: "housing", direction: "impossible_to_possible",
+    ruptureDate: "1960-01-01", ruptureYear: 1960, datePrecision: "year",
+    placeName: "Salle de bain française", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Démocratisation de la machine à laver en France",
+    triggerType: "public_rollout",
+    beforeState: "Avant 1960, laver le linge à la main ou à la laverie publique est la norme dans la majorité des foyers.",
+    afterState: "Dans les années 1960, la machine à laver entre dans les foyers et transforme la corvée de lessive.",
+    gestureChanged: "Tu peux charger le tambour et tourner le bouton au lieu de frotter le linge les mains dans l'eau froide.",
+    materialAnchor: "Machine à laver Calor, tambour rotatif et poudre Persil",
+    sceneText: "Années 1960, salle de bain. La bassine et la planche à laver restent dans le placard. La machine tourne toute seule pendant que tu fais autre chose. La lessive cesse d'être une journée entière.",
+    fact: "Dans les années 1960, la machine à laver se démocratise en France, transformant une tâche quotidienne pénible.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Machine_%C3%A0_laver", authority: false }
+    ],
+    tags: ["maison", "lessive", "electromenager", "linge"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1963-code-la-route-permis",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "passer-le-permis-de-conduire",
+    gestureLabel: "passer le permis de conduire",
+    theme: "transport", gestureRoot: "passer_le_permis",
+    editorialScore: 86,
+    category: "transport", direction: "impossible_to_possible",
+    ruptureDate: "1963-09-01", ruptureYear: 1963, datePrecision: "month",
+    placeName: "Auto-école", placeType: "institution", placeQid: null,
+    triggerLabel: "Réforme du permis de conduire et du code de la route",
+    triggerType: "law",
+    beforeState: "Avant 1963, le permis de conduire n'est pas normalisé sous cette forme avec code et conduite séparés.",
+    afterState: "Après 1963, le permis de conduire se passe en deux étapes : code puis conduite.",
+    gestureChanged: "Tu passes d'abord l'examen du code avant de t'asseoir derrière le volant pour l'épreuve.",
+    materialAnchor: "Manuel du code de la route, auto-école et voiture d'examen",
+    sceneText: "1963, auto-école. Le livret du code de la route sur les genoux, tu révises les panneaux et les priorités avant même de toucher un volant. Le permis se mérite en deux étapes.",
+    fact: "En 1963, la réforme du permis de conduire instaure l'examen du code de la route séparé de l'examen de conduite.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Permis_de_conduire_en_France", authority: false }
+    ],
+    tags: ["voiture", "permis", "auto-ecole", "route"],
+    quality: { strictPlace: true, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+];

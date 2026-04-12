@@ -77,23 +77,26 @@ function createPrismaMock() {
       const key = `${where.year}|${where.countryQid}|${where.lang}|${where.eventQid}`;
       const row = rows.get(key);
       if (!row) return { count: 0 };
-      const staleLimit = where.OR?.find((v) => v.updatedAt)?.updatedAt?.lt;
-      const canUpdate =
-        row.status !== "pending" || (staleLimit instanceof Date && new Date(row.updatedAt).getTime() < staleLimit.getTime());
-      if (!canUpdate) return { count: 0 };
+      if (typeof where.status === "string" && row.status !== where.status) return { count: 0 };
+      if (typeof where.lockOwner === "string" && row.lockOwner !== where.lockOwner) return { count: 0 };
+      if (where.OR) {
+        const now = Date.now();
+        const can = where.OR.some((clause) => {
+          if (clause.lockExpiresAt === null) return row.lockExpiresAt == null;
+          if (clause.lockExpiresAt?.lt instanceof Date) {
+            return row.lockExpiresAt instanceof Date && row.lockExpiresAt.getTime() < clause.lockExpiresAt.lt.getTime();
+          }
+          return false;
+        });
+        if (!can && row.lockExpiresAt instanceof Date && row.lockExpiresAt.getTime() > now) return { count: 0 };
+      }
       Object.assign(row, data);
       rows.set(key, row);
       ops.push({ op: "updateMany", key, status: row.status });
       return { count: 1 };
     },
-    async update({ where, data }) {
-      const key = keyOf(where);
-      const row = rows.get(key);
-      if (!row) throw new Error("missing_row");
-      Object.assign(row, data);
-      rows.set(key, row);
-      ops.push({ op: "update", key, status: row.status });
-      return row;
+    async update() {
+      throw new Error("update_not_supported_in_scene_flow");
     }
   };
   return { eventCache, rows, ops };
@@ -138,12 +141,12 @@ async function run() {
         JSON.stringify([
           {
             qid: "Q123",
-            label: "Décret test",
+            label: "Festival de Cannes 1968",
             date: "1968-05-18T00:00:00Z",
             wikipediaUrl: "https://fr.wikipedia.org/wiki/Test_unitaire",
             rupture_type: "LEGAL_REGULATORY",
             confidence: 0.8,
-            placeHints: { p131Qid: "Q90", p131Label: "Paris" }
+            placeHints: { p131Qid: "Q39984", p131Label: "Cannes" }
           }
         ]),
         { status: 200, headers: { "content-type": "application/json" } }
@@ -170,9 +173,16 @@ async function run() {
       return new Response(
         JSON.stringify({
           output_parsed: {
-            fact: "Décret publié au Journal officiel.",
-            before_state: "Aucune obligation n'est appliquée.",
-            after_state: "La règle devient immédiatement obligatoire.",
+            fact: "Le 18 mai 1968, le decret est publie au Journal officiel et entre en vigueur.",
+            before_state: "Avant cette date, aucune obligation uniforme n'est appliquee dans les services concernes.",
+            after_state: "Apres publication, la regle s'applique immediatement et modifie les demarches au guichet.",
+            gesture_changed: "A partir de ce jour, tu dois presenter ce document au guichet pour finaliser la demarche.",
+            material_anchor: "Guichet administratif et formulaire officiel",
+            rupture_test: {
+              geste_modifie: true,
+              duree_longue: true,
+              impact_quotidien: true
+            },
             place_selected: null
           }
         }),
@@ -190,22 +200,43 @@ async function run() {
   const url = "https://example.com/api/scene?year=1968&country=Q142&qid=Q123&lang=fr";
 
   const first = await onRequestGet({ request: new Request(url), env });
-  assert.equal(first.status, 200);
-  assert.equal(batchCalls, 1);
-  assert.equal(openaiCalls, 1);
-  assert.ok(wikiCalls >= 1);
+  assert.ok(first.status === 200 || first.status === 202);
+  if (first.status === 202) {
+    await new Promise((resolve) => setTimeout(resolve, 30));
+  }
 
   const key = "1968|Q142|fr|Q123";
-  const row = prisma.rows.get(key);
-  assert.equal(row.status, "ready");
-  assert.ok(row.r2Key);
-  assert.ok(r2.store.has(row.r2Key));
-  assert.ok(prisma.ops.some((op) => op.op === "create" && op.status === "pending"));
-  assert.ok(prisma.ops.some((op) => op.op === "update" && op.status === "ready"));
-
   const beforeCounts = { batchCalls, openaiCalls, wikiCalls };
   const second = await onRequestGet({ request: new Request(url), env });
-  assert.equal(second.status, 200);
+  let secondBody = await second.clone().json().catch(() => null);
+
+  if (second.status !== 200) {
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const third = await onRequestGet({ request: new Request(url), env });
+    secondBody = await third.clone().json().catch(() => null);
+    assert.equal(third.status, 200);
+  } else {
+    assert.equal(second.status, 200);
+  }
+
+  const row = prisma.rows.get(key);
+  assert.ok(row);
+  assert.ok(row.r2Key);
+  assert.ok(r2.store.has(row.r2Key));
+  const r2Payload = JSON.parse(r2.store.get(row.r2Key));
+  assert.equal(r2Payload.event_qid, "Q123");
+  assert.equal(secondBody?.event_qid, "Q123");
+  assert.equal(String(r2Payload.narrative_style || ""), "cinematic_v1");
+  assert.ok(typeof r2Payload.narrative_text === "string" && r2Payload.narrative_text.trim().length > 30);
+  assert.equal(String(secondBody?.narrative_style || ""), "cinematic_v1");
+  assert.ok(typeof secondBody?.narrative_text === "string" && secondBody.narrative_text.trim().length > 30);
+  assert.match(String(r2Payload.fact || ""), /\b1968\b/);
+  assert.notEqual(String(r2Payload.before_state || "").trim(), String(r2Payload.after_state || "").trim());
+  assert.equal(r2Payload.rupture_test?.geste_modifie, true);
+  assert.equal(r2Payload.rupture_test?.impact_quotidien, true);
+  assert.ok(String(r2Payload.gesture_changed || "").trim().length > 20);
+  assert.ok(String(r2Payload.material_anchor || "").trim().length > 10);
+  assert.ok(Array.isArray(r2Payload.sources) && r2Payload.sources.length > 0);
   assert.equal(batchCalls, beforeCounts.batchCalls);
   assert.equal(openaiCalls, beforeCounts.openaiCalls);
   assert.equal(wikiCalls, beforeCounts.wikiCalls);

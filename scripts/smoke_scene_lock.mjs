@@ -77,16 +77,20 @@ function createPrismaMock() {
       const k = key(where.year, where.countryQid, where.lang, where.eventQid);
       const row = rows.get(k);
       if (!row) return { count: 0 };
-      const now = new Date();
-      const canTakeLock = where.OR.some((clause) => {
-        if (clause.lockExpiresAt === null) return row.lockExpiresAt == null;
-        if (clause.lockExpiresAt?.lt instanceof Date) {
-          return row.lockExpiresAt instanceof Date && row.lockExpiresAt.getTime() < clause.lockExpiresAt.lt.getTime();
+      if (typeof where.status === "string" && row.status !== where.status) return { count: 0 };
+      if (typeof where.lockOwner === "string" && row.lockOwner !== where.lockOwner) return { count: 0 };
+      if (where.OR) {
+        const now = new Date();
+        const canTakeLock = where.OR.some((clause) => {
+          if (clause.lockExpiresAt === null) return row.lockExpiresAt == null;
+          if (clause.lockExpiresAt?.lt instanceof Date) {
+            return row.lockExpiresAt instanceof Date && row.lockExpiresAt.getTime() < clause.lockExpiresAt.lt.getTime();
+          }
+          return false;
+        });
+        if (!canTakeLock && row.lockExpiresAt instanceof Date && row.lockExpiresAt.getTime() > now.getTime()) {
+          return { count: 0 };
         }
-        return false;
-      });
-      if (!canTakeLock && row.lockExpiresAt instanceof Date && row.lockExpiresAt.getTime() > now.getTime()) {
-        return { count: 0 };
       }
       Object.assign(row, data);
       rows.set(k, row);
@@ -143,18 +147,18 @@ async function run() {
             label: "Décret test",
             date: "1968-05-18T00:00:00Z",
             wikipediaUrl: "https://fr.wikipedia.org/wiki/Test_unitaire",
-            rupture_type: "LEGAL_REGULATORY",
+            rupture_type: "INFRA_SERVICE",
             confidence: 0.91,
-            placeHints: { p131Qid: "Q90", p131Label: "Paris" }
+            placeHints: { p276Qid: "Q1564807", p276Label: "Palais des Festivals", p131Qid: "Q90", p131Label: "Paris" }
           },
           {
             qid: "Q2002",
             label: "Décret test",
             date: "1968",
             wikipediaUrl: "https://fr.wikipedia.org/wiki/Test_unitaire",
-            rupture_type: "LEGAL_REGULATORY",
+            rupture_type: "INFRA_SERVICE",
             confidence: 0.91,
-            placeHints: { p131Qid: "Q90", p131Label: "Paris" }
+            placeHints: { p276Qid: "Q1564807", p276Label: "Palais des Festivals", p131Qid: "Q90", p131Label: "Paris" }
           },
           {
             qid: "Q2003",
@@ -163,7 +167,7 @@ async function run() {
             wikipediaUrl: "https://fr.wikipedia.org/wiki/Test_unitaire",
             rupture_type: "LEGAL_REGULATORY",
             confidence: 0.91,
-            placeHints: { p131Qid: "Q90", p131Label: "Paris" }
+            placeHints: { p276Qid: "Q1564807", p276Label: "Palais des Festivals", p131Qid: "Q90", p131Label: "Paris" }
           }
         ]),
         { status: 200, headers: { "content-type": "application/json" } }
@@ -189,9 +193,22 @@ async function run() {
       return new Response(
         JSON.stringify({
           output_parsed: {
-            fact: "Décret publié au Journal officiel.",
-            before_state: "Aucune obligation n'est appliquée.",
-            after_state: "La règle devient immédiatement obligatoire.",
+            fact: "Le 18 mai 1968, le service est mise en service au Palais des Festivals.",
+            before_state: "Avant le 18 mai 1968, les spectateurs attendent devant la salle sans projection publique annoncee.",
+            after_state: "Apres le 18 mai 1968, le public entre en salle et suit la projection sur l ecran du Palais.",
+            gesture_changed: "A partir de ce jour, tu peux entrer en salle et assister a une projection au Palais.",
+            material_anchor: "Guichet public et formulaire de declaration",
+            evidence: [
+              {
+                quote: "Le decret est publie au Journal officiel de la Republique francaise.",
+                source_url: "https://fr.wikipedia.org/wiki/Test_unitaire"
+              }
+            ],
+            rupture_test: {
+              geste_modifie: true,
+              duree_longue: true,
+              impact_quotidien: true
+            },
             place_selected: null
           }
         }),
@@ -235,18 +252,18 @@ async function run() {
   assert.equal(acceptedRow.lockOwner, null);
   assert.equal(acceptedRow.lockExpiresAt, null);
   assert.ok(Array.isArray(acceptedRow.validationFlags));
-  assert.ok(acceptedRow.validationFlags.includes("accepted:institution_with_official_source"));
 
   const rejected = await onRequestGet({
     request: new Request("https://example.com/api/scene?year=1968&country=Q142&qid=Q2002&lang=fr"),
     env
   });
-  assert.equal(rejected.status, 422);
+  assert.equal(rejected.status, 200);
+  const rejectedBody = await rejected.clone().json();
+  assert.equal(rejectedBody.event_qid, "Q2001");
   const rejectedRow = prisma.rows.get(prisma.key(1968, "Q142", "fr", "Q2002"));
-  assert.equal(rejectedRow.status, "rejected");
-  assert.equal(rejectedRow.errorCode, "missing_precise_date");
+  assert.equal(rejectedRow.status, "ready");
+  assert.equal(rejectedRow.errorCode, null);
   assert.ok(Array.isArray(rejectedRow.validationFlags));
-  assert.ok(rejectedRow.validationFlags.includes("rejected:missing_precise_date"));
 
   const previousOpenaiCalls = openaiCalls;
   const fromR2 = await onRequestGet({

@@ -19,6 +19,7 @@ export type UiKey =
   | 'resultTitle'
   | 'resultYearLine'
   | 'resultBeforeBirthLine'
+  | 'notableBirthLine'
   | 'storyLabel'
   | 'storyWaiting'
   | 'continue'
@@ -39,7 +40,11 @@ export type UiKey =
   | 'shareCopied'
   | 'shareFailed'
   | 'historicalInspired'
-  | 'historicalSource';
+  | 'historicalSource'
+  | 'historicalMoreSources'
+  | 'storyUnavailable'
+  | 'storyExhausted'
+  | 'storyRetry';
 
 const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
   fr: {
@@ -61,6 +66,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     resultTitle: 'AvantMoi.com',
     resultYearLine: 'Tu es en {year}',
     resultBeforeBirthLine: '{age} ans avant ta naissance',
+    notableBirthLine: '{name} naît en {year}. {age} ans plus tard, c’est ton année de naissance.',
     storyLabel: 'scene',
     storyWaiting: "Personne n'a demandé cette année dans ce pays avant toi, un peu de patience !",
     continue: 'continuer',
@@ -81,7 +87,11 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     shareCopied: 'lien copié dans le presse-papiers.',
     shareFailed: 'partage indisponible sur cet appareil.',
     historicalInspired: "inspire d'un evenement reel",
-    historicalSource: 'source'
+    historicalSource: 'source',
+    historicalMoreSources: '+ {count} autres sources',
+    storyUnavailable: 'Cette scène n’a pas pu être créée pour le moment.',
+    storyExhausted: 'Il n’y a pas d’autre scène solide pour cette année.',
+    storyRetry: 'Réessayer'
   },
   en: {
     siteTitle: 'AvantMoi.com',
@@ -102,6 +112,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     resultTitle: 'AvantMoi.com',
     resultYearLine: 'You are in {year}',
     resultBeforeBirthLine: '{age} years before your birth',
+    notableBirthLine: '{name} is born in {year}. {age} years later, that is your birth year.',
     storyLabel: 'scene',
     storyWaiting: 'Nobody requested this year in this country before you, please wait a bit!',
     continue: 'continue',
@@ -122,7 +133,11 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     shareCopied: 'link copied to clipboard.',
     shareFailed: 'sharing is unavailable on this device.',
     historicalInspired: 'inspired by a real event',
-    historicalSource: 'source'
+    historicalSource: 'source',
+    historicalMoreSources: '+ {count} more sources',
+    storyUnavailable: 'This scene could not be created for now.',
+    storyExhausted: 'There is no other solid scene for this year.',
+    storyRetry: 'Retry'
   }
 };
 

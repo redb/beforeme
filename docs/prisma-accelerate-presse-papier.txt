@@ -1,0 +1,27 @@
+Prisma + Accelerate (AvantMoi)
+
+• Dépendances
+  "@prisma/client": "6.16.0"
+  "@prisma/extension-accelerate": "^2.0.2"
+
+• Client (functions/lib/prisma.js)
+  import { PrismaClient } from '@prisma/client/edge';
+  import { withAccelerate } from '@prisma/extension-accelerate';
+
+  const url = String(env?.DATABASE_URL || env?.PRISMA_ACCELERATE_URL || '').trim();
+  const base = new PrismaClient({ datasources: { db: { url } } });
+  prismaClient = base.$extends(withAccelerate());
+
+• Variables d’environnement
+  DATABASE_URL=postgresql://...        # direct Postgres (dev / fallback)
+  PRISMA_ACCELERATE_URL=https://...   # optionnel : URL Accelerate (connection pooling + cache)
+
+  Le client utilise PRISMA_ACCELERATE_URL si présent, sinon DATABASE_URL.
+  Sur Cloudflare Workers/Pages, privilégier Accelerate pour éviter saturation de connexions.
+
+• Génération (postinstall, sans engine local)
+  DATABASE_URL=postgresql://user:pass@localhost:5432/postgres prisma generate --no-engine
+
+• Doc
+  https://www.prisma.io/docs/accelerate
+  https://www.prisma.io/docs/accelerate/troubleshoot

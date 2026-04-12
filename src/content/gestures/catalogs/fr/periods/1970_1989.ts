@@ -1,0 +1,128 @@
+import type { GestureRupture } from "../../../types";
+
+export const FR_GESTURE_BACKFILL_1970_1989: GestureRupture[] = [
+  {
+    id: "fr-1972-securite-sociale-generalisee",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "etre-couvert-par-la-secu-sans-etre-salarie",
+    gestureLabel: "être couvert par la Sécurité sociale sans être salarié",
+    theme: "santé", gestureRoot: "secu_generalisee",
+    editorialScore: 86,
+    category: "health", direction: "impossible_to_possible",
+    ruptureDate: "1974-07-24", ruptureYear: 1974, datePrecision: "day",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Loi généralisant la Sécurité sociale",
+    triggerType: "law",
+    beforeState: "Avant juillet 1974, la couverture maladie reste liée au statut de salarié ou d'ayant droit.",
+    afterState: "Après juillet 1974, toute personne résidant en France peut être affiliée à la Sécurité sociale.",
+    gestureChanged: "Tu peux ouvrir des droits à la Sécu même si tu n'es pas salarié ni rattaché à un conjoint qui l'est.",
+    materialAnchor: "Carnet de santé, carte d'assuré et guichet CPAM",
+    sceneText: "24 juillet 1974, guichet CPAM. La couverture n'est plus réservée aux seuls salariés. Artisans, étudiants, inactifs — tout résident peut désormais s'affilier. La carte d'assuré social sort de son cercle restreint.",
+    fact: "Le 24 juillet 1974, la loi généralise la Sécurité sociale à l'ensemble de la population française résidente.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/S%C3%A9curit%C3%A9_sociale_en_France", authority: false },
+      { label: "Sécu", url: "https://www.securite-sociale.fr/la-secu-cest-quoi/histoire", authority: true }
+    ],
+    tags: ["sante", "secu", "affiliation", "couverture"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1978-informatique-et-libertes",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "avoir-droit-a-ses-donnees-personnelles",
+    gestureLabel: "avoir un droit de regard sur ses données personnelles",
+    theme: "communication", gestureRoot: "droits_donnees_personnelles",
+    editorialScore: 84,
+    category: "public_space", direction: "impossible_to_possible",
+    ruptureDate: "1978-01-06", ruptureYear: 1978, datePrecision: "day",
+    placeName: "Administration et entreprises", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Loi Informatique et Libertés",
+    triggerType: "law",
+    beforeState: "Avant le 6 janvier 1978, les fichiers informatiques sur les individus n'ont pas de cadre légal protecteur.",
+    afterState: "Après le 6 janvier 1978, toute personne peut s'informer, accéder et rectifier ses données dans les fichiers.",
+    gestureChanged: "Tu peux demander à consulter et corriger les informations te concernant dans un fichier informatique.",
+    materialAnchor: "Dossier administratif, terminal et formulaire CNIL",
+    sceneText: "6 janvier 1978, France. Les ordinateurs s'installent partout dans les administrations. La loi fixe pour la première fois un droit : tu peux savoir ce qu'ils savent de toi, et demander qu'on corrige.",
+    fact: "Le 6 janvier 1978, la loi Informatique et Libertés crée en France le droit d'accès aux fichiers informatiques personnels.",
+    sources: [
+      { label: "CNIL", url: "https://www.cnil.fr/fr/la-loi-informatique-et-libertes", authority: true },
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Loi_informatique_et_libert%C3%A9s", authority: false }
+    ],
+    tags: ["donnees", "informatique", "cnil", "droits"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1981-peine-de-mort-abolie",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "vivre-dans-un-pays-sans-peine-de-mort",
+    gestureLabel: "vivre dans un pays sans peine de mort",
+    theme: "administration", gestureRoot: "abolition_peine_de_mort",
+    editorialScore: 94,
+    category: "public_space", direction: "impossible_to_possible",
+    ruptureDate: "1981-10-09", ruptureYear: 1981, datePrecision: "day",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Loi abolissant la peine de mort",
+    triggerType: "law",
+    beforeState: "Avant le 9 octobre 1981, la peine de mort existe en droit français et des exécutions ont lieu.",
+    afterState: "Après le 9 octobre 1981, la France abolit la peine capitale — la guillotine disparaît.",
+    gestureChanged: "Tu vis dans un pays où aucun tribunal ne peut plus condamner à mort.",
+    materialAnchor: "Code pénal, salle d'audience et plaidoirie de Badinter",
+    sceneText: "9 octobre 1981, Assemblée nationale. Robert Badinter monte à la tribune. La loi passe. La guillotine entre dans l'histoire. La France rejoint les démocraties qui ont renoncé à tuer au nom de la justice.",
+    fact: "Le 9 octobre 1981, la France abolit la peine de mort sous l'impulsion du garde des Sceaux Robert Badinter.",
+    sources: [
+      { label: "Légifrance", url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000700213", authority: true },
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Abolition_de_la_peine_de_mort_en_France", authority: false }
+    ],
+    tags: ["justice", "peine-de-mort", "badinter", "droits"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1985-bac-informatique",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "avoir-une-heure-d-informatique-au-lycee",
+    gestureLabel: "avoir un cours d'informatique au lycée",
+    theme: "école", gestureRoot: "informatique_lycee",
+    editorialScore: 76,
+    category: "school", direction: "impossible_to_possible",
+    ruptureDate: "1985-09-01", ruptureYear: 1985, datePrecision: "month",
+    placeName: "Lycée français", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Plan Informatique Pour Tous",
+    triggerType: "public_rollout",
+    beforeState: "Avant 1985, l'ordinateur est absent des salles de classe françaises.",
+    afterState: "Après 1985, des ordinateurs TO7 entrent dans les lycées et l'informatique devient une matière scolaire.",
+    gestureChanged: "Tu peux toucher un ordinateur à l'école et taper ton premier programme.",
+    materialAnchor: "Thomson TO7, clavier caoutchouc et écran vert",
+    sceneText: "Septembre 1985, salle informatique du lycée. Les Thomson TO7 sont alignés en rangées. Le professeur dicte les premières lignes de Basic. C'est bizarre, lent, mais c'est un ordinateur — et il est là pour toi.",
+    fact: "En 1985, le Plan Informatique Pour Tous installe 120 000 micro-ordinateurs dans les écoles françaises.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Plan_Informatique_pour_tous", authority: false },
+      { label: "INA", url: "https://www.ina.fr/ina-eclaire-actu/plan-informatique-pour-tous-1985", authority: true }
+    ],
+    tags: ["ecole", "informatique", "to7", "lycee"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1989-europe-1-libre",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "passer-le-bac-a-18-ans-en-terminale",
+    gestureLabel: "passer le baccalauréat rénové",
+    theme: "école", gestureRoot: "baccalaureat",
+    editorialScore: 78,
+    category: "school", direction: "impossible_to_possible",
+    ruptureDate: "1989-06-01", ruptureYear: 1989, datePrecision: "month",
+    placeName: "Centre d'examen", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Objectif 80 % d'une classe d'âge au niveau bac",
+    triggerType: "public_rollout",
+    beforeState: "Avant 1989, moins de 30 % d'une classe d'âge obtient le baccalauréat.",
+    afterState: "Après 1989, la massification scolaire pousse vers 80 % de bacheliers par génération.",
+    gestureChanged: "Le bac cesse d'être réservé à une élite et devient un horizon ordinaire pour la majorité des lycéens.",
+    materialAnchor: "Feuille de composition, stylo bille et salle d'examen",
+    sceneText: "1989, salle d'examen. La table numérotée, le sujet retourné, le stylo prêt. Passer le bac n'est plus un parcours d'exception — c'est une étape ordinaire du lycée français.",
+    fact: "En 1989, la France se fixe l'objectif de mener 80 % d'une classe d'âge au niveau du baccalauréat.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Baccalaur%C3%A9at_en_France", authority: false }
+    ],
+    tags: ["bac", "lycee", "examen", "jeunesse"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+];

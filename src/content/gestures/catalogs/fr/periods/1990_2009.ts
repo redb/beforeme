@@ -1,0 +1,128 @@
+import type { GestureRupture } from "../../../types";
+
+export const FR_GESTURE_BACKFILL_1990_2009: GestureRupture[] = [
+  {
+    id: "fr-2000-35-heures",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "travailler-35-heures-par-semaine",
+    gestureLabel: "travailler 35 heures par semaine",
+    theme: "travail", gestureRoot: "travailler_35_heures",
+    editorialScore: 88,
+    category: "work", direction: "possible_to_impossible",
+    ruptureDate: "2000-02-01", ruptureYear: 2000, datePrecision: "day",
+    placeName: "Entreprise française", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Loi Aubry — passage aux 35 heures",
+    triggerType: "law",
+    beforeState: "Avant février 2000, la semaine légale de travail est fixée à 39 heures.",
+    afterState: "Après février 2000, la durée légale passe à 35 heures avec les RTT.",
+    gestureChanged: "Tu accumules des jours de RTT à poser en plus de tes congés payés.",
+    materialAnchor: "Planning RTT, badge de sortie et compteur horaire",
+    sceneText: "Février 2000, bureau. Le compteur horaire change. Les RTT s'accumulent dans le planning. La semaine de 35 heures entre dans les discussions de couloir, les négociations d'entreprise et les agendas du vendredi.",
+    fact: "Le 1er février 2000, la loi Aubry II impose les 35 heures aux entreprises de plus de 20 salariés.",
+    sources: [
+      { label: "Légifrance", url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000569830", authority: true },
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Dur%C3%A9e_du_travail_en_France", authority: false }
+    ],
+    tags: ["travail", "35h", "rtt", "aubry"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-2002-euro-paiement",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "payer-en-euros",
+    gestureLabel: "payer en euros",
+    theme: "argent", gestureRoot: "payer_en_euros",
+    editorialScore: 96,
+    category: "money", direction: "possible_to_impossible",
+    ruptureDate: "2002-01-01", ruptureYear: 2002, datePrecision: "day",
+    placeName: "Caisse et commerces", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Introduction de l'euro fiduciaire en France",
+    triggerType: "law",
+    beforeState: "Avant le 1er janvier 2002, les transactions du quotidien se font en francs français.",
+    afterState: "Après le 1er janvier 2002, le franc disparaît et l'euro devient la seule monnaie légale.",
+    gestureChanged: "Tu peux sortir des pièces en euros de ta poche — les francs ne sont plus acceptés.",
+    materialAnchor: "Pièce de 1 euro, billet de 20 euros et caisse enregistreuse",
+    sceneText: "1er janvier 2002, caisse du supermarché. Les nouvelles pièces sonnent différemment. Le billet de 50 francs ne passe plus. La France change de monnaie du jour au lendemain — et ce geste ne reviendra jamais en arrière.",
+    fact: "Le 1er janvier 2002, les billets et pièces en euros entrent en circulation en France, remplaçant définitivement le franc.",
+    sources: [
+      { label: "Banque de France", url: "https://www.banque-france.fr/fr/billet-piece/lhistoire-de-leuro", authority: true },
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Euro", authority: false }
+    ],
+    tags: ["euro", "monnaie", "franc", "paiement"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-2004-dossier-medical-informatise",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "avoir-son-dossier-medical-en-ligne",
+    gestureLabel: "avoir un dossier médical partagé en ligne",
+    theme: "santé", gestureRoot: "dossier_medical_partage",
+    editorialScore: 78,
+    category: "health", direction: "impossible_to_possible",
+    ruptureDate: "2004-08-13", ruptureYear: 2004, datePrecision: "day",
+    placeName: "Cabinet médical et hôpital", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Loi créant le Dossier Médical Personnel",
+    triggerType: "law",
+    beforeState: "Avant 2004, ton historique médical est dispersé entre médecins, spécialistes et hôpitaux sans coordination numérique.",
+    afterState: "Après 2004, le principe d'un dossier médical personnel numérique centralisé est inscrit dans la loi.",
+    gestureChanged: "Tu peux en théorie avoir l'ensemble de ton parcours médical accessible par tes soignants.",
+    materialAnchor: "Carte Vitale, écran de consultation et dossier numérique",
+    sceneText: "2004, cabinet médical. Le médecin peut bientôt voir tes antécédents sans que tu te souviennes de tout. Le dossier médical personnel entre dans la loi — même si son déploiement prendra des années.",
+    fact: "Le 13 août 2004, la loi crée le Dossier Médical Personnel (DMP) en France.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Dossier_m%C3%A9dical_partag%C3%A9", authority: false },
+      { label: "Ameli", url: "https://www.ameli.fr/assure/sante/dossier-medical", authority: true }
+    ],
+    tags: ["sante", "numerique", "dossier", "medecin"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-2006-velib-paris",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "louer-un-velo-en-libre-service",
+    gestureLabel: "louer un vélo en libre-service dans la rue",
+    theme: "transport", gestureRoot: "velo_libre_service",
+    editorialScore: 82,
+    category: "transport", direction: "impossible_to_possible",
+    ruptureDate: "2007-07-15", ruptureYear: 2007, datePrecision: "day",
+    placeName: "Paris", placeType: "city", placeQid: "Q90",
+    triggerLabel: "Lancement de Vélib'",
+    triggerType: "service_start",
+    beforeState: "Avant juillet 2007, se déplacer à vélo en ville suppose de posséder son propre vélo.",
+    afterState: "Après juillet 2007, n'importe qui peut prendre un vélo en station et le redéposer ailleurs.",
+    gestureChanged: "Tu peux saisir un vélo à une borne, pédaler jusqu'à destination, et le laisser dans une autre station.",
+    materialAnchor: "Station Vélib', borne de déverrouillage et vélo gris",
+    sceneText: "15 juillet 2007, Paris. La borne grésille, le vélo se débloque. Tu pédales jusqu'au bureau et le redéposes à deux rues. La ville se traverse autrement — sans posséder de vélo.",
+    fact: "Le 15 juillet 2007, Vélib' est lancé à Paris avec 10 648 vélos et 750 stations.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/V%C3%A9lib%27", authority: false },
+      { label: "Mairie de Paris", url: "https://www.paris.fr/velib", authority: true }
+    ],
+    tags: ["velo", "paris", "libre-service", "transport"],
+    quality: { strictPlace: true, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-2009-cpam-en-ligne",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "suivre-ses-remboursements-ameli-en-ligne",
+    gestureLabel: "suivre ses remboursements sur Ameli.fr",
+    theme: "santé", gestureRoot: "ameli_en_ligne",
+    editorialScore: 76,
+    category: "health", direction: "impossible_to_possible",
+    ruptureDate: "2009-01-01", ruptureYear: 2009, datePrecision: "year",
+    placeName: "Domicile connecté", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Déploiement d'Ameli.fr",
+    triggerType: "public_rollout",
+    beforeState: "Avant 2009, suivre ses remboursements exige d'attendre le courrier ou d'appeler la CPAM.",
+    afterState: "Après 2009, Ameli.fr permet de consulter ses remboursements en temps réel depuis chez soi.",
+    gestureChanged: "Tu peux ouvrir ton compte Ameli et vérifier tes remboursements sans décrocher le téléphone.",
+    materialAnchor: "Ordinateur, identifiants Ameli et tableau de remboursements",
+    sceneText: "2009, à la maison. Au lieu d'attendre l'enveloppe ou de rester en attente téléphonique, tu ouvres Ameli.fr. Tes remboursements sont là, datés, détaillés. La Sécu entre dans ton navigateur.",
+    fact: "En 2009, le portail Ameli.fr se généralise, permettant à chaque assuré de suivre ses remboursements en ligne.",
+    sources: [
+      { label: "Ameli", url: "https://www.ameli.fr", authority: true }
+    ],
+    tags: ["sante", "ameli", "remboursements", "numerique"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+];

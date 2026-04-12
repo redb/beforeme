@@ -15,6 +15,25 @@ function buildScenePromptInput(event, type, placeCandidates) {
         rupture_type: type,
         allowed_claim_templates: ruptureTaxonomy_1.ALLOWED_CLAIM_TEMPLATES[type],
         required_material_elements: ruptureTaxonomy_1.REQUIRED_MATERIAL_ELEMENTS[type],
+        output_contract: {
+            fact: "string",
+            before_state: "string",
+            after_state: "string",
+            narrative_template: {
+                instant: "string",
+                before: "string",
+                after: "string"
+            },
+            gesture_changed: "string",
+            material_anchor: "string",
+            rupture_test: {
+                geste_modifie: "boolean",
+                duree_longue: "boolean",
+                impact_quotidien: "boolean"
+            },
+            evidence: [{ quote: "string", source_url: "string" }],
+            place_selected: "string|null"
+        },
         place_candidates: placeCandidates.map((candidate) => ({
             id: candidate.id,
             type: candidate.type,

@@ -1,115 +1,191 @@
-# AvantMoi
+# AvantMoi v1 Stable
 
-Site statique Vite + TS avec Cloudflare Pages Functions.
+AvantMoi est un site Vite + TypeScript deploye sur Cloudflare Pages Functions.
 
-## Points cle
+La v1 publique est volontairement etroite :
+- France uniquement
+- francais uniquement
+- une scene a la fois
+- contenu strictement source
+- Cloudflare Pages + Functions + R2 + Prisma
 
-- Calcul annee miroir:
-  - `currentYear = Math.floor(new Date().getFullYear())`
-  - si age: `birthYear = currentYear - age`, `mirrorYear = birthYear - age`
-  - si annee de naissance: `mirrorYear = 2 * birthYear - currentYear`
-- Une anecdote a la fois
-- Bloc pub non bloquant
-- Partage facultatif
-- Fond video fixe (`/public/tunnel-bg.mp4`)
-- Admin simple (`/morgao/`) pour pub + suppression de fiches cachees
+## Garde-fou domaine
 
-## Pipeline France-only (fonction Cloudflare)
+- le projet Cloudflare Pages de reference est `avantmoi`
+- le domaine public attendu est `avantmoi.com`
+- verification manuelle/CI : `npm run verify:cf-binding`
+- le deploy `npm run cf:deploy` echoue si `avantmoi.com` est attache a un autre projet Pages
 
-Endpoint:
+## Contrat public
+
+### UX
+- un seul champ public : age ou annee de naissance
+- calcul exact de l annee miroir
+- une scene a la fois
+- `continuer`
+- partage facultatif
+- pub non bloquante
+
+### Calcul
+- `currentYear = Math.floor(new Date().getFullYear())`
+- si age :
+  - `birthYear = currentYear - age`
+  - `mirrorYear = birthYear - age`
+- si annee de naissance :
+  - `mirrorYear = 2 * birthYear - currentYear`
+
+### Route publique
+- home : `/`
+- resultat : `/?year=1968`
+
+## Chaine publique canonique
+
+Le front public ne consomme que :
+- `GET /api/candidates-ranked`
+- `GET /api/scene`
+
+### 1. Classement candidats
 
 ```txt
-/api/anecdotes?year=1968&lang=fr
+/api/candidates-ranked?year=1968&country=Q142&lang=fr&limit=20
 ```
 
-Retour:
+Retour :
 
 ```json
 {
   "year": 1968,
-  "country": "FR",
+  "country_qid": "Q142",
+  "lang": "fr",
+  "generated_at": "2026-03-12T00:00:00.000Z",
   "items": [
-    { "scene": "...", "fact": "...", "sourceUrl": "...", "eventQid": "Q...", "title": "..." }
+    { "qid": "Q123", "title": "..." }
   ]
 }
 ```
 
-Etapes:
+### 2. Scene canonique
 
-1. Recupere des candidats Wikidata (France uniquement, annee exacte)
-2. Filtre/score dur via `functions/api/anecdotes.js`
-3. Prend top 6 puis tente de produire 3 scenes
-4. Cache Prisma `EventCache` par `(year,country,lang,eventQid)`
-5. Si cache existe: ressert direct
-6. Sinon generation OpenAI + post-validation via `functions/api/anecdotes.js` (max 3 tentatives)
+```txt
+/api/scene?year=1968&country=Q142&lang=fr&qid=Q123&mode=fast
+```
 
-## Schema Prisma
+Retour stable :
 
-Fichier: `prisma/schema.prisma`
+```json
+{
+  "schema_version": "1.0",
+  "country_qid": "Q142",
+  "year": 1968,
+  "lang": "fr",
+  "event_qid": "Q123",
+  "date": "1968-05-18",
+  "date_precision": "day",
+  "place": { "name": "Palais des Festivals", "qid": "Q1564807", "type": "site" },
+  "rupture_type": "FIRST_PUBLIC_DEMO",
+  "confidence": 0.9,
+  "fact": "...",
+  "before_state": "...",
+  "after_state": "...",
+  "gesture_changed": "...",
+  "material_anchor": "...",
+  "rupture_test": {
+    "geste_modifie": true,
+    "duree_longue": true,
+    "impact_quotidien": true
+  },
+  "narrative_template": { "version": "..." },
+  "narrative_text": "...",
+  "narrative_style": "cinematic_v1",
+  "sources": [{ "label": "Wikipedia", "url": "https://fr.wikipedia.org/wiki/..." }],
+  "evidence": [{ "quote": "...", "source_url": "https://fr.wikipedia.org/wiki/..." }],
+  "validation_mode": "strict",
+  "generated_at": "2026-03-12T00:00:00.000Z",
+  "prompt_hash": "..."
+}
+```
 
-- `AnecdoteCache`
-- `EventCache` (unique: `year,country,lang,eventQid`)
-- `Vote` (unique: `year,country,lang,eventQid`)
-- `AppConfig` (config encart pub)
+## Pipeline scene
 
-Migration SQL:
+`/Users/jean-brunoricard/dev/BeforeMe/functions/api/scene.ts`
 
-- `prisma/migrations/20260219_pipeline_france_only/migration.sql`
+Ordre :
+1. lookup R2
+2. auto-heal DB si R2 pret et DB encore `pending`
+3. lookup Prisma `EventCache`
+4. lock ownership strict
+5. generation structurelle stricte
+6. validation stricte
+7. ecriture R2
+8. update DB `ready` uniquement si ownership toujours valide
+
+Le pipeline refuse toute scene non sourcee.
+
+## Front public
+
+`/Users/jean-brunoricard/dev/BeforeMe/src/main.ts`
+
+Regles :
+- pas de selecteur pays public
+- pas de geolocalisation publique
+- pas de langue publique autre que `fr`
+- partage et pub ne bloquent jamais la lecture
+
+`/Users/jean-brunoricard/dev/BeforeMe/src/lib/anecdoteApi.ts` est le seul client public.
+
+## Admin
+
+- URL fixe : `/morgao/`
+- pas de lien depuis le site
+- `robots.txt` + meta `noindex`
+- login Google uniquement
+- gestion pub, stats, inspection des scenes
 
 ## Variables d environnement
 
-Configurer en local et Cloudflare:
+Obligatoires en production :
 
 ```bash
 DATABASE_URL=postgresql://...
-DIRECT_URL=postgresql://... # optionnel selon setup Prisma
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o
-WIKIDATA_ENDPOINT=https://query.wikidata.org/sparql
-ADMIN_GOOGLE_CLIENT_ID=...apps.googleusercontent.com
-ADMIN_GOOGLE_EMAILS=toi@gmail.com
-ADMIN_SESSION_SECRET=une-cle-longue-et-secrete
 ```
 
-### Auth admin Google (`/morgao/`)
+Selon le setup :
 
-- Créer un OAuth Client ID Web dans Google Cloud.
-- Ajouter les origines autorisées:
-  - `https://avantmoi.com`
-  - `https://www.avantmoi.com` (si utilisé)
-  - URL preview Cloudflare si besoin
-- Mettre le client ID dans `ADMIN_GOOGLE_CLIENT_ID`.
-- Mettre l email admin dans `ADMIN_GOOGLE_EMAILS` (liste CSV possible).
-- Mettre une clé forte dans `ADMIN_SESSION_SECRET` (min 32 chars).
+```bash
+OPENAI_MODEL=gpt-4.1-mini
+PRISMA_ACCELERATE_URL=...
+ADMIN_GOOGLE_CLIENT_ID=...apps.googleusercontent.com
+ADMIN_GOOGLE_EMAILS=toi@domaine.fr
+ADMIN_SESSION_SECRET=cle-longue
+```
 
 ## Developpement local
 
 ```bash
 npm install
-npm run dev
+npm run db:up
+npm run db:migrate
+npm run cf:dev
 ```
 
-## Build
+Verifier rapidement :
+
+```bash
+curl "http://localhost:8788/api/candidates-ranked?year=1968&country=Q142&lang=fr&limit=5"
+curl "http://localhost:8788/api/scene?year=1968&country=Q142&lang=fr&qid=SEED-FR-1968-CANNES&mode=fast"
+```
+
+## Build et deploy
 
 ```bash
 npm run build
-npm run preview
+npm run build:cf
+npm run cf:deploy
 ```
 
-## Cloudflare Pages (etape 1: preparation)
+## Notes de version
 
-- Config Pages: `wrangler.jsonc`
-- Build Cloudflare: `npm run build:cf`
-- Lancer local Cloudflare Pages: `npm run cf:dev`
-- Deploy direct (quand on passera a l etape deploy): `npm run cf:deploy`
-
-Notes:
-- `build:cf` garde le build Vite standard puis remplace `dist/_redirects` par la version Cloudflare.
-
-## DNS Cloudflare (DNS only)
-
-1. Ajouter le domaine dans Cloudflare Pages.
-2. Dans Cloudflare:
-   - `CNAME` `www` vers le domaine Pages cible
-   - `CNAME` `@` selon ton setup DNS
-3. Attendre propagation, puis verifier TLS sur Cloudflare.
+- pied de page versionne via `__APP_VERSION__`
+- build id injecte via `__APP_BUILD_ID__`
+- aucune reference Netlify sur le chemin critique v1

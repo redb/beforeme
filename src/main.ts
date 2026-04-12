@@ -2,17 +2,9 @@ import './style.css';
 import { renderAdBreak } from './components/AdBreak';
 import { VideoBackground } from './components/VideoBackground';
 import { ReadingShade } from './components/ReadingShade';
-import { fetchAnecdoteSlot, type AnecdoteScope, type AnecdoteSlot } from './lib/anecdoteApi';
+import { fetchAnecdoteSlot, resetAnecdoteSessionMemory, type AnecdoteScope, type AnecdoteSlot } from './lib/anecdoteApi';
 import { t, type Lang } from './lib/i18n';
-import {
-  countryLabel,
-  detectCountry,
-  detectCountryFromGeolocation,
-  detectLanguage,
-  normalizeCountry,
-  parseCountryInput,
-  type CountryCode
-} from './lib/locale';
+import type { CountryCode } from './lib/locale';
 
 const app = (() => {
   const node = document.querySelector<HTMLDivElement>('#app');
@@ -24,6 +16,9 @@ const app = (() => {
 
 const CURRENT_YEAR = Math.floor(new Date().getFullYear());
 const APP_VERSION = `V${__APP_VERSION__} (${__APP_BUILD_ID__})`;
+const PUBLIC_LANG: Lang = 'fr';
+const PUBLIC_COUNTRY: CountryCode = 'FR';
+const PUBLIC_COUNTRY_LINE = 'en France';
 
 interface StorySession {
   key: string;
@@ -36,6 +31,7 @@ interface StorySession {
   shareFeedback: string;
   slotCache: Map<number, AnecdoteSlot>;
   loadingSlots: Set<number>;
+  failedSlots: Set<number>;
   isTransitioning: boolean;
   pendingReveal: boolean;
 }
@@ -69,10 +65,102 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#039;');
 }
 
+function normalizeInlineText(value: string): string {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function parseYearParam(raw: string | null): number | null {
   if (!raw) return null;
   const year = Number(raw);
   return Number.isInteger(year) ? year : null;
+}
+
+function monthIndexFromName(name: string, lang: Lang): number | null {
+  const normalized = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '');
+
+  const frMonths = [
+    'janvier', 'fevrier', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre'
+  ];
+  const enMonths = [
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december'
+  ];
+  const table = lang === 'fr' ? frMonths : enMonths;
+  const idx = table.findIndex((value) => value === normalized || value.startsWith(normalized));
+  return idx >= 0 ? idx + 1 : null;
+}
+
+function isValidDateParts(year: number, month: number, day: number): boolean {
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return false;
+  if (year < 1900 || year > CURRENT_YEAR) return false;
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
+function parseBirthYearInput(rawInput: string, lang: Lang): number | null {
+  const trimmed = rawInput.trim();
+  if (!trimmed) return null;
+
+  if (/^\d{1,3}$/.test(trimmed)) {
+    const age = Number(trimmed);
+    if (!Number.isInteger(age) || age < 1 || age > 120) return null;
+    return CURRENT_YEAR - age;
+  }
+
+  if (/^\d{4}$/.test(trimmed)) {
+    const birthYear = Number(trimmed);
+    if (!Number.isInteger(birthYear) || birthYear < 1900 || birthYear > CURRENT_YEAR) return null;
+    return birthYear;
+  }
+
+  const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const year = Number(isoMatch[1]);
+    const month = Number(isoMatch[2]);
+    const day = Number(isoMatch[3]);
+    return isValidDateParts(year, month, day) ? year : null;
+  }
+
+  const slashMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch) {
+    const a = Number(slashMatch[1]);
+    const b = Number(slashMatch[2]);
+    const year = Number(slashMatch[3]);
+    const day = lang === 'fr' ? a : b;
+    const month = lang === 'fr' ? b : a;
+    return isValidDateParts(year, month, day) ? year : null;
+  }
+
+  const frTextDate = trimmed.match(/^(\d{1,2})\s+([A-Za-zÀ-ÿ]+)\s+(\d{4})$/);
+  if (frTextDate && lang === 'fr') {
+    const day = Number(frTextDate[1]);
+    const month = monthIndexFromName(frTextDate[2], 'fr');
+    const year = Number(frTextDate[3]);
+    return month && isValidDateParts(year, month, day) ? year : null;
+  }
+
+  const enTextDate = trimmed.match(/^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})$/);
+  if (enTextDate && lang !== 'fr') {
+    const month = monthIndexFromName(enTextDate[1], 'en');
+    const day = Number(enTextDate[2]);
+    const year = Number(enTextDate[3]);
+    return month && isValidDateParts(year, month, day) ? year : null;
+  }
+
+  return null;
 }
 
 function clearPulseState() {
@@ -263,24 +351,20 @@ function activateAdHtmlScripts(root: ParentNode = app) {
 
 function readRoute() {
   const params = new URLSearchParams(window.location.search);
-  const lang = detectLanguage();
-  const autoCountry = detectCountry();
-
-  const country = normalizeCountry(params.get('country') ?? autoCountry);
   const year = parseYearParam(params.get('year'));
 
-  return { lang, country, year };
+  return { lang: PUBLIC_LANG, country: PUBLIC_COUNTRY, year };
 }
 
-function updateUrl(params: { year?: number; country: CountryCode }) {
+function updateUrl(params: { year?: number }) {
   const query = new URLSearchParams();
-  query.set('country', params.country);
 
   if (typeof params.year === 'number') {
     query.set('year', String(params.year));
   }
 
-  const next = `${window.location.pathname}?${query.toString()}`;
+  const nextQuery = query.toString();
+  const next = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
   window.history.pushState({}, '', next);
 }
 
@@ -292,31 +376,12 @@ function computeAgeBeforeBirth(mirrorYear: number): number {
   return Math.floor((CURRENT_YEAR - mirrorYear) / 2);
 }
 
-function countryWithPreposition(lang: Lang, country: CountryCode): string {
-  const label = countryLabel(lang, country);
-  if (lang !== 'fr') {
-    return `in ${label}`;
-  }
-
-  switch (country) {
-    case 'US':
-      return `aux ${label}`;
-    case 'MG':
-      return `à ${label}`;
-    case 'GB':
-    case 'CA':
-    case 'BR':
-      return `au ${label}`;
-    default:
-      return `en ${label}`;
-  }
-}
-
 function createSessionKey(mirrorYear: number, lang: Lang, country: CountryCode): string {
   return `${mirrorYear}|${country}|${lang}`;
 }
 
 function createSession(mirrorYear: number, lang: Lang, country: CountryCode): StorySession {
+  resetAnecdoteSessionMemory();
   const key = createSessionKey(mirrorYear, lang, country);
 
   const slotCache = new Map<number, AnecdoteSlot>();
@@ -337,6 +402,7 @@ function createSession(mirrorYear: number, lang: Lang, country: CountryCode): St
     shareFeedback: '',
     slotCache,
     loadingSlots: new Set(),
+    failedSlots: new Set(),
     isTransitioning: false,
     pendingReveal: false
   };
@@ -380,8 +446,11 @@ function scopeForSlot(slot: number): AnecdoteScope {
   return cycleIndex < 3 ? 'global' : 'local';
 }
 
-function loadSlot(target: StorySession, slot: number) {
+function loadSlot(target: StorySession, slot: number, options: { force?: boolean } = {}) {
   if (target.slotCache.has(slot) || target.loadingSlots.has(slot)) {
+    return;
+  }
+  if (target.failedSlots.has(slot) && !options.force) {
     return;
   }
 
@@ -401,6 +470,9 @@ function loadSlot(target: StorySession, slot: number) {
 
       if (payload) {
         target.slotCache.set(slot, payload);
+        target.failedSlots.delete(slot);
+      } else {
+        target.failedSlots.add(slot);
       }
 
       target.loadingSlots.delete(slot);
@@ -412,6 +484,7 @@ function loadSlot(target: StorySession, slot: number) {
       }
 
       target.loadingSlots.delete(slot);
+      target.failedSlots.add(slot);
       renderResult(target.mirrorYear, target.lang, target.country);
     });
 }
@@ -476,17 +549,15 @@ function render() {
     return;
   }
 
-  renderHome(route.lang, route.country);
+  renderHome(route.lang);
 }
 
-function renderHome(lang: Lang, country: CountryCode) {
+function renderHome(lang: Lang) {
   setViewMode('home');
   videoBackground.setHomeState();
   readingShade.setImmediate(0.65);
-  const locationLabel = t(lang, 'locationLabel').trim();
   const isCompactMobile = window.matchMedia('(max-width: 760px)').matches;
   const agePlaceholder = isCompactMobile ? t(lang, 'ageOrBirthYearPlaceholderMobile') : t(lang, 'ageOrBirthYearPlaceholder');
-  const locationPlaceholder = isCompactMobile ? t(lang, 'locationPlaceholderMobile') : t(lang, 'locationPlaceholder');
 
   app.innerHTML = `
     <main class="shell">
@@ -504,33 +575,11 @@ function renderHome(lang: Lang, country: CountryCode) {
                 id="age-or-birth-year-input"
                 name="ageOrBirthYear"
                 type="text"
-                inputmode="numeric"
-                pattern="[0-9]*"
+                inputmode="text"
                 placeholder="${escapeHtml(agePlaceholder)}"
               />
             </label>
           </div>
-
-          <div class="location-row">
-            <label class="field">
-              ${locationLabel ? `<span>${escapeHtml(locationLabel)}</span>` : ''}
-              <input
-                id="location-input"
-                name="location"
-                type="text"
-                placeholder="${escapeHtml(locationPlaceholder)}"
-                value=""
-              />
-            </label>
-            <button
-              id="locate-btn"
-              class="ghost locate-btn"
-              type="button"
-              title="${escapeHtml(t(lang, 'locateTooltip'))}"
-              aria-label="${escapeHtml(t(lang, 'locateTooltip'))}"
-            >${escapeHtml(t(lang, 'locateAction'))}</button>
-          </div>
-          <p id="locate-feedback" class="feedback"></p>
 
           <p id="error" class="error" aria-live="assertive"></p>
           <button class="cta" type="submit">${escapeHtml(t(lang, 'cta'))}</button>
@@ -545,117 +594,48 @@ function renderHome(lang: Lang, country: CountryCode) {
 
   const form = document.querySelector<HTMLFormElement>('#launch-form');
   const ageOrBirthYearInput = document.querySelector<HTMLInputElement>('#age-or-birth-year-input');
-  const locationInput = document.querySelector<HTMLInputElement>('#location-input');
-  const locateButton = document.querySelector<HTMLButtonElement>('#locate-btn');
-  const locateFeedback = document.querySelector<HTMLParagraphElement>('#locate-feedback');
   const errorNode = document.querySelector<HTMLParagraphElement>('#error');
   const submitButton = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
 
-  if (!form || !ageOrBirthYearInput || !locationInput || !locateButton || !locateFeedback || !errorNode || !submitButton) {
+  if (!form || !ageOrBirthYearInput || !errorNode || !submitButton) {
     return;
   }
 
   ageOrBirthYearInput.addEventListener('input', () => {
-    ageOrBirthYearInput.value = ageOrBirthYearInput.value.replace(/[^\d]/g, '');
-  });
-
-  locateButton.addEventListener('click', async (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    locateFeedback.textContent = '';
-    const preservedAgeOrBirthYear = ageOrBirthYearInput.value;
-    const preservedLocation = locationInput.value;
-    locateButton.disabled = true;
-
-    try {
-      const detected = await detectCountryFromGeolocation();
-      // Re-query inputs au cas où render() a recréé le formulaire pendant l’attente
-      const ageInput = document.querySelector<HTMLInputElement>('#age-or-birth-year-input');
-      const locInput = document.querySelector<HTMLInputElement>('#location-input');
-      const feedbackEl = document.querySelector<HTMLParagraphElement>('#locate-feedback');
-      if (ageInput) ageInput.value = preservedAgeOrBirthYear;
-      if (!detected) {
-        if (locInput) locInput.value = preservedLocation;
-        if (feedbackEl) feedbackEl.textContent = t(lang, 'locateFailed');
-        return;
-      }
-
-      if (locInput) locInput.value = detected;
-      if (feedbackEl) feedbackEl.textContent = `${t(lang, 'locateSuccess')} (${countryLabel(lang, detected)})`;
-    } finally {
-      const btn = document.querySelector<HTMLButtonElement>('#locate-btn');
-      if (btn) btn.disabled = false;
-    }
+    ageOrBirthYearInput.value = ageOrBirthYearInput.value.replace(/[^\dA-Za-zÀ-ÿ/\-\s,]/g, '');
   });
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     errorNode.textContent = '';
-    locateFeedback.textContent = '';
-
-    const selectedLang = detectLanguage();
-    const selectedCountryFallback = country;
+    const selectedLang = PUBLIC_LANG;
     const rawInput = ageOrBirthYearInput.value.trim();
-    const locationRaw = locationInput.value.trim();
 
     if (!rawInput) {
       errorNode.textContent = t(selectedLang, 'inputError');
       return;
     }
 
-    let mirrorYear: number;
-    const isBirthYear = /^\d{4}$/.test(rawInput);
-
-    if (isBirthYear) {
-      const birthYear = Number(rawInput);
-      if (!Number.isInteger(birthYear) || birthYear < 1900 || birthYear > CURRENT_YEAR) {
-        errorNode.textContent = t(selectedLang, 'yearError');
-        return;
-      }
-
-      mirrorYear = computeMirrorYearFromBirthYear(birthYear);
-    } else {
-      const age = Number(rawInput);
-      if (!Number.isInteger(age) || age < 1 || age > 120) {
-        errorNode.textContent = t(selectedLang, 'yearError');
-        return;
-      }
-
-      const birthYear = CURRENT_YEAR - age;
-      mirrorYear = computeMirrorYearFromBirthYear(birthYear);
+    const birthYear = parseBirthYearInput(rawInput, selectedLang);
+    if (!birthYear) {
+      errorNode.textContent = t(selectedLang, 'yearError');
+      return;
     }
+
+    const mirrorYear = computeMirrorYearFromBirthYear(birthYear);
 
     if (!Number.isInteger(mirrorYear) || mirrorYear < 1 || mirrorYear > CURRENT_YEAR) {
       errorNode.textContent = t(selectedLang, 'yearError');
       return;
     }
 
-    if (locationRaw) {
-      const parsed = parseCountryInput(locationRaw, selectedLang);
-      if (!parsed) {
-        errorNode.textContent = t(selectedLang, 'locationError');
-        return;
-      }
-
-      submitButton.disabled = true;
-      submitButton.textContent = t(selectedLang, 'ctaLoading');
-      prefetchFirstSlot(mirrorYear, selectedLang, parsed);
-      startTransition(() => {
-        session = null;
-        revealOnNextResult = true;
-        updateUrl({ year: mirrorYear, country: parsed });
-        render();
-      });
-      return;
-    }
-
     submitButton.disabled = true;
     submitButton.textContent = t(selectedLang, 'ctaLoading');
-    prefetchFirstSlot(mirrorYear, selectedLang, selectedCountryFallback);
+    prefetchFirstSlot(mirrorYear, selectedLang, PUBLIC_COUNTRY);
     startTransition(() => {
       session = null;
       revealOnNextResult = true;
-      updateUrl({ year: mirrorYear, country: selectedCountryFallback });
+      updateUrl({ year: mirrorYear });
       render();
     });
   });
@@ -670,10 +650,7 @@ function renderResult(
   setViewMode('result');
   const storySession = ensureSession(mirrorYear, lang, country);
   const ageBeforeBirth = computeAgeBeforeBirth(mirrorYear);
-  const countryLine = countryWithPreposition(lang, country);
-  const yearLine = lang === 'fr'
-    ? `Tu es en ${mirrorYear} ${countryLine}`
-    : `You are in ${mirrorYear} ${countryLine}`;
+  const yearLine = `${t(lang, 'resultYearLine').replace('{year}', String(mirrorYear))} ${PUBLIC_COUNTRY_LINE}`;
   const beforeBirthLine = t(lang, 'resultBeforeBirthLine').replace('{age}', String(ageBeforeBirth));
   document.title = yearLine;
 
@@ -730,7 +707,7 @@ function renderResult(
     });
 
     restartButton?.addEventListener('click', () => {
-      updateUrl({ country });
+      updateUrl({});
       session = null;
       render();
     });
@@ -741,7 +718,35 @@ function renderResult(
   loadSlot(storySession, storySession.currentSlot);
 
   const slotData = storySession.slotCache.get(storySession.currentSlot) ?? null;
+  const isLoading = storySession.loadingSlots.has(storySession.currentSlot);
+  const noScene = !slotData && !isLoading;
   const canShare = storySession.currentSlot >= 3;
+  const storyExhausted = noScene && canShare;
+
+  const storyContent = slotData
+    ? slotData.narrative
+    : isLoading
+      ? t(lang, 'storyWaiting')
+      : storyExhausted
+        ? t(lang, 'storyExhausted')
+        : t(lang, 'storyUnavailable');
+  const sourceLabel = t(lang, 'historicalSource');
+  const sourceEntries = slotData
+    ? (
+      slotData.sources?.length
+        ? slotData.sources
+        : [{ label: sourceLabel, url: slotData.url }]
+    ).filter((entry) => entry.url && entry.url.trim())
+    : [];
+  const primarySource = sourceEntries[0] ?? null;
+  const extraSourcesCount = Math.max(0, sourceEntries.length - 1);
+  const extraSourcesLabel = extraSourcesCount
+    ? t(lang, 'historicalMoreSources').replace('{count}', String(extraSourcesCount))
+    : '';
+  const storyFact =
+    slotData?.fact && normalizeInlineText(slotData.fact) !== normalizeInlineText(storyContent)
+      ? slotData.fact
+      : '';
 
   app.innerHTML = `
     <main class="shell">
@@ -753,16 +758,31 @@ function renderResult(
 
       <section class="card story-card">
         <p class="story-label">${escapeHtml(t(lang, 'storyLabel'))} ${storySession.currentSlot}</p>
-        <p class="story-text">${escapeHtml(slotData?.narrative ?? t(lang, 'storyWaiting'))}</p>
+        <p class="story-text">${escapeHtml(storyContent)}</p>
+
+        ${
+          noScene && !storyExhausted
+            ? `<div class="result-actions-plain" style="margin-top:0.75rem">
+                 <button id="retry-scene-btn" class="ghost" type="button">${escapeHtml(t(lang, 'storyRetry'))}</button>
+               </div>`
+            : ''
+        }
 
         ${
           slotData
             ? `<div class="historical-note">
                  <p class="historical-kicker">${escapeHtml(t(lang, 'historicalInspired'))}</p>
-                 <p class="historical-summary">${escapeHtml(slotData.fact)}</p>
-                 <a class="historical-link" href="${escapeHtml(slotData.url)}" target="_blank" rel="noopener noreferrer">
-                   ${escapeHtml(t(lang, 'historicalSource'))}
-                 </a>
+                 ${storyFact ? `<p class="historical-summary">${escapeHtml(storyFact)}</p>` : ''}
+                 ${
+                   primarySource
+                     ? `<p class="historical-meta">
+                          <a class="historical-link" href="${escapeHtml(primarySource.url)}" target="_blank" rel="noopener noreferrer">
+                            ${escapeHtml(primarySource.label || sourceLabel)}
+                          </a>
+                          ${extraSourcesCount ? `<span class="historical-more">${escapeHtml(extraSourcesLabel)}</span>` : ''}
+                        </p>`
+                     : ''
+                 }
                </div>`
             : ''
         }
@@ -770,7 +790,6 @@ function renderResult(
         ${
           canShare
             ? `<div class="share-call">
-                 <p>${escapeHtml(t(lang, 'sharePrompt'))}</p>
                  <button id="share-btn" class="ghost" type="button">${escapeHtml(t(lang, 'shareAction'))}</button>
                  <p class="feedback" id="share-feedback">${escapeHtml(storySession.shareFeedback)}</p>
                </div>`
@@ -781,7 +800,11 @@ function renderResult(
       <section class="result-actions-plain">
         <div class="buttons">
           <button id="restart" class="cta" type="button">${escapeHtml(t(lang, 'restart'))}</button>
-          <button id="continue" class="ghost" type="button">${escapeHtml(t(lang, 'continue'))}</button>
+          ${
+            storyExhausted
+              ? ''
+              : `<button id="continue" class="ghost" type="button">${escapeHtml(t(lang, 'continue'))}</button>`
+          }
         </div>
       </section>
 
@@ -794,19 +817,43 @@ function renderResult(
   const continueButton = document.querySelector<HTMLButtonElement>('#continue');
   const restartButton = document.querySelector<HTMLButtonElement>('#restart');
   const shareButton = document.querySelector<HTMLButtonElement>('#share-btn');
+  const retrySceneButton = document.querySelector<HTMLButtonElement>('#retry-scene-btn');
+
+  retrySceneButton?.addEventListener('click', () => {
+    if (!storySession.loadingSlots.has(storySession.currentSlot)) {
+      storySession.failedSlots.delete(storySession.currentSlot);
+      loadSlot(storySession, storySession.currentSlot, { force: true });
+      renderResult(storySession.mirrorYear, storySession.lang, storySession.country);
+    }
+  });
 
   continueButton?.addEventListener('click', () => {
     nextAnecdote(storySession);
   });
 
   restartButton?.addEventListener('click', () => {
-    updateUrl({ country });
+    updateUrl({});
     session = null;
     render();
   });
 
   shareButton?.addEventListener('click', async () => {
     const shareText = t(lang, 'shareTextTemplate').replace('{year}', String(storySession.mirrorYear));
+    const slotToShare = storySession.slotCache.get(storySession.currentSlot) ?? null;
+    const entryId = slotToShare?.editorialId ?? slotToShare?.eventQid ?? null;
+
+    // Fire-and-forget — jamais bloquant, jamais affiché
+    if (entryId) {
+      void fetch('/api/share-signal', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          entryId,
+          year: storySession.mirrorYear,
+          country: 'Q142'
+        })
+      }).catch(() => undefined);
+    }
 
     if (navigator.share) {
       try {

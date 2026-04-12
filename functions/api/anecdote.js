@@ -380,7 +380,16 @@ export async function onRequestGet(context) {
     const renderedUrl = sourceFromCard || source.sourceUrl;
 
     if (!isValidNarrative(renderedNarrative) || !renderedFact || !renderedUrl) {
-      return json(502, { error: 'AI scene did not pass minimal narrative checks.' });
+      const fallbackFact = renderedFact || shortFactFromLead(wikiLead, source.title);
+      const fallbackNarrative = renderedNarrative || `${source.title}. ${fallbackFact}`;
+      const fallbackPayload = {
+        slot,
+        narrative: fallbackNarrative,
+        fact: fallbackFact,
+        url: renderedUrl || source.sourceUrl
+      };
+      poolCache.set(cacheKey, fallbackPayload);
+      return json(200, fallbackPayload);
     }
 
     const payload = {

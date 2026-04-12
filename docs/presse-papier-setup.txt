@@ -1,0 +1,13 @@
+# AvantMoi - a copier dans le presse-papier
+
+npm run db:up
+sleep 3
+npm run db:migrate
+
+# Puis dans .dev.vars ajoute : OPENAI_API_KEY=sk-...
+
+npm run cf:dev
+
+# Test :
+curl "http://localhost:8788/api/candidates-ranked?year=1968&country=Q142&lang=fr&limit=5"
+curl "http://localhost:8788/api/scene?year=1968&country=Q142&lang=fr&qid=SEED-FR-1968-CANNES&mode=fast"

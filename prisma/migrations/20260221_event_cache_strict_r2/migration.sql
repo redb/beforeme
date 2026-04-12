@@ -33,8 +33,28 @@ ON "event_cache" ("year", "country_qid", "lang", "event_qid");
 CREATE INDEX IF NOT EXISTS "event_cache_status_updated_at_idx"
 ON "event_cache" ("status", "updated_at");
 
+CREATE INDEX IF NOT EXISTS "event_cache_status_lock_owner_idx"
+ON "event_cache" ("status", "lock_owner");
+
 CREATE INDEX IF NOT EXISTS "event_cache_lock_expires_at_idx"
 ON "event_cache" ("lock_expires_at");
 
 CREATE INDEX IF NOT EXISTS "event_cache_country_qid_year_lang_idx"
 ON "event_cache" ("country_qid", "year", "lang");
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'ready_no_lock'
+      AND conrelid = 'event_cache'::regclass
+  ) THEN
+    ALTER TABLE "event_cache"
+      ADD CONSTRAINT "ready_no_lock"
+      CHECK (
+        "status" <> 'ready'
+        OR ("lock_owner" IS NULL AND "lock_expires_at" IS NULL)
+      );
+  END IF;
+END $$;

@@ -1,0 +1,16 @@
+# AvantMoi – variables pour le dev local Cloudflare (wrangler pages dev)
+# Copier en .dev.vars et remplir. Ne pas committer .dev.vars.
+# Voir README.md section "Variables d environnement".
+
+DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o
+WIKIDATA_ENDPOINT=https://query.wikidata.org/sparql
+
+# Admin /morgao/
+ADMIN_GOOGLE_CLIENT_ID=...apps.googleusercontent.com
+ADMIN_GOOGLE_EMAILS=toi@gmail.com
+ADMIN_SESSION_SECRET=une-cle-longue-et-secrete
+
+# Optionnel si tu utilises Prisma Accelerate
+# PRISMA_ACCELERATE_URL=https://...
