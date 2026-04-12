@@ -16,8 +16,6 @@ export interface AnecdoteSlot {
   afterState?: string;
   sources?: Array<{ label: string; url: string }>;
   date?: string;
-  /** Année « miroir » demandée (champ `year` des JSON API) — utile quand `date` est une année proche (match nearby). */
-  mirrorYear?: number;
   placeName?: string;
   theme?: string;
   gestureRoot?: string;
@@ -53,6 +51,8 @@ function rankWithinFamily(slot: number): number {
 interface StableSceneResponse {
   /** Année de la requête (année miroir), présente sur /api/scene et les scènes éditoriales. */
   year?: number;
+  /** Année réelle de la carte ; doit coïncider avec `year` (premium : pas de nearby côté serveur). */
+  matched_year?: number;
   event_qid?: string;
   gesture_id?: string;
   invention_id?: string;
@@ -193,7 +193,11 @@ function buildNarrativeFromStableScene(params: {
 function looksMechanicalNarrative(value: string): boolean {
   const text = String(value || "").trim();
   if (!text) return false;
-  return /\b(avant|before|apres|après|after),\b/i.test(text) || /\bdevant\b/i.test(text);
+  // « devant l'écran / le poste » est du français courant, pas un gabarit mécanique.
+  const commaAfterBefore =
+    /\b(avant|before|apres|après|after),\b/i.test(text) ||
+    /\bdevant\s+(le\s+)?guichet\b/i.test(text);
+  return commaAfterBefore;
 }
 
 function isLowQualityStableScene(data: {
@@ -227,11 +231,11 @@ function isLowQualityStableScene(data: {
 
 async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
   const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  const timer = globalThis.setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(url, { signal: controller.signal });
   } finally {
-    window.clearTimeout(timer);
+    globalThis.clearTimeout(timer);
   }
 }
 
@@ -253,6 +257,12 @@ function parseBatchCandidates(payload: unknown): BatchCandidate[] {
 function parseStableScene(payload: unknown, slot: number): AnecdoteSlot | null {
   if (!payload || typeof payload !== "object") return null;
   const data = payload as StableSceneResponse;
+  const requestYear = typeof data.year === "number" ? data.year : undefined;
+  const matchedYear = typeof data.matched_year === "number" ? data.matched_year : undefined;
+  if (requestYear !== undefined && matchedYear !== undefined && matchedYear !== requestYear) {
+    console.warn("[avantmoi] editorial_year_mismatch_rejected", { requestYear, matchedYear, slot });
+    return null;
+  }
   const fact = typeof data.fact === "string" ? data.fact.trim() : "";
   const beforeState = typeof data.before_state === "string" ? data.before_state.trim() : "";
   const afterState = typeof data.after_state === "string" ? data.after_state.trim() : "";
@@ -268,7 +278,6 @@ function parseStableScene(payload: unknown, slot: number): AnecdoteSlot | null {
   const theme = typeof data.theme === "string" ? data.theme.trim() : "";
   const gestureRoot = typeof data.gesture_root === "string" ? data.gesture_root.trim() : "";
   const editorialScore = typeof data.editorial_score === "number" ? data.editorial_score : 0;
-  const mirrorYear = typeof data.year === "number" ? data.year : undefined;
   const eventQid = typeof data.event_qid === "string" ? data.event_qid.trim() : "";
   const editorialId =
     (typeof data.gesture_id === "string" && data.gesture_id.trim()) ||
@@ -313,7 +322,6 @@ function parseStableScene(payload: unknown, slot: number): AnecdoteSlot | null {
     afterState: afterState || undefined,
     sources: sources.length ? sources : undefined,
     date: date || undefined,
-    mirrorYear,
     placeName: placeName || undefined,
     theme: theme || undefined,
     gestureRoot: gestureRoot || undefined,
@@ -321,8 +329,7 @@ function parseStableScene(payload: unknown, slot: number): AnecdoteSlot | null {
   };
 }
 
-function slotMatchesYear(slot: Pick<AnecdoteSlot, "date" | "mirrorYear"> | null, targetYear: number): boolean {
-  if (slot && typeof slot.mirrorYear === "number" && slot.mirrorYear === targetYear) return true;
+function slotMatchesYear(slot: Pick<AnecdoteSlot, "date"> | null, targetYear: number): boolean {
   if (!slot?.date) return false;
   return extractYear(slot.date) === targetYear;
 }
@@ -363,7 +370,6 @@ function buildNotableBirthSlot(input: {
     eventQid: input.match.qid,
     sources: [{ label: "Wikipedia", url: input.match.wikipediaUrl }],
     date: input.match.birthDate,
-    mirrorYear: input.year,
     placeName: input.match.name,
     theme: input.match.theme,
     gestureRoot: input.match.gestureRoot,

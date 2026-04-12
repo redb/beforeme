@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { listCulturalEntries } from "../src/content/culturalMoments";
 import { listGestureEntries } from "../src/content/gestures";
 import { listInventionEntries } from "../src/content/inventions";
@@ -95,13 +97,18 @@ function assertRecord(record: EditorialRecord) {
     assert.ok(!pattern.test(record.changeDescription), `${record.kind}:${record.id} generic changeDescription`);
   }
 
-  for (const pattern of FOREIGN_VIEWPOINT_PATTERNS) {
-    assert.ok(!pattern.test(record.sceneText), `${record.kind}:${record.id} foreign-centered scene`);
-    assert.ok(!pattern.test(record.placeName), `${record.kind}:${record.id} foreign-centered place`);
+  // Gestes / culturel : éviter une scène centrée sur un lieu étranger sans ancrage français.
+  // Inventions : une innovation peut naître à l'étranger tout en concernant la France (adoption, équipements) ;
+  // on ne bloque pas Londres, Bell Labs, etc. sur ce type de carte.
+  if (record.kind !== "invention") {
+    for (const pattern of FOREIGN_VIEWPOINT_PATTERNS) {
+      assert.ok(!pattern.test(record.sceneText), `${record.kind}:${record.id} foreign-centered scene`);
+      assert.ok(!pattern.test(record.placeName), `${record.kind}:${record.id} foreign-centered place`);
+    }
   }
 }
 
-function collectRecords(): EditorialRecord[] {
+export function collectEditorialRecordsForScan(): EditorialRecord[] {
   return [
     ...listGestureEntries(COUNTRY_QID, LANG).map((entry) => ({
       kind: "gesture" as const,
@@ -145,8 +152,12 @@ function collectRecords(): EditorialRecord[] {
   ];
 }
 
+export function assertEditorialRecord(record: EditorialRecord): void {
+  assertRecord(record);
+}
+
 function main() {
-  const records = collectRecords();
+  const records = collectEditorialRecordsForScan();
   assert.ok(records.length > 0, "no editorial records found");
   records.forEach(assertRecord);
 
@@ -161,4 +172,10 @@ function main() {
   console.log(JSON.stringify({ ok: true, ...counts, total: records.length }, null, 2));
 }
 
-main();
+const isDirectRun =
+  typeof process.argv[1] === "string" &&
+  path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+
+if (isDirectRun) {
+  main();
+}

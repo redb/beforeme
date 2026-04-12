@@ -20,12 +20,9 @@ async function run() {
   assert.equal(internetPayload.matched_year, 1994);
   assert.equal(internetPayload.match_type, 'exact');
 
-  const nearby = await fetchGesture('https://example.com/api/gesture-scene?year=1911&country=Q142&lang=fr&slot=1');
-  assert.equal(nearby.status, 200);
-  const nearbyPayload = await nearby.json() as { gesture_id: string; matched_year: number; match_type: string };
-  assert.equal(nearbyPayload.gesture_id, 'fr-1910-saint-germain-metro');
-  assert.equal(nearbyPayload.matched_year, 1910);
-  assert.equal(nearbyPayload.match_type, 'nearby');
+  // Premium : pas de carte « année proche » — 1911 n'a pas de geste exact au catalogue → 404
+  const noExactYear = await fetchGesture('https://example.com/api/gesture-scene?year=1911&country=Q142&lang=fr&slot=1');
+  assert.equal(noExactYear.status, 404);
 
   const missing = await fetchGesture('https://example.com/api/gesture-scene?year=1911&country=Q142&lang=fr&slot=99');
   assert.equal(missing.status, 404);

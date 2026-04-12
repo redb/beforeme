@@ -2,6 +2,114 @@ import type { GestureRupture } from "../../../types";
 
 export const FR_GESTURE_BACKFILL_1950_1969: GestureRupture[] = [
   {
+    id: "fr-1951-tele-club-nogentel",
+    countryQid: "Q142",
+    lang: "fr",
+    gestureKey: "regarder-la-television-en-club-experimental",
+    gestureLabel: "regarder la télévision en club expérimental",
+    theme: "loisirs",
+    gestureRoot: "tele_club_collectif",
+    editorialScore: 82,
+    category: "media",
+    direction: "impossible_to_possible",
+    ruptureDate: "1951-03-01",
+    ruptureYear: 1951,
+    datePrecision: "month",
+    placeName: "Nogentel, Aisne",
+    placeType: "site",
+    placeQid: null,
+    triggerLabel: "Création du premier télé-club français",
+    triggerType: "opening",
+    beforeState:
+      "Avant 1951, la télévision reste surtout un poste individuel ou une démonstration ponctuelle, rarement un rendez-vous collectif hors salon.",
+    afterState:
+      "À partir du printemps 1951, un télé-club expérimental regroupe le public pour découvrir l'image animée comme spectacle partagé.",
+    gestureChanged:
+      "Tu peux t'asseoir avec d'autres spectateurs devant un même écran de club au lieu de capter seul chez toi.",
+    materialAnchor: "Écran collectif, chaises alignées et antenne commune",
+    sceneText:
+      "Mars 1951, à Nogentel. Le premier télé-club ouvre : ce n'est plus seulement la famille devant le poste, c'est une salle qui découvre l'image en groupe. La télévision devient un rendez-vous public, presque comme le cinéma du quartier.",
+    fact: "En mars 1951, la France expérimente à Nogentel le premier télé-club, lieu de visionnage collectif de télévision.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/1951_en_France", authority: false },
+      { label: "INA", url: "https://www.ina.fr/", authority: true }
+    ],
+    tags: ["television", "club", "collectif", "aisne"],
+    quality: { strictPlace: true, strictDate: false, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1952-givenchy-premiere-collection",
+    countryQid: "Q142",
+    lang: "fr",
+    gestureKey: "porter-une-pret-a-porter-haute-couture-givenchy",
+    gestureLabel: "porter les premières pièces de la maison Givenchy",
+    theme: "loisirs",
+    gestureRoot: "givenchy_maison",
+    editorialScore: 84,
+    category: "media",
+    direction: "impossible_to_possible",
+    ruptureDate: "1952-02-02",
+    ruptureYear: 1952,
+    datePrecision: "day",
+    placeName: "8 rue Alfred-de-Vigny, Paris",
+    placeType: "site",
+    placeQid: null,
+    triggerLabel: "Première collection du couturier Hubert de Givenchy",
+    triggerType: "opening",
+    beforeState:
+      "Avant février 1952, Hubert de Givenchy n'a pas encore présenté sa propre griffe rue Alfred-de-Vigny.",
+    afterState:
+      "Après le 2 février 1952, la maison Givenchy propose une ligne où la blouse Bettina devient la pièce maîtresse.",
+    gestureChanged:
+      "Tu peux choisir une silhouette signée Givenchy plutôt que seulement les maisons déjà installées depuis des décennies.",
+    materialAnchor: "Blouse Bettina, cintre et étiquette Givenchy",
+    sceneText:
+      "2 février 1952, Paris. Hubert de Givenchy dévoile sa première collection rue Alfred-de-Vigny. La blouse Bettina fait le tour des magazines : une ligne jeune, nette, qui parle à une clientèle qui veut du chic sans lourdeur.",
+    fact: "Le 2 février 1952, Hubert de Givenchy présente sa première collection parisienne, dont la pièce emblématique est la « Blouse Bettina ».",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Hubert_de_Givenchy", authority: false },
+      { label: "1952 en France", url: "https://fr.wikipedia.org/wiki/1952_en_France", authority: false }
+    ],
+    tags: ["mode", "givenchy", "haute-couture", "paris"],
+    quality: { strictPlace: true, strictDate: true, dailyLife: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1953-plan-courant-logement",
+    countryQid: "Q142",
+    lang: "fr",
+    gestureKey: "construire-avec-le-plan-courant",
+    gestureLabel: "construire ou acheter un logement aidé par le Plan Courant",
+    theme: "maison",
+    gestureRoot: "plan_courant_logement",
+    editorialScore: 86,
+    category: "housing",
+    direction: "impossible_to_possible",
+    ruptureDate: "1953-03-27",
+    ruptureYear: 1953,
+    datePrecision: "day",
+    placeName: "Assemblée nationale, Paris",
+    placeType: "institution",
+    placeQid: null,
+    triggerLabel: "Vote du Plan Courant pour la construction de logements économiques",
+    triggerType: "law",
+    beforeState:
+      "Avant mars 1953, la construction de logements économiques manque encore de plans-types, d'aides fiscales et d'épargne-construction coordonnés.",
+    afterState:
+      "Après le vote du Plan Courant, l'État lie loi foncière, financement et modèles normalisés pour accélérer les chantiers.",
+    gestureChanged:
+      "Tu peux t'engager dans un projet de maison avec plans-types et avantages fiscaux plutôt que bricoler seul sans cadre national.",
+    materialAnchor: "Plan de maison type, bon d'épargne-construction et permis de construire",
+    sceneText:
+      "27 mars 1953, à Paris. Le Parlement adopte le Plan Courant : des milliers de logements doivent sortir de terre avec des modèles répétables, des aides et une épargne bonifiée. Pour des familles qui squattent encore des chambres de bonne, le projet sonne comme un toit enfin programmé.",
+    fact: "Le 27 mars 1953, l'Assemblée nationale vote le Plan Courant, qui accélère la construction de logements économiques par plans-types et incitations fiscales.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Plan_Courant", authority: false },
+      { label: "1953 en France", url: "https://fr.wikipedia.org/wiki/1953_en_France", authority: false }
+    ],
+    tags: ["logement", "reconstruction", "plan", "france"],
+    quality: { strictPlace: true, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
     id: "fr-1955-refrigerateur",
     countryQid: "Q142", lang: "fr",
     gestureKey: "conserver-ses-aliments-au-refrigerateur",
@@ -98,6 +206,154 @@ export const FR_GESTURE_BACKFILL_1950_1969: GestureRupture[] = [
     ],
     tags: ["maison", "lessive", "electromenager", "linge"],
     quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1950-smig",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "recevoir-le-salaire-minimum-smig",
+    gestureLabel: "recevoir le salaire minimum garanti (SMIG)",
+    theme: "travail", gestureRoot: "smig_salaire_min",
+    editorialScore: 88,
+    category: "work", direction: "impossible_to_possible",
+    ruptureDate: "1950-02-11", ruptureYear: 1950, datePrecision: "day",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Création du SMIG (Salaire minimum interprofessionnel garanti)",
+    triggerType: "law",
+    beforeState: "Avant février 1950, il n'existe pas de plancher légal de salaire interprofessionnel garanti en France.",
+    afterState: "À partir du 11 février 1950, chaque salarié a droit à un salaire horaire minimum garanti par la loi.",
+    gestureChanged: "Tu peux exiger un minimum légal sur ta feuille de paie, quel que soit ton secteur.",
+    materialAnchor: "Feuille de paie, bulletin de salaire et barème affiché",
+    sceneText: "11 février 1950, France. Le SMIG entre en vigueur : pour la première fois, un plancher de salaire horaire s'impose à tous les employeurs. Recevoir moins devient illégal, et la feuille de paie affiche enfin un seuil garanti.",
+    fact: "Le 11 février 1950, la loi crée le SMIG, salaire minimum interprofessionnel garanti, premier plancher légal de rémunération en France.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Salaire_minimum_interprofessionnel_garanti", authority: false },
+      { label: "Ministère du Travail", url: "https://travail-emploi.gouv.fr/", authority: true }
+    ],
+    tags: ["salaire", "smig", "travail", "droit-social"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1957-sud-aviation",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "voyager-sur-un-avion-concu-par-sud-aviation",
+    gestureLabel: "voyager sur un avion conçu par Sud-Aviation",
+    theme: "transport", gestureRoot: "sud_aviation",
+    editorialScore: 82,
+    category: "transport", direction: "impossible_to_possible",
+    ruptureDate: "1957-01-12", ruptureYear: 1957, datePrecision: "day",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Création de Sud-Aviation par décret",
+    triggerType: "decree",
+    beforeState: "Avant janvier 1957, l'industrie aéronautique française reste divisée entre la SNCASO et la SNCASE.",
+    afterState: "Après le décret du 12 janvier 1957, Sud-Aviation réunit ces deux entités et forme le socle de l'industrie avionnique nationale.",
+    gestureChanged: "Tu peux monter dans un avion de ligne portant l'héritage industriel de Sud-Aviation, futur ancêtre d'Airbus.",
+    materialAnchor: "Cockpit, logo Sud-Aviation et billet de vol intérieur",
+    sceneText: "12 janvier 1957. Le décret crée Sud-Aviation en fusionnant deux constructeurs : une industrie aéronautique française plus solide prend forme. Dans les années suivantes, elle donnera naissance à la Caravelle et, plus loin, à Airbus.",
+    fact: "Le 12 janvier 1957, un décret crée Sud-Aviation par fusion de la SNCASO et de la SNCASE, posant les bases de l'industrie aéronautique française moderne.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Sud_Aviation", authority: false },
+      { label: "1957 en France", url: "https://fr.wikipedia.org/wiki/1957_en_France", authority: false }
+    ],
+    tags: ["aviation", "sud-aviation", "industrie", "aeronautique"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1961-algerie-departements",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "suivre-le-referendum-sur-lautodetermination-en-algerie",
+    gestureLabel: "suivre le référendum sur l'autodétermination en Algérie",
+    theme: "administration", gestureRoot: "algerie_referendum",
+    editorialScore: 84,
+    category: "public_space", direction: "impossible_to_possible",
+    ruptureDate: "1961-01-08", ruptureYear: 1961, datePrecision: "day",
+    placeName: "France et Algérie", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Référendum sur l'autodétermination de l'Algérie",
+    triggerType: "law",
+    beforeState: "Avant janvier 1961, le statut futur de l'Algérie reste ouvert, et les Français n'ont pas encore eu à voter sur la question.",
+    afterState: "Après le 8 janvier 1961, le oui à l'autodétermination ouvre officiellement la voie à l'indépendance algérienne.",
+    gestureChanged: "Tu peux glisser un bulletin dans l'urne pour décider du statut d'un territoire qui fait l'objet d'un conflit depuis 1954.",
+    materialAnchor: "Bulletins de vote, affiche officielle et résultat affiché en mairie",
+    sceneText: "8 janvier 1961, mairie de France. Le référendum se tient : 75 % de oui à l'autodétermination. Le pays vote pour une sortie de crise dont il ne connaît pas encore la forme exacte. L'Algérie et la France basculent ensemble.",
+    fact: "Le 8 janvier 1961, un référendum approuve à 75 % l'autodétermination de l'Algérie, ouvrant la voie aux accords d'Évian.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/R%C3%A9f%C3%A9rendum_fran%C3%A7ais_du_8_janvier_1961", authority: false }
+    ],
+    tags: ["algerie", "referendum", "decolonisation", "vote"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1962-pompidou-premier-ministre",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "voter-aux-elections-legislatives-de-1962",
+    gestureLabel: "voter aux élections législatives après la dissolution de 1962",
+    theme: "administration", gestureRoot: "elections_1962",
+    editorialScore: 82,
+    category: "public_space", direction: "impossible_to_possible",
+    ruptureDate: "1962-11-18", ruptureYear: 1962, datePrecision: "day",
+    placeName: "Bureau de vote, France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Élections législatives après dissolution et vote sur l'élection du Président au suffrage universel",
+    triggerType: "law",
+    beforeState: "Avant novembre 1962, le chef de l'État était élu au suffrage indirect ; les législatives s'inscrivent dans un paysage institutionnel encore incertain.",
+    afterState: "Après les législatives de novembre 1962, le gaullisme sort renforcé avec la majorité et le référendum sur le SUD validé.",
+    gestureChanged: "Tu peux aller aux urnes dans un pays qui vient de valider l'élection directe du Président par les Français.",
+    materialAnchor: "Bulletins de vote, isoloir et résultats du scrutin",
+    sceneText: "18 novembre 1962, bureau de vote. Le second tour des législatives confirme la majorité gaulliste. Un mois après le référendum sur le suffrage universel direct, les Français donnent une chambre qui va dans le même sens. La Ve République change de configuration.",
+    fact: "En novembre 1962, les élections législatives post-dissolution donnent au gaullisme une majorité claire, après le référendum sur l'élection du Président au suffrage universel.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/%C3%89lections_l%C3%A9gislatives_fran%C3%A7aises_de_1962", authority: false }
+    ],
+    tags: ["elections", "gaullisme", "republique", "vote"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1966-securite-sociale-maladie",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "etre-rembourse-par-lassurance-maladie-secu",
+    gestureLabel: "être remboursé par l'Assurance maladie de la Sécurité sociale",
+    theme: "santé", gestureRoot: "assurance_maladie",
+    editorialScore: 86,
+    category: "health", direction: "impossible_to_possible",
+    ruptureDate: "1966-01-01", ruptureYear: 1966, datePrecision: "year",
+    placeName: "Pharmacie et cabinet médical, France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Généralisation de l'Assurance maladie obligatoire pour les salariés du privé",
+    triggerType: "law",
+    beforeState: "Avant 1966, la couverture maladie obligatoire ne s'étend pas encore à l'ensemble des travailleurs salariés du secteur privé.",
+    afterState: "À partir de 1966, l'affiliation à la Sécurité sociale et les remboursements maladie couvrent une plus grande part des salariés.",
+    gestureChanged: "Tu peux déposer une feuille de soins à la Sécu et attendre un remboursement partiel au lieu de tout payer de ta poche.",
+    materialAnchor: "Feuille de soins, carte d'assuré et ordonnance du médecin",
+    sceneText: "1966, cabinet médical. La feuille de soins part à la Sécurité sociale : médicaments et consultations ne sont plus uniquement à ta charge. Pour des millions de salariés du privé, le remboursement cesse d'être un privilège et devient une norme.",
+    fact: "Dans les années 1960, l'Assurance maladie obligatoire est progressivement étendue, notamment aux salariés du secteur privé.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/S%C3%A9curit%C3%A9_sociale_en_France", authority: false },
+      { label: "Ameli", url: "https://www.ameli.fr/", authority: true }
+    ],
+    tags: ["sante", "secu", "remboursement", "maladie"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1954-hiver-abbe-pierre",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "repondre-a-l-appel-de-l-abbe-pierre-contre-le-froid",
+    gestureLabel: "répondre à l'appel de l'abbé Pierre contre le froid",
+    theme: "maison", gestureRoot: "abbe_pierre_appel",
+    editorialScore: 90,
+    category: "family", direction: "impossible_to_possible",
+    ruptureDate: "1954-02-01", ruptureYear: 1954, datePrecision: "day",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Appel de l'abbé Pierre à Radio Luxembourg — hiver 1954",
+    triggerType: "public_rollout",
+    beforeState: "Avant l'hiver 1954, la solidarité envers les sans-abri n'est pas organisée nationalement.",
+    afterState: "Après l'appel de l'abbé Pierre, la France se mobilise massivement et le mouvement Emmaüs prend une dimension nationale.",
+    gestureChanged: "Tu peux donner une couverture, un manteau ou de l'argent en réponse à un appel radio qui a touché toute la France.",
+    materialAnchor: "Couverture de laine, camion de collecte et discours radiophonique",
+    sceneText: "1er février 1954, France. Le thermomètre est à moins quinze. L'abbé Pierre passe à la radio : «Mes amis, au secours.» Le lendemain, les dons arrivent par milliers. La France se mobilise. Emmaüs prend une dimension nationale.",
+    fact: "Le 1er février 1954, l'abbé Pierre lance sur Radio Luxembourg un appel historique contre le froid, déclenchant un élan de solidarité nationale sans précédent.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Appel_de_l%27abb%C3%A9_Pierre_(1954)", authority: false },
+      { label: "Emmaüs France", url: "https://emmaus-france.org/", authority: true }
+    ],
+    tags: ["abbe-pierre", "solidarite", "emmaus", "hiver"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
   },
   {
     id: "fr-1963-code-la-route-permis",

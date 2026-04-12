@@ -2,6 +2,109 @@ import type { CulturalMomentEntry } from "../../../types";
 
 export const FR_CULTURAL_BACKFILL_1950_1969: CulturalMomentEntry[] = [
   {
+    id: "fr-1951-cahiers-du-cinema",
+    countryQid: "Q142",
+    lang: "fr",
+    momentKey: "premier-numero-cahiers-du-cinema",
+    momentLabel: "le premier numéro des Cahiers du cinéma",
+    label: "le premier numéro des Cahiers du cinéma",
+    category: "foundational_event",
+    theme: "loisirs",
+    gestureRoot: "cahiers_cinema",
+    editorialScore: 90,
+    date: "1951-04-01",
+    year: 1951,
+    datePrecision: "day",
+    placeName: "Paris",
+    placeType: "city",
+    placeQid: "Q90",
+    triggerLabel: "Parution du premier numéro des Cahiers du cinéma",
+    beforeState:
+      "Avant avril 1951, la critique de cinéma française n'a pas encore ce journal mensuel qui va imposer une ligne nouvelle.",
+    afterState:
+      "Après le 1er avril 1951, les Cahiers du cinéma offrent un lieu d'écriture où s'invente une critique exigeante et politique du cinéma.",
+    gestureChanged:
+      "On peut citer les Cahiers comme référence quand on parle d'auteur, de plan-séquence et de politique des salles.",
+    materialAnchor: "Revue brochée, la salle obscure et la plume des fondateurs",
+    sceneText:
+      "1er avril 1951, Paris. Le premier numéro des Cahiers du cinéma paraît : André Bazin, Jacques Doniol-Valcroze et leurs compagnons y parlent de cinéma comme d'un art à part entière. La critique française gagne un ton qui fera école dans les salles et les revues spécialisées.",
+    fact: "Le 1er avril 1951 paraît le premier numéro des Cahiers du cinéma, revue qui marque profondément la critique et la théorie cinématographiques.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Les_Cahiers_du_cin%C3%A9ma", authority: false }
+    ],
+    tags: ["cinema", "critique", "cahiers", "bazin"],
+    quality: { strictPlace: true, strictDate: true, dailyLife: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1952-brassens-patachou",
+    countryQid: "Q142",
+    lang: "fr",
+    momentKey: "brassens-debuts-cabaret-patachou",
+    momentLabel: "les débuts de Georges Brassens au cabaret de Patachou",
+    label: "les débuts de Georges Brassens au cabaret de Patachou",
+    category: "public_premiere",
+    theme: "loisirs",
+    gestureRoot: "brassens_patachou",
+    editorialScore: 88,
+    date: "1952-03-08",
+    year: 1952,
+    datePrecision: "day",
+    placeName: "Cabaret de Patachou, Paris",
+    placeType: "institution",
+    placeQid: null,
+    triggerLabel: "Débuts officiels de Georges Brassens sur scène",
+    beforeState:
+      "Avant mars 1952, Georges Brassens n'a pas encore investi le cabaret parisien comme auteur-compositeur reconnu du public.",
+    afterState:
+      "À partir du 8 mars 1952, ses soirées au cabaret de Patachou lancent une voix et des textes qui marqueront la chanson française.",
+    gestureChanged:
+      "Le public peut entendre Brassens dans un cabaret parisien comme passage obligé avant les disques et les tournées.",
+    materialAnchor: "Micro de cabaret, guitare et verre sur la table",
+    sceneText:
+      "8 mars 1952, Paris. Georges Brassens monte sur la scène du cabaret de Patachou : guitare sèche, phrasing libre, textes qui parlent des marges et des petites gens. Une manière de chanter la France qui va s'imposer pour des décennies.",
+    fact: "Le 8 mars 1952 marque les débuts officiels de Georges Brassens au cabaret de Patachou à Paris.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Georges_Brassens", authority: false },
+      { label: "1952 en France", url: "https://fr.wikipedia.org/wiki/1952_en_France", authority: false }
+    ],
+    tags: ["brassens", "chanson", "cabaret", "paris"],
+    quality: { strictPlace: true, strictDate: true, dailyLife: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1953-vacances-monsieur-hulot",
+    countryQid: "Q142",
+    lang: "fr",
+    momentKey: "jacques-tati-vacances-monsieur-hulot",
+    momentLabel: "Les Vacances de Monsieur Hulot de Jacques Tati",
+    label: "Les Vacances de Monsieur Hulot",
+    category: "work_release",
+    theme: "loisirs",
+    gestureRoot: "tati_hulot",
+    editorialScore: 92,
+    date: "1953-02-25",
+    year: 1953,
+    datePrecision: "day",
+    placeName: "Salles françaises",
+    placeType: "country",
+    placeQid: "Q142",
+    triggerLabel: "Sortie des Vacances de Monsieur Hulot",
+    beforeState:
+      "Avant février 1953, Jacques Tati n'a pas encore imposé Monsieur Hulot comme figure comique du quotidien français à l'écran.",
+    afterState:
+      "Après la sortie du film, le personnage de Hulot devient un symbole de la comédie à la française et du rire sans dialogue forcé.",
+    gestureChanged:
+      "Le spectateur retrouve une plage et un hôtel rangés comme un mécanisme où le gag naît du détail et du bruit.",
+    materialAnchor: "Affiche de salle, chapeau Hulot et bruits de portes",
+    sceneText:
+      "25 février 1953, salles françaises. Les Vacances de Monsieur Hulot sortent : plage, hôtel, vacances post-1945, et ce personnage maladroit qui observe plus qu'il ne parle. Le cinéma comique français gagne une silhouette reconnaissable entre deux vagues.",
+    fact: "Le 25 février 1953 sortent Les Vacances de Monsieur Hulot, premier long métrage de Jacques Tati avec le personnage de Hulot.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Les_Vacances_de_Monsieur_Hulot", authority: false }
+    ],
+    tags: ["tati", "hulot", "cinema", "comedie"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: false, sourceCount: 1 }
+  },
+  {
     id: "fr-1953-edith-piaf-hymne-amour",
     countryQid: "Q142", lang: "fr",
     momentKey: "piaf-hymne-a-lamour",
@@ -104,13 +207,13 @@ export const FR_CULTURAL_BACKFILL_1950_1969: CulturalMomentEntry[] = [
     editorialScore: 94,
     date: "1963-10-13", year: 1963, datePrecision: "day",
     placeName: "France", placeType: "country", placeQid: "Q142",
-    triggerLabel: "Concert des Beatles au Palladium — début de la Beatlemania",
-    beforeState: "Avant octobre 1963, les Beatles sont connus en Grande-Bretagne mais pas encore un phénomène mondial.",
-    afterState: "Après octobre 1963, la Beatlemania déferle sur le monde entier et redéfinit la culture pop.",
+    triggerLabel: "Concert des Beatles retransmis — Beatlemania auprès du public français",
+    beforeState: "Avant octobre 1963, les Beatles sont connus outre-Manche mais pas encore un phénomène pour les adolescents français.",
+    afterState: "Après octobre 1963, la Beatlemania déferle en Europe occidentale et redéfinit la culture pop pour toute une génération.",
     gestureChanged: "Tu peux hurler dans une salle de concert parce que les musiciens jouent — quelque chose de nouveau dans la culture.",
     materialAnchor: "Cheveux longs, guitare électrique et foule en délire",
     sceneText: "13 octobre 1963, dans les salons francais. Les images du concert tournent vite, puis les prenoms des Beatles se retrouvent dans les cours de lycee et les kiosques. Pour la jeunesse francaise aussi, la pop cesse d'etre importee en silence et devient un phenomene.",
-    fact: "Le 13 octobre 1963, le concert des Beatles au Palladium de Londres, retransmis en direct, marque le début de la Beatlemania mondiale.",
+    fact: "Le 13 octobre 1963, des images de concert des Beatles diffusées en direct marquent le début de la Beatlemania auprès du public européen, dont les jeunes Français.",
     sources: [
       { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Beatlemania", authority: false }
     ],
@@ -129,7 +232,7 @@ export const FR_CULTURAL_BACKFILL_1950_1969: CulturalMomentEntry[] = [
     placeName: "France", placeType: "country", placeQid: "Q142",
     triggerLabel: "Alunissage d'Apollo 11",
     beforeState: "Avant juillet 1969, l'humanité n'a jamais marché sur un autre astre que la Terre.",
-    afterState: "Après juillet 1969, la Lune a des empreintes humaines et le monde entier l'a vu en direct.",
+    afterState: "Après juillet 1969, la Lune a des empreintes humaines et des millions de téléspectateurs français les ont vues en direct.",
     gestureChanged: "Tu peux te souvenir de l'exacte nuit où l'humanité a posé le pied sur un autre monde.",
     materialAnchor: "Combinaison spatiale, drapeau américain et sol lunaire gris",
     sceneText: "21 juillet 1969, 3h56 du matin, dans les foyers francais encore eveilles. L'image tremble sur le televiseur, mais on distingue un homme descendre l'echelle. Dans les salons, personne ne parle fort: la nuit ou l'on marche sur la Lune devient aussi une nuit francaise.",
@@ -140,5 +243,212 @@ export const FR_CULTURAL_BACKFILL_1950_1969: CulturalMomentEntry[] = [
     ],
     tags: ["lune", "apollo", "armstrong", "espace"],
     quality: { strictPlace: false, strictDate: true, dailyLife: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1965-hallyday-idoles-yeyé",
+    countryQid: "Q142", lang: "fr",
+    momentKey: "aller-a-un-concert-johnny-hallyday-ou-yeyé",
+    momentLabel: "Aller à un concert de Johnny Hallyday ou d'un chanteur yéyé",
+    label: "Le yéyé et Johnny Hallyday (années 1960)",
+    category: "symbolic_moment", theme: "loisirs", gestureRoot: "yeyé_johnny",
+    editorialScore: 86,
+    date: "1965-01-01", year: 1965, datePrecision: "year",
+    placeName: "Salle de spectacle, France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Apogée du mouvement yéyé et de la jeune idole Johnny Hallyday",
+    beforeState: "Avant le début des années 1960, la musique populaire française est dominée par la chanson réaliste et le music-hall.",
+    afterState: "Avec Johnny Hallyday, Sylvie Vartan et les idoles yéyé, la jeunesse française s'empare du rock et crée sa propre culture populaire.",
+    gestureChanged: "Tu peux hurler devant la scène, faire la queue pour un autographe et t'identifier à un chanteur de ton âge.",
+    materialAnchor: "Disque 45 tours, poster de Johnny et billet de concert",
+    sceneText: "1965, salle de concert. Johnny entre en scène. Les filles crient, les garçons imitent sa démarche. Le yéyé n'est pas juste de la musique — c'est la naissance d'une culture jeune française qui ne se reconnaît pas dans les disques de ses parents.",
+    fact: "Dans les années 1960, Johnny Hallyday et les idoles yéyé créent la première culture musicale populaire autonome de la jeunesse française.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Y%C3%A9-y%C3%A9", authority: false }
+    ],
+    tags: ["yeyé", "johnny", "musique", "jeunesse"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1967-bande-dessinee-magazine-pilote",
+    countryQid: "Q142", lang: "fr",
+    momentKey: "lire-pilote-ou-un-magazine-de-bd-en-france",
+    momentLabel: "Lire Pilote — le magazine de bande dessinée de Goscinny et Uderzo",
+    label: "Pilote et Astérix dans les années 1960",
+    category: "work_release", theme: "loisirs", gestureRoot: "pilote_asterix",
+    editorialScore: 86,
+    date: "1967-01-01", year: 1967, datePrecision: "year",
+    placeName: "Kiosques à journaux, France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Apogée du magazine Pilote et d'Astérix dans les années 1960",
+    beforeState: "Avant les années 1960, la bande dessinée franco-belge est surtout diffusée dans des journaux pour enfants comme Spirou ou Tintin.",
+    afterState: "Avec Pilote, Goscinny et Uderzo atteignent un public adulte et imposent Astérix comme premier personnage de BD populaire française.",
+    gestureChanged: "Tu peux acheter Pilote au kiosque et lire une BD que tes parents apprécient autant que toi.",
+    materialAnchor: "Magazine Pilote, affiche d'Astérix et kiosque à journaux",
+    sceneText: "1967, kiosque. Pilote est dans le présentoir. Astérix et les Gaulois — dessinés par Uderzo, écrits par Goscinny — font rire toute la famille. La BD devient une forme littéraire sérieuse en France.",
+    fact: "Dans les années 1960, Pilote et Astérix font de la bande dessinée franco-belge un art populaire apprécié par toutes les générations.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Pilote_(magazine)", authority: false }
+    ],
+    tags: ["bd", "asterix", "pilote", "goscinny"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1956-et-dieu-crea-la-femme-bardot",
+    countryQid: "Q142", lang: "fr",
+    momentKey: "voir-et-dieu-crea-la-femme-bardot",
+    momentLabel: "Voir Et Dieu… créa la femme de Roger Vadim avec Brigitte Bardot",
+    label: "Et Dieu… créa la femme (1956)",
+    category: "work_release", theme: "loisirs", gestureRoot: "bardot_vadim",
+    editorialScore: 86,
+    date: "1956-11-28", year: 1956, datePrecision: "day",
+    placeName: "Cinémas français", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Sortie du film Et Dieu… créa la femme de Roger Vadim",
+    beforeState: "Avant 1956, le cinéma français ne montre pas la sensualité féminine de manière aussi directe et populaire.",
+    afterState: "Après le succès mondial du film, Brigitte Bardot devient une icône internationale et Saint-Tropez un mythe.",
+    gestureChanged: "Tu peux aller au cinéma voir un film où le corps féminin est montré librement — une rupture dans les mœurs de l'époque.",
+    materialAnchor: "Affiche du film, plage de Saint-Tropez et pellicule 35 mm",
+    sceneText: "28 novembre 1956, cinémas de France. Brigitte Bardot danse sur l'écran à Saint-Tropez. Le film choque, séduit, fascine. En quelques semaines, BB devient une icône planétaire et Saint-Tropez un symbole de la liberté des corps.",
+    fact: "Le 28 novembre 1956, Et Dieu… créa la femme de Roger Vadim sort en France et propulse Brigitte Bardot au rang de sex-symbol international.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Et_Dieu..._cr%C3%A9a_la_femme", authority: false }
+    ],
+    tags: ["cinema", "bardot", "saint-tropez", "culture-pop"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1957-traite-rome-culture",
+    countryQid: "Q142", lang: "fr",
+    momentKey: "signer-le-traite-de-rome",
+    momentLabel: "Signature du traité de Rome et naissance de la CEE",
+    label: "Traité de Rome (1957)",
+    category: "foundational_event", theme: "administration", gestureRoot: "traite_rome_cee",
+    editorialScore: 88,
+    date: "1957-03-25", year: 1957, datePrecision: "day",
+    placeName: "Rome, Italie (ratifié en France)", placeType: "institution", placeQid: null,
+    triggerLabel: "Signature du traité de Rome instituant la CEE",
+    beforeState: "Avant mars 1957, la coopération européenne se limite au secteur du charbon et de l'acier (CECA).",
+    afterState: "Après le 25 mars 1957, la CEE ouvre la voie à un marché commun européen plus large entrant en vigueur en 1958.",
+    gestureChanged: "Tu peux lire dans tes journaux que la France vient de s'engager dans une construction européenne bien plus large que le charbon.",
+    materialAnchor: "Traité imprimé, drapeaux européens et salle de signature",
+    sceneText: "25 mars 1957, Rome. Six pays signent le traité. La France s'engage avec l'Italie, l'Allemagne, la Belgique, les Pays-Bas et le Luxembourg dans une Communauté économique européenne. Une étape décisive de la construction d'un marché commun.",
+    fact: "Le 25 mars 1957, le traité de Rome institue la Communauté économique européenne (CEE), signée par six pays dont la France.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Trait%C3%A9_de_Rome_(1957)", authority: false }
+    ],
+    tags: ["europe", "cee", "traite-de-rome", "marche-commun"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1958-saint-laurent-collection-trapeze",
+    countryQid: "Q142", lang: "fr",
+    momentKey: "voir-la-premiere-collection-yves-saint-laurent-chez-dior",
+    momentLabel: "Voir la première collection d'Yves Saint Laurent chez Dior",
+    label: "Yves Saint Laurent chez Dior — ligne Trapèze (1958)",
+    category: "work_release", theme: "loisirs", gestureRoot: "saint_laurent_dior",
+    editorialScore: 86,
+    date: "1958-01-30", year: 1958, datePrecision: "day",
+    placeName: "Maison Dior, Avenue Montaigne, Paris", placeType: "site", placeQid: null,
+    triggerLabel: "Présentation de la ligne Trapèze d'Yves Saint Laurent chez Dior",
+    beforeState: "Avant janvier 1958, Yves Saint Laurent est un inconnu de 21 ans qui prend la direction de Dior après la mort de Christian Dior.",
+    afterState: "Après la présentation de la ligne Trapèze, Saint Laurent est salué comme génie de la mode et sauveur de la maison.",
+    gestureChanged: "Tu peux voir dans les journaux les photos d'une nouvelle silhouette signée par un jeune prodige qui vient de ressusciter Dior.",
+    materialAnchor: "Robe Trapèze, Avenue Montaigne et presse mode",
+    sceneText: "30 janvier 1958, Avenue Montaigne. Yves Saint Laurent présente 178 modèles et la ligne Trapèze. La presse mondiale crie au génie. À 21 ans, il a sauvé la maison Dior et s'est imposé comme le successeur légitime du New Look.",
+    fact: "Le 30 janvier 1958, Yves Saint Laurent présente sa première collection chez Dior — la ligne Trapèze — et s'impose immédiatement comme un maître de la mode française.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Yves_Saint_Laurent_(couturier)", authority: false }
+    ],
+    tags: ["mode", "saint-laurent", "dior", "paris"],
+    quality: { strictPlace: true, strictDate: true, dailyLife: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1961-paris-cinema-nouvelle-vague",
+    countryQid: "Q142", lang: "fr",
+    momentKey: "aller-au-cinema-voir-la-nouvelle-vague",
+    momentLabel: "Aller au cinéma voir la Nouvelle Vague — Jules et Jim de Truffaut",
+    label: "Jules et Jim de Truffaut (1962)",
+    category: "work_release", theme: "loisirs", gestureRoot: "truffaut_jules_jim",
+    editorialScore: 88,
+    date: "1962-01-24", year: 1961, datePrecision: "year",
+    placeName: "Cinémas parisiens", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Sortie de Jules et Jim de François Truffaut (Nouvelle Vague)",
+    beforeState: "Avant 1962, le cinéma français reste dominé par les grandes productions du cinéma de papa.",
+    afterState: "Avec Jules et Jim, Truffaut confirme que la Nouvelle Vague renouvelle en profondeur le langage cinématographique français.",
+    gestureChanged: "Tu peux aller au cinéma voir un film tourné à la caméra légère, en dehors des studios, avec une liberté de récit inédite.",
+    materialAnchor: "Affiche du film, caméra légère et ticket de cinéma",
+    sceneText: "1962, cinéma de quartier. Jules et Jim commence. La caméra suit les personnages au pas de course, en extérieur. Le montage brise les règles. Truffaut invente une façon de raconter — et le public le suit.",
+    fact: "Jules et Jim de François Truffaut (1962) est l'un des films emblématiques de la Nouvelle Vague, révolutionnant le langage cinématographique français.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Jules_et_Jim", authority: false }
+    ],
+    tags: ["cinema", "truffaut", "nouvelle-vague", "film"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1962-premier-album-gainsbourg",
+    countryQid: "Q142", lang: "fr",
+    momentKey: "entendre-gainsbourg-la-javanaise-a-la-radio",
+    momentLabel: "Entendre Gainsbourg — La Javanaise à la radio",
+    label: "La Javanaise de Gainsbourg (1963)",
+    category: "work_release", theme: "loisirs", gestureRoot: "gainsbourg_javanaise",
+    editorialScore: 84,
+    date: "1963-05-01", year: 1962, datePrecision: "year",
+    placeName: "Radios françaises", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Serge Gainsbourg s'impose sur les ondes avec ses compositions",
+    beforeState: "Avant 1962-1963, Gainsbourg est un musicien reconnu des milieux du cabaret mais peu diffusé en radio.",
+    afterState: "Avec La Javanaise écrite pour Juliette Gréco, il acquiert une reconnaissance nationale comme auteur-compositeur de premier plan.",
+    gestureChanged: "Tu peux allumer la radio et entendre une chanson française qui allie intelligence du texte et mélodie douce — signée Gainsbourg.",
+    materialAnchor: "Poste de radio, disque 45 tours et pochette en noir et blanc",
+    sceneText: "1963, radio. La Javanaise passe. La mélodie est douce, le texte élégant et ambigu. Gainsbourg n'est plus un secret de connaisseurs — il devient une voix nationale de la chanson française.",
+    fact: "En 1963, La Javanaise, composée par Serge Gainsbourg pour Juliette Gréco, propulse Gainsbourg au rang des grands auteurs-compositeurs français.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/La_Javanaise", authority: false }
+    ],
+    tags: ["gainsbourg", "chanson", "radio", "musique"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1964-museum-art-moderne-ouverture",
+    countryQid: "Q142", lang: "fr",
+    momentKey: "visiter-le-musee-dart-moderne-paris",
+    momentLabel: "Visiter une exposition d'art moderne à Paris dans les années 1960",
+    label: "L'art moderne à Paris dans les années 1960",
+    category: "symbolic_moment", theme: "loisirs", gestureRoot: "art_moderne_paris",
+    editorialScore: 80,
+    date: "1964-06-01", year: 1964, datePrecision: "year",
+    placeName: "Paris", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Bouillonnement culturel parisien des années 1960 — galeries et expositions d'art contemporain",
+    beforeState: "Avant les années 1960, les grands musées et galeries présentent surtout l'art classique ou impressionniste.",
+    afterState: "Dans les années 1960, Paris accueille les mouvements Nouveau Réalisme, Fluxus et Pop Art, s'imposant comme capitale mondiale de l'art contemporain.",
+    gestureChanged: "Tu peux entrer dans une galerie parisienne et voir des œuvres faites de déchets, de toiles déchirées ou de voitures compressées.",
+    materialAnchor: "Catalogue d'exposition, affiche de vernissage et œuvres d'accumulation",
+    sceneText: "1964, galerie parisienne. L'artiste a compressé une voiture — c'est une sculpture. Des boîtes de conserve sont empilées — c'est de l'art. César, Arman, Yves Klein : Paris est le laboratoire mondial de l'art contemporain.",
+    fact: "Dans les années 1960, Paris s'affirme comme capitale de l'art contemporain mondial avec le Nouveau Réalisme (Arman, César, Klein) et l'essor des galeries d'avant-garde.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Nouveau_r%C3%A9alisme", authority: false }
+    ],
+    tags: ["art-contemporain", "paris", "nouveau-realisme", "culture"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1966-deuxieme-sexe-feminisme",
+    countryQid: "Q142", lang: "fr",
+    momentKey: "lire-simone-de-beauvoir-et-debattre-de-feminisme",
+    momentLabel: "Lire Simone de Beauvoir et débattre du féminisme",
+    label: "Le féminisme et Simone de Beauvoir dans les années 1960",
+    category: "symbolic_moment", theme: "loisirs", gestureRoot: "beauvoir_feminisme",
+    editorialScore: 82,
+    date: "1966-06-01", year: 1966, datePrecision: "year",
+    placeName: "Cafés et universités, France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Diffusion des idées féministes en France — Simone de Beauvoir en figure centrale",
+    beforeState: "Avant le milieu des années 1960, les questions d'égalité hommes-femmes sont peu débattues dans l'espace public français.",
+    afterState: "Dans la seconde moitié des années 1960, le féminisme gagne les universités, les cafés et la presse française.",
+    gestureChanged: "Tu peux participer à un débat sur l'égalité femmes-hommes dans un café ou une faculté, influencé par les écrits de Beauvoir.",
+    materialAnchor: "Exemplaire du Deuxième Sexe, carnet de notes et café de Saint-Germain",
+    sceneText: "Années 1960, café de Saint-Germain. Le Deuxième Sexe circule de table en table. La phrase de Simone de Beauvoir — on ne naît pas femme, on le devient — entre dans les conversations. Le féminisme cesse d'être une curiosité pour devenir un mouvement.",
+    fact: "Dans les années 1960, Le Deuxième Sexe de Simone de Beauvoir (1949) trouve un second souffle et nourrit l'émergence du féminisme en France.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Le_Deuxi%C3%A8me_Sexe", authority: false }
+    ],
+    tags: ["feminisme", "beauvoir", "philosophie", "femmes"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: false, sourceCount: 1 }
   },
 ];

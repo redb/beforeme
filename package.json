@@ -1,7 +1,7 @@
 {
   "name": "beforeme",
   "private": true,
-  "version": "0.17.164",
+  "version": "0.17.166",
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/bump-version.mjs",
@@ -31,6 +31,9 @@
     "test:gesture-scene": "npx tsx scripts/smoke_gesture_scene.ts",
     "test:story-cycle": "npx tsx scripts/smoke_story_cycle.ts",
     "test:editorial-fr": "npx tsx scripts/smoke_editorial_fr_catalog.ts",
+    "editorial:scan": "npx tsx scripts/editorial/scan_every_record.ts",
+    "editorial:gap-report": "npx tsx scripts/editorial/catalog_gap_report.ts",
+    "editorial:gap-report:ci": "npx tsx scripts/editorial/catalog_gap_report.ts --fail-if-any-gap",
     "audit:cards-per-year": "npx tsx scripts/count_cards_per_year.mjs"
   },
   "devDependencies": {

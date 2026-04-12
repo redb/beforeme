@@ -230,7 +230,7 @@ export async function onRequestGet(context: { request: Request; env?: ShareEnv }
       rankedLength,
       reason:
         rankedLength === 0
-          ? "no_exact_or_nearby_gesture"
+          ? "no_exact_year_gesture"
           : slot > rankedLength
             ? "slot_out_of_range"
             : "slot_filtered_or_empty"

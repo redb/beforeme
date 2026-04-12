@@ -2,6 +2,110 @@ import type { InventionEntry } from "../../../types";
 
 export const FR_INVENTION_BACKFILL_1950_1969: InventionEntry[] = [
   {
+    id: "fr-1951-traite-paris-ceca",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "echanger-charbon-et-acier-dans-le-marche-ceca",
+    itemLabel: "échanger charbon et acier dans le marché communautaire CECA",
+    theme: "travail",
+    gestureRoot: "ceca_marche_commun",
+    editorialScore: 88,
+    objectType: "service",
+    category: "service",
+    releaseDate: "1951-04-18",
+    releaseYear: 1951,
+    datePrecision: "day",
+    placeName: "Hôtel de Matignon, Paris",
+    placeType: "institution",
+    placeQid: null,
+    triggerLabel: "Signature du traité de Paris instituant la CECA",
+    beforeState:
+      "Avant avril 1951, le charbon et l'acier circulent encore surtout derrière des frontières nationales et des quotas bilatéraux.",
+    afterState:
+      "Après le traité du 18 avril 1951, six pays posent les bases d'un marché commun du charbon et de l'acier.",
+    objectChanged:
+      "Les industriels peuvent en principe s'appuyer sur des règles communes pour échanger acier et coke au sein de la Communauté.",
+    materialAnchor: "Traités paraphés, tonnes d'acier et carnet de commandes",
+    sceneText:
+      "18 avril 1951, à Paris. Les ministres paraphent le traité qui invente la CECA : pour la sidérurgie et les mines, l'Europe commence par le charbon et l'acier. Les usines françaises voient poindre un cadre commun avec leurs voisins.",
+    fact: "Le 18 avril 1951, le traité de Paris crée la Communauté européenne du charbon et de l'acier (CECA) entre six pays, dont la France.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Trait%C3%A9_de_Paris_(1951)", authority: false },
+      { label: "CVCE", url: "https://www.cvce.eu/", authority: true }
+    ],
+    tags: ["europe", "ceca", "acier", "charbon"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1952-ceca-entree-en-vigueur",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "produire-selon-les-regles-ceca",
+    itemLabel: "produire selon les règles communes de la CECA",
+    theme: "travail",
+    gestureRoot: "ceca_vigueur",
+    editorialScore: 86,
+    objectType: "service",
+    category: "service",
+    releaseDate: "1952-07-23",
+    releaseYear: 1952,
+    datePrecision: "day",
+    placeName: "France",
+    placeType: "country",
+    placeQid: "Q142",
+    triggerLabel: "Entrée en vigueur du traité CECA",
+    beforeState:
+      "Avant juillet 1952, le traité de Paris reste signé mais les règles du marché commun du charbon et de l'acier ne sont pas encore pleinement applicables.",
+    afterState:
+      "Après le 23 juillet 1952, la CECA devient opérationnelle : autorité supranationale et règles de concurrence entrent en vigueur.",
+    objectChanged:
+      "Les entreprises sidérurgiques françaises voient leurs échanges encadrés par un droit communautaire naissant.",
+    materialAnchor: "Hauts fourneaux, quotas communautaires et timbres douaniers",
+    sceneText:
+      "23 juillet 1952. Le traité CECA entre en vigueur : pour les sidérurgistes français, les tonnes d'acier et de coke se négocient désormais avec une Haute Autorité au-dessus des seuls arbitrages nationaux. L'Europe industrielle prend une date d'anniversaire.",
+    fact: "Le 23 juillet 1952, le traité instituant la CECA entre en vigueur, ouvrant le marché commun du charbon et de l'acier.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Communaut%C3%A9_europ%C3%A9enne_du_charbon_et_de_l%27acier", authority: false }
+    ],
+    tags: ["ceca", "europe", "industrie", "traite"],
+    quality: { strictPlace: false, strictDate: true, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1953-livre-de-poche",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "acheter-un-livre-de-poche-en-librairie",
+    itemLabel: "acheter un livre de poche bon marché en librairie",
+    theme: "loisirs",
+    gestureRoot: "livre_de_poche",
+    editorialScore: 84,
+    objectType: "media",
+    category: "media",
+    releaseDate: "1953-02-09",
+    releaseYear: 1953,
+    datePrecision: "day",
+    placeName: "Librairie, Paris",
+    placeType: "institution",
+    placeQid: null,
+    triggerLabel: "Lancement de la collection Livre de poche",
+    beforeState:
+      "Avant 1953, emporter un roman en poche bon marché reste l'exception : les formats brochés chers dominent encore les étals.",
+    afterState:
+      "À partir du 9 février 1953, la collection Livre de poche démocratise l'accès au roman imprimé au format poche.",
+    objectChanged:
+      "Le lecteur peut glisser un classique dans la poche pour le prix d'un magazine plutôt que d'un volume cartonné.",
+    materialAnchor: "Premier titre Kœnigsmark, couverture souple et prix affiché",
+    sceneText:
+      "9 février 1953, en librairie. Le premier Livre de poche sort avec Kœnigsmark de Pierre Benoit : un format léger, une couverture souple, un prix qui change la lecture dans les trains et les salles d'attente.",
+    fact: "Le 9 février 1953 paraît le premier volume de la collection Livre de poche, qui démocratise l'édition française en format poche.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Livre_de_poche", authority: false },
+      { label: "1953 en France", url: "https://fr.wikipedia.org/wiki/1953_en_France", authority: false }
+    ],
+    tags: ["livre", "poche", "edition", "lecture"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: true, sourceCount: 2 }
+  },
+  {
     id: "fr-1954-vaccin-polio",
     countryQid: "Q142", lang: "fr",
     itemKey: "se-faire-vacciner-contre-la-polio",
@@ -23,6 +127,44 @@ export const FR_INVENTION_BACKFILL_1950_1969: InventionEntry[] = [
     ],
     tags: ["vaccin", "polio", "sante", "enfants"],
     quality: { strictPlace: false, strictDate: true, everydayUse: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1956-renault-dauphine",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "conduire-une-renault-dauphine",
+    itemLabel: "conduire une Renault Dauphine",
+    theme: "transport",
+    gestureRoot: "renault_dauphine",
+    editorialScore: 88,
+    objectType: "device",
+    category: "transport",
+    releaseDate: "1956-03-06",
+    releaseYear: 1956,
+    datePrecision: "day",
+    placeName: "Palais de Chaillot, Paris",
+    placeType: "site",
+    placeQid: null,
+    triggerLabel: "Présentation publique de la Renault Dauphine",
+    beforeState:
+      "Avant 1956, la petite Renault familiale reste la 4CV, seule petite berline à moteur arrière du catalogue à grande série.",
+    afterState:
+      "À partir du printemps 1956, la Dauphine remplace progressivement la 4CV et incarne une voiture française exportée massivement.",
+    objectChanged:
+      "Tu peux choisir une berline compacte à moteur arrière pensée pour motoriser les familles à grande série.",
+    materialAnchor: "Clés de Dauphine, ligne de toit et sellerie d'origine",
+    sceneText:
+      "6 mars 1956, au Palais de Chaillot à Paris. La foule découvre la Renault Dauphine devant des milliers de personnes, et le même jour les concessionnaires exposent le modèle dans leurs halls. La 4CV a une successeure nommée, fabriquée à Flins, qui va s'imposer sur les routes françaises et à l'export.",
+    fact: "En mars 1956, Renault présente la Dauphine au public au Palais de Chaillot à Paris ; elle devient l'une des automobiles françaises les plus diffusées de son époque.",
+    sources: [
+      {
+        label: "Wikipedia",
+        url: "https://fr.wikipedia.org/wiki/Renault_Dauphine",
+        authority: false
+      }
+    ],
+    tags: ["automobile", "renault", "dauphine", "france"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: true, sourceCount: 1 }
   },
   {
     id: "fr-1957-spoutnik-satellite",
@@ -93,5 +235,285 @@ export const FR_INVENTION_BACKFILL_1950_1969: InventionEntry[] = [
     ],
     tags: ["ordinateur", "informatique", "entreprise", "bull"],
     quality: { strictPlace: true, strictDate: false, everydayUse: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1950-eniac-france-premiers-calculateurs",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "utiliser-un-calculateur-electronique-en-france",
+    itemLabel: "utiliser un calculateur électronique en France",
+    theme: "science", gestureRoot: "calculateur_electronique",
+    editorialScore: 80,
+    objectType: "device", category: "device",
+    releaseDate: "1950-01-01", releaseYear: 1950, datePrecision: "year",
+    placeName: "Laboratoires scientifiques, France", placeType: "institution", placeQid: null,
+    triggerLabel: "Installation des premiers calculateurs électroniques dans les laboratoires français",
+    beforeState: "Avant 1950, le calcul scientifique repose sur des tables, des règles à calcul et des machines mécaniques.",
+    afterState: "Dans les années 1950, des calculateurs électroniques arrivent dans quelques grands centres de recherche français.",
+    objectChanged: "Les chercheurs peuvent confier des calculs complexes à une machine électronique plutôt que de les effectuer à la main.",
+    materialAnchor: "Armoire de tubes, câbles et rouleaux de ruban perforé",
+    sceneText: "1950, laboratoire de recherche. Les armoires bourdonnent. Des tubes électroniques traitent des calculs qui prendraient des semaines à la main. Les premiers calculateurs arrivent en France — l'ère de l'informatique scientifique commence discrètement.",
+    fact: "Dans les années 1950, la France voit arriver ses premiers calculateurs électroniques dans les institutions scientifiques, amorçant la transition numérique.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Histoire_de_l%27informatique_en_France", authority: false }
+    ],
+    tags: ["calculateur", "science", "informatique", "laboratoire"],
+    quality: { strictPlace: false, strictDate: false, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1955-ds-citroen",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "voir-la-citroen-ds-au-salon-de-lautomobile",
+    itemLabel: "voir la Citroën DS au Salon de l'automobile de Paris",
+    theme: "transport", gestureRoot: "citroen_ds",
+    editorialScore: 92,
+    objectType: "vehicle", category: "transport",
+    releaseDate: "1955-10-05", releaseYear: 1955, datePrecision: "day",
+    placeName: "Salon de l'automobile de Paris", placeType: "site", placeQid: null,
+    triggerLabel: "Présentation de la Citroën DS au Salon de l'auto",
+    beforeState: "Avant octobre 1955, les automobiles françaises restent ancrées dans des formes conventionnelles.",
+    afterState: "Après le 5 octobre 1955, la DS révèle une carrosserie futuriste et une suspension hydraulique inédite.",
+    objectChanged: "Tu peux voir une voiture qui ressemble à un vaisseau spatial sur le stand Citroën — et la rouler bientôt.",
+    materialAnchor: "Carrosserie fuselée, suspension hydropneumatique et stand salon",
+    sceneText: "5 octobre 1955, Salon de l'automobile, Paris. Les visiteurs s'amassent autour du stand Citroën. La voiture ressemble à un vaisseau : carrosserie profilée, pas d'arêtes, une suspension qui lève et baisse le nez. En quelques heures, 12 000 commandes. La DS est une sensation mondiale.",
+    fact: "Le 5 octobre 1955, Citroën présente la DS au Salon de l'automobile de Paris : 12 000 commandes le premier jour, une révolution de design et de technique.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Citro%C3%ABn_DS", authority: false },
+      { label: "INA", url: "https://www.ina.fr/ina-eclaire-actu/la-citroen-ds-1955", authority: true }
+    ],
+    tags: ["citroen", "ds", "automobile", "design"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1957-caravelle-maiden-flight",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "voler-sur-la-caravelle-premier-avion-a-reaction-civil-francais",
+    itemLabel: "voler sur la Caravelle, premier avion à réaction commercial français",
+    theme: "transport", gestureRoot: "caravelle_avion",
+    editorialScore: 88,
+    objectType: "vehicle", category: "transport",
+    releaseDate: "1955-05-27", releaseYear: 1957, datePrecision: "year",
+    placeName: "Aéroport de Toulouse-Blagnac", placeType: "site", placeQid: null,
+    triggerLabel: "Entrée en service commercial de la Caravelle (Sud-Aviation)",
+    beforeState: "Avant 1959, les lignes aériennes françaises utilisent des avions à hélices.",
+    afterState: "À partir de 1959, la Caravelle introduit le vol à réaction sur les lignes court-moyen courriers français.",
+    objectChanged: "Tu peux embarquer dans un avion à réaction fabriqué en France pour un vol court-courrier.",
+    materialAnchor: "Hublot, moteur à réaction et billet Air France",
+    sceneText: "1959, aéroport d'Orly. Les réacteurs sifflent. La Caravelle, conçue à Toulouse, commence ses vols commerciaux. Produit entièrement français, elle modernise les liaisons moyen-courriers et bâtit la réputation de l'aviation nationale.",
+    fact: "Conçue par Sud-Aviation, la Caravelle entre en service commercial en 1959 — premier avion à réaction commercial produit en France.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Sud_Aviation_SE_210_Caravelle", authority: false }
+    ],
+    tags: ["caravelle", "avion", "reaction", "aeronautique"],
+    quality: { strictPlace: false, strictDate: false, everydayUse: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1958-ve-republique",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "voter-sous-la-ve-republique",
+    itemLabel: "voter sous les institutions de la Ve République",
+    theme: "administration", gestureRoot: "cinquieme_republique",
+    editorialScore: 92,
+    objectType: "service", category: "service",
+    releaseDate: "1958-10-04", releaseYear: 1958, datePrecision: "day",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Entrée en vigueur de la Constitution de la Ve République",
+    beforeState: "Avant le 4 octobre 1958, la France est régie par la Constitution de 1946 (IVe République), marquée par l'instabilité gouvernementale.",
+    afterState: "Après le 4 octobre 1958, les institutions renforcent l'exécutif : le Président dispose de pouvoirs étendus.",
+    objectChanged: "Tu vis et votes dans un cadre institutionnel qui dure depuis 1958 — la République la plus stable de l'histoire française.",
+    materialAnchor: "Constitution imprimée, Palais de l'Élysée et bulletin de vote",
+    sceneText: "4 octobre 1958. La Constitution de la Ve République entre en vigueur. De Gaulle a refait les règles du jeu politique : un président fort, un parlement encadré. Ce texte gouverne la France depuis plus de soixante ans.",
+    fact: "Le 4 octobre 1958, la Constitution de la Ve République entre en vigueur, refondant les institutions françaises autour d'un exécutif renforcé.",
+    sources: [
+      { label: "Légifrance", url: "https://www.legifrance.gouv.fr/contenu/constitution-du-4-octobre-1958", authority: true },
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Constitution_de_la_Ve_R%C3%A9publique_fran%C3%A7aise", authority: false }
+    ],
+    tags: ["constitution", "republique", "de-gaulle", "institutions"],
+    quality: { strictPlace: false, strictDate: true, everydayUse: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1959-plan-calcul-debut",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "voir-lamelioration-de-linformation-statistique-en-france",
+    itemLabel: "bénéficier des statistiques de l'INSEE et de l'informatique publique",
+    theme: "science", gestureRoot: "insee_statistiques",
+    editorialScore: 78,
+    objectType: "service", category: "service",
+    releaseDate: "1959-01-01", releaseYear: 1959, datePrecision: "year",
+    placeName: "INSEE, France", placeType: "institution", placeQid: null,
+    triggerLabel: "Modernisation du traitement statistique à l'INSEE",
+    beforeState: "Avant 1959, les statistiques officielles françaises sont produites manuellement ou avec des mécaniques rudimentaires.",
+    afterState: "À partir de la fin des années 1950, l'INSEE modernise ses traitements et utilise les premiers ordinateurs pour les recensements.",
+    objectChanged: "Les données économiques et démographiques du pays sont calculées plus vite et plus précisément.",
+    materialAnchor: "Cartes perforées, machine à calculer et tableaux statistiques",
+    sceneText: "1959, INSEE. Les premières cartes perforées entrent dans les lecteurs. Les recensements et les statistiques nationales quittent les tables de calcul manuelles. La France commence à compter ses citoyens à la vitesse d'un ordinateur.",
+    fact: "Dans les années 1950-1960, l'INSEE modernise son traitement statistique en adoptant les premières machines à cartes perforées puis les ordinateurs.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Institut_national_de_la_statistique_et_des_%C3%A9tudes_%C3%A9conomiques", authority: false }
+    ],
+    tags: ["insee", "statistique", "informatique", "etat"],
+    quality: { strictPlace: false, strictDate: false, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1960-ariane-bombe-A",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "vivre-dans-un-pays-qui-a-la-bombe-atomique",
+    itemLabel: "vivre dans un pays qui dispose de la bombe atomique",
+    theme: "science", gestureRoot: "bombe_atomique_france",
+    editorialScore: 88,
+    objectType: "device", category: "device",
+    releaseDate: "1960-02-13", releaseYear: 1960, datePrecision: "day",
+    placeName: "Reggane, Sahara algérien", placeType: "site", placeQid: null,
+    triggerLabel: "Premier essai nucléaire français à Reggane (opération Gerboise Bleue)",
+    beforeState: "Avant le 13 février 1960, seuls les États-Unis, l'URSS et le Royaume-Uni disposent d'une capacité nucléaire.",
+    afterState: "Après Gerboise Bleue, la France devient la quatrième puissance nucléaire mondiale.",
+    objectChanged: "La France entre dans le club des puissances atomiques — sa politique étrangère et sa défense changent de nature.",
+    materialAnchor: "Tour de tir, nuage champignon et rapport militaire classifié",
+    sceneText: "13 février 1960, Reggane, Sahara. La première bombe atomique française explose. La France entre dans le club nucléaire. De Gaulle peut désormais dire non aux deux grands — la dissuasion devient le socle de la défense nationale.",
+    fact: "Le 13 février 1960, la France fait exploser sa première bombe atomique à Reggane, dans le Sahara, devenant la quatrième puissance nucléaire.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Gerboise_bleue", authority: false },
+      { label: "CEA", url: "https://www.cea.fr/", authority: true }
+    ],
+    tags: ["nucleaire", "bombe", "defense", "france"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1963-palais-des-congres-premier",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "ecouter-une-chanteuse-en-concert-olympia",
+    itemLabel: "assister à un concert à l'Olympia de Paris",
+    theme: "loisirs", gestureRoot: "olympia_paris",
+    editorialScore: 80,
+    objectType: "infrastructure", category: "media",
+    releaseDate: "1963-01-01", releaseYear: 1963, datePrecision: "year",
+    placeName: "Olympia, Paris", placeType: "site", placeQid: null,
+    triggerLabel: "L'Olympia — salle de référence de la chanson française",
+    beforeState: "Avant les années 1960, les grandes salles parisiennes de concert de variétés ne sont pas encore institutionnalisées.",
+    afterState: "Dans les années 1960, l'Olympia devient la salle de référence nationale pour les grandes tournées de variétés françaises.",
+    objectChanged: "Tu peux acheter un billet pour l'Olympia et voir les plus grands noms de la chanson française dans une salle de référence.",
+    materialAnchor: "Affiche de concert, billet d'entrée et scène de l'Olympia",
+    sceneText: "1963, Olympia, Paris. Les feux de la rampe s'allument. La salle est comble. Piaf, Brel, Brassens, Hallyday — l'Olympia est devenu le temple de la chanson française. Avoir son nom sur cette affiche, c'est la consécration.",
+    fact: "Dans les années 1960, l'Olympia de Paris s'impose comme la grande salle de référence de la chanson française.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/L%27Olympia", authority: false }
+    ],
+    tags: ["olympia", "chanson", "concert", "paris"],
+    quality: { strictPlace: true, strictDate: false, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1966-premier-satellite-francais-d1",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "vivre-dans-un-pays-qui-a-son-propre-satellite",
+    itemLabel: "vivre dans un pays qui a lancé son propre satellite",
+    theme: "science", gestureRoot: "satellite_d1_france",
+    editorialScore: 88,
+    objectType: "device", category: "device",
+    releaseDate: "1965-11-26", releaseYear: 1966, datePrecision: "year",
+    placeName: "Centre spatial de Hammaguir, Sahara", placeType: "site", placeQid: null,
+    triggerLabel: "Lancement du satellite Astérix — la France troisième puissance spatiale",
+    beforeState: "Avant le 26 novembre 1965, seuls les États-Unis et l'URSS peuvent placer un satellite en orbite.",
+    afterState: "Après Astérix, la France devient la troisième puissance spatiale mondiale.",
+    objectChanged: "Tu vis dans un pays qui possède sa propre capacité de lancement de satellites — une indépendance technologique et stratégique.",
+    materialAnchor: "Fusée Diamant, satellite Astérix et salle de contrôle",
+    sceneText: "26 novembre 1965, Sahara. La fusée Diamant décolle. Astérix entre en orbite. La France devient le troisième pays au monde à lancer son propre satellite. L'indépendance technologique prend son altitude.",
+    fact: "Le 26 novembre 1965, la France lance le satellite Astérix depuis le Sahara avec la fusée Diamant, devenant la troisième puissance spatiale.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Ast%C3%A9rix_(satellite)", authority: false },
+      { label: "CNES", url: "https://cnes.fr/fr/asterix-le-premier-satellite-francais-en-1965", authority: true }
+    ],
+    tags: ["satellite", "espace", "asterix", "diamant"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1969-concorde-premier-vol",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "apprendre-le-premier-vol-du-concorde",
+    itemLabel: "apprendre le premier vol du Concorde",
+    theme: "transport", gestureRoot: "concorde_premier_vol",
+    editorialScore: 90,
+    objectType: "vehicle", category: "transport",
+    releaseDate: "1969-03-02", releaseYear: 1969, datePrecision: "day",
+    placeName: "Aéroport de Toulouse-Blagnac", placeType: "site", placeQid: null,
+    triggerLabel: "Premier vol du Concorde à Toulouse",
+    beforeState: "Avant le 2 mars 1969, le Concorde n'est qu'un prototype sur les plans — personne ne sait si l'avion supersonique volera vraiment.",
+    afterState: "Après le premier vol, le programme Concorde se confirme et ouvre la voie au vol commercial supersonique.",
+    objectChanged: "Tu peux lire que la France vient de faire voler un avion de ligne à deux fois la vitesse du son — une première mondiale.",
+    materialAnchor: "Prototype Concorde 001, piste d'envol et combinaison de pilote",
+    sceneText: "2 mars 1969, Toulouse-Blagnac. Le 001 blanc et effilé s'élance. Les ingénieurs retiennent leur souffle. Le Concorde vole. Franco-britannique, supersonique, il réunit deux nations et prouve que l'Europe peut faire mieux que les autres.",
+    fact: "Le 2 mars 1969, le Concorde 001 effectue son premier vol depuis Toulouse-Blagnac — symbole de la coopération franco-britannique dans l'aviation.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Concorde", authority: false }
+    ],
+    tags: ["concorde", "aviation", "supersonique", "toulouse"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1961-cosmonaute-analogie-gagarine",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "apprendre-que-youri-gagarine-a-orbite-la-terre",
+    itemLabel: "apprendre que Youri Gagarine a orbité la Terre",
+    theme: "science", gestureRoot: "gagarine_espace",
+    editorialScore: 82,
+    objectType: "service", category: "device",
+    releaseDate: "1961-04-12", releaseYear: 1961, datePrecision: "day",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Premier vol habité dans l'espace par Gagarine — suivi en France",
+    beforeState: "Avant avril 1961, aucun être humain n'a jamais quitté l'atmosphère terrestre.",
+    afterState: "Après le 12 avril 1961, l'ère des vols habités dans l'espace est ouverte.",
+    objectChanged: "Tu peux lire dans ton journal qu'un homme a fait le tour de la Terre dans l'espace — et que l'impossible vient de changer de camp.",
+    materialAnchor: "Journal télévisé, portrait de Gagarine et globe terrestre",
+    sceneText: "12 avril 1961, France. Le journal du matin porte la nouvelle en une : Gagarine a orbité la Terre en 108 minutes. Dans les cafés, les ateliers, les familles, on parle de la Lune comme d'une prochaine étape. L'espace est soudain devenu concret.",
+    fact: "Le 12 avril 1961, Youri Gagarine réalise le premier vol spatial humain ; la France suit l'événement en direct et la presse en fait sa une.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Youri_Gagarine", authority: false }
+    ],
+    tags: ["espace", "gagarine", "science", "progres"],
+    quality: { strictPlace: false, strictDate: true, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1962-loi-orientation-agricole",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "beneficier-de-la-modernisation-agricole-en-france",
+    itemLabel: "bénéficier de la modernisation agricole (lois d'orientation)",
+    theme: "travail", gestureRoot: "agriculture_modernisation",
+    editorialScore: 80,
+    objectType: "service", category: "service",
+    releaseDate: "1962-08-08", releaseYear: 1962, datePrecision: "day",
+    placeName: "Exploitations agricoles, France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Lois d'orientation agricole de 1962",
+    beforeState: "Avant 1962, l'agriculture française reste fragmentée, peu mécanisée, avec des exploitations de petite taille.",
+    afterState: "Après 1962, les lois d'orientation accélèrent la modernisation, le remembrement et la mécanisation des exploitations.",
+    objectChanged: "Un agriculteur peut bénéficier d'aides et d'un cadre légal pour moderniser son exploitation et accéder au remembrement.",
+    materialAnchor: "Tracteur, acte de remembrement et formulaire PAC",
+    sceneText: "1962, exploitation agricole. Le tracteur a remplacé le cheval depuis peu. Les lois d'orientation ouvrent l'accès à des aides pour agrandir, mécaniser, moderniser. La France agricole change de siècle.",
+    fact: "Les lois d'orientation agricole de 1960 et 1962 modernisent profondément l'agriculture française : remembrement, mécanisation et accès aux marchés.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Loi_d%27orientation_agricole_de_1960", authority: false }
+    ],
+    tags: ["agriculture", "modernisation", "remembrement", "tracteur"],
+    quality: { strictPlace: false, strictDate: true, everydayUse: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1964-securite-sociale-maladie-elargie",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "beneficier-du-remboursement-secu-apres-la-reforme-1967",
+    itemLabel: "bénéficier de la réforme de la Sécurité sociale (ordonnances 1967)",
+    theme: "santé", gestureRoot: "secu_reforme_1967",
+    editorialScore: 80,
+    objectType: "service", category: "service",
+    releaseDate: "1964-01-01", releaseYear: 1964, datePrecision: "year",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Réforme et consolidation du régime général de Sécurité sociale",
+    beforeState: "Avant 1964, le financement de la Sécurité sociale et ses règles restent fragiles et souvent déficitaires.",
+    afterState: "Au milieu des années 1960, des réformes stabilisent le régime général et clarifient les droits des assurés.",
+    objectChanged: "Tu peux compter sur un régime de remboursement maladie plus stable et mieux financé.",
+    materialAnchor: "Feuille de soins, carte d'assuré et ordonnance médicale",
+    sceneText: "1964, caisse de Sécurité sociale. Le système se restructure. Les réformes du milieu des années soixante clarifient droits et cotisations, stabilisent les remboursements. La Sécu cesse d'être précaire pour devenir un filet solide.",
+    fact: "Dans les années 1960, des réformes successives consolident le régime général de Sécurité sociale et étendent les droits des assurés.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/S%C3%A9curit%C3%A9_sociale_en_France", authority: false }
+    ],
+    tags: ["secu", "sante", "reforme", "assurance-maladie"],
+    quality: { strictPlace: false, strictDate: false, everydayUse: true, sourceCount: 1 }
   },
 ];

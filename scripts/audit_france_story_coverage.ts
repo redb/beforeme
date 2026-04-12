@@ -239,15 +239,15 @@ async function main() {
   for (const year of localPersonYears) {
     assert.ok(
       nearestDelta(year, gestureYears) <= MAX_GESTURE_NEARBY_YEAR_DISTANCE,
-      `missing nearby daily_life coverage for ${year}`
+      `missing exact daily_life (gesture) for year ${year} — premium: année catalogue = année demandée`
     );
     assert.ok(
       nearestDelta(year, inventionYears) <= MAX_INVENTION_NEARBY_YEAR_DISTANCE,
-      `missing nearby invention coverage for ${year}`
+      `missing exact invention for year ${year} — premium: année catalogue = année demandée`
     );
     assert.ok(
       nearestDelta(year, culturalYears) <= MAX_CULTURAL_NEARBY_YEAR_DISTANCE,
-      `missing nearby cultural_moment coverage for ${year}`
+      `missing exact cultural_moment for year ${year} — premium: année catalogue = année demandée`
     );
     await auditRuntimeYear(year);
   }
@@ -268,7 +268,7 @@ async function main() {
           cultural: culturalYears.length,
           personLocal: localPersonYears.length
         },
-        nearbyMaxDistance: {
+        premiumYearTolerance: {
           daily: MAX_GESTURE_NEARBY_YEAR_DISTANCE,
           invention: MAX_INVENTION_NEARBY_YEAR_DISTANCE,
           cultural: MAX_CULTURAL_NEARBY_YEAR_DISTANCE

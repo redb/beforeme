@@ -9,6 +9,7 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "jsx": "preserve",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,

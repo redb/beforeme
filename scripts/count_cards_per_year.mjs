@@ -4,7 +4,7 @@ import { listInventionEntries } from "../src/content/inventions/index.ts";
 import { listNotableBirthsForYear } from "../src/content/notableBirths/index.ts";
 
 const START = 1925;
-const END = new Date().getFullYear();
+const END = Math.min(2025, new Date().getFullYear());
 const cultural = listCulturalEntries("Q142", "fr");
 const gestures = listGestureEntries("Q142", "fr");
 const inventions = listInventionEntries("Q142", "fr");

@@ -1,13 +1,15 @@
 import { listInventionEntries } from "../../content/inventions";
 import type { EditorialTheme } from "../../content/editorialTheme";
 import type { InventionEntry } from "../../content/inventions/types";
+import { isCatalogPlaceholderInvention } from "../../lib/editorialCatalogPlaceholders";
 
 export type InventionSelection = {
   exact: InventionEntry[];
   nearby: InventionEntry[];
 };
 
-export const MAX_INVENTION_NEARBY_YEAR_DISTANCE = 6;
+/** 0 = premium : uniquement `releaseYear === année demandée`. */
+export const MAX_INVENTION_NEARBY_YEAR_DISTANCE = 0;
 
 function computeBaseYearScore(entry: InventionEntry, targetYear: number): number {
   return entry.releaseYear === targetYear ? 100 : 0;
@@ -69,7 +71,9 @@ export function selectInventionsForYear(params: {
   seenGestureRoots?: string[];
   shareBonus?: Map<string, number>;
 }): InventionSelection {
-  const entries = listInventionEntries(params.countryQid, params.lang);
+  const entries = listInventionEntries(params.countryQid, params.lang).filter(
+    (entry) => !isCatalogPlaceholderInvention(entry)
+  );
   const compareEntries = (left: InventionEntry, right: InventionEntry) => {
     const scoreDiff =
       scoreEntry(

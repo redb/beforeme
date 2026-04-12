@@ -1,6 +1,7 @@
 import type { EditorialTheme } from "../../content/editorialTheme";
 import type { CulturalMomentEntry } from "../../content/culturalMoments/types";
 import { listCulturalEntries } from "../../content/culturalMoments";
+import { isCatalogPlaceholderCultural } from "../../lib/editorialCatalogPlaceholders";
 
 export type CulturalMomentSelectionContext = {
   year: number;
@@ -18,7 +19,8 @@ export type CulturalMomentSelectionParams = {
   shareBonus?: Map<string, number>;
 };
 
-export const MAX_CULTURAL_NEARBY_YEAR_DISTANCE = 4;
+/** 0 = premium : uniquement `year === année demandée`. */
+export const MAX_CULTURAL_NEARBY_YEAR_DISTANCE = 0;
 
 export function getCulturalMomentSelectionContext(params: {
   year: number;
@@ -29,7 +31,9 @@ export function getCulturalMomentSelectionContext(params: {
     year: params.year,
     countryQid: params.countryQid,
     lang: params.lang,
-    entries: listCulturalEntries(params.countryQid, params.lang)
+    entries: listCulturalEntries(params.countryQid, params.lang).filter(
+      (entry) => !isCatalogPlaceholderCultural(entry)
+    )
   };
 }
 

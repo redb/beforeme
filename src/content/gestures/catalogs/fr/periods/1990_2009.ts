@@ -125,4 +125,77 @@ export const FR_GESTURE_BACKFILL_1990_2009: GestureRupture[] = [
     tags: ["sante", "ameli", "remboursements", "numerique"],
     quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
   },
+  {
+    id: "fr-2001-pass-navigo-anticipation",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "passer-son-badge-sans-contact-dans-les-transports-parisiens",
+    gestureLabel: "passer son badge sans contact dans les transports parisiens",
+    theme: "transport", gestureRoot: "pass_navigo",
+    editorialScore: 84,
+    category: "transport", direction: "impossible_to_possible",
+    ruptureDate: "2001-01-01", ruptureYear: 2001, datePrecision: "year",
+    placeName: "Stations de métro parisien", placeType: "site", placeQid: "Q23718",
+    triggerLabel: "Déploiement progressif du passe Navigo sans contact dans les transports parisiens",
+    triggerType: "public_rollout",
+    beforeState: "Avant 2001, les Parisiens utilisent des tickets en carton ou des carnets à déchirer pour prendre le métro.",
+    afterState: "À partir de 2001, le passe Navigo sans contact remplace progressivement les tickets papier dans les transports d'Île-de-France.",
+    gestureChanged: "Tu peux poser ton badge sur le lecteur sans sortir ton portefeuille — le portillon s'ouvre instantanément.",
+    materialAnchor: "Badge Navigo, portillon RATP et lecteur sans contact",
+    sceneText: "2001, station de métro. Le badge passe sur la borne. Le portillon s'ouvre. Plus besoin de fouiller dans la poche pour un ticket cartonné. Le passe sans contact commence à remplacer le carnet — geste discret, rupture réelle.",
+    fact: "À partir de 2001, la RATP déploie progressivement le passe Navigo sans contact, remplaçant les tickets papier dans les transports parisiens.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Navigo", authority: false },
+      { label: "RATP", url: "https://www.ratp.fr/", authority: true }
+    ],
+    tags: ["navigo", "transport", "paris", "sans-contact"],
+    quality: { strictPlace: true, strictDate: false, dailyLife: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-2003-mariage-pacs-droit",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "signer-un-pacs-a-la-mairie",
+    gestureLabel: "signer un PACS à la mairie",
+    theme: "administration", gestureRoot: "pacs_mairie",
+    editorialScore: 86,
+    category: "family", direction: "impossible_to_possible",
+    ruptureDate: "1999-11-15", ruptureYear: 2003, datePrecision: "year",
+    placeName: "Mairie, France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Démocratisation du PACS comme acte civil ordinaire",
+    triggerType: "public_rollout",
+    beforeState: "Avant le PACS (1999), deux personnes qui s'installent ensemble n'ont pas de cadre juridique civil intermédiaire entre le mariage et le concubinage.",
+    afterState: "Après 1999 et dans les années 2000, le PACS se généralise et devient un acte civil courant pour des centaines de milliers de couples.",
+    gestureChanged: "Tu peux te rendre à la mairie avec ton partenaire et signer un pacte civil qui vous donne des droits patrimoniaux et fiscaux.",
+    materialAnchor: "Formulaire PACS, bureau de la mairie et registre civil",
+    sceneText: "Années 2000, mairie. Le formulaire PACS est sur le bureau du secrétariat. Deux personnes signent sans aucune cérémonie. C'est un acte administratif — mais il offre des droits réels. Le PACS est devenu banal.",
+    fact: "Depuis 1999, des centaines de milliers de couples signent un PACS chaque année en France — acte civil qui égale presque le mariage en termes de droits.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Pacte_civil_de_solidarit%C3%A9", authority: false }
+    ],
+    tags: ["pacs", "mariage", "droits", "couple"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-2006-achat-en-ligne-france",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "commander-un-produit-en-ligne-et-le-recevoir-chez-soi",
+    gestureLabel: "commander un produit en ligne et le recevoir chez soi",
+    theme: "communication", gestureRoot: "ecommerce_france",
+    editorialScore: 86,
+    category: "media", direction: "impossible_to_possible",
+    ruptureDate: "2006-01-01", ruptureYear: 2006, datePrecision: "year",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Boom du e-commerce en France — Amazon, FNAC.com et vente en ligne grand public",
+    triggerType: "public_rollout",
+    beforeState: "Avant 2005, commander en ligne est l'exception — méfiance envers le paiement, peu de sites, délais longs.",
+    afterState: "À partir de 2006, le e-commerce explose : des millions de Français commandent sur Amazon, FNAC.com ou PriceMinister.",
+    gestureChanged: "Tu peux choisir un livre, une tenue ou une télévision sur ton ordinateur et recevoir le colis à domicile trois jours après.",
+    materialAnchor: "Colis livré, carton avec logo e-commerce et clavier d'ordinateur",
+    sceneText: "2006, domicile. La commande est passée la veille. Le colis est là. La FNAC, Amazon, PriceMinister — les Français achètent en ligne massivement pour la première fois. Le commerce de proximité va sentir passer le vent.",
+    fact: "Dans la seconde moitié des années 2000, le e-commerce explose en France et modifier durablement les habitudes d'achat.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Commerce_%C3%A9lectronique_en_France", authority: false }
+    ],
+    tags: ["ecommerce", "internet", "achat", "numerique"],
+    quality: { strictPlace: false, strictDate: false, dailyLife: true, sourceCount: 1 }
+  },
 ];

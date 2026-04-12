@@ -1,13 +1,15 @@
 import { listGestureEntries } from "../../content/gestures";
 import type { EditorialTheme } from "../../content/editorialTheme";
 import type { GestureRupture } from "../../content/gestures/types";
+import { isCatalogPlaceholderGesture } from "../../lib/editorialCatalogPlaceholders";
 
 export type GestureSelection = {
   exact: GestureRupture[];
   nearby: GestureRupture[];
 };
 
-export const MAX_GESTURE_NEARBY_YEAR_DISTANCE = 11;
+/** 0 = premium : aucune carte « année proche », uniquement `ruptureYear === année demandée`. */
+export const MAX_GESTURE_NEARBY_YEAR_DISTANCE = 0;
 
 function computeBaseYearScore(entry: GestureRupture, targetYear: number): number {
   return entry.ruptureYear === targetYear ? 100 : 0;
@@ -69,7 +71,9 @@ export function selectGesturesForYear(params: {
   seenGestureRoots?: string[];
   shareBonus?: Map<string, number>;
 }): GestureSelection {
-  const entries = listGestureEntries(params.countryQid, params.lang);
+  const entries = listGestureEntries(params.countryQid, params.lang).filter(
+    (entry) => !isCatalogPlaceholderGesture(entry)
+  );
   const compareEntries = (left: GestureRupture, right: GestureRupture) => {
     const scoreDiff =
       scoreEntry(

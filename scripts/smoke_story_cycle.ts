@@ -3,13 +3,7 @@ import { onRequestGet as gestureGet } from "../functions/api/gesture-scene";
 import { onRequestGet as notableGet } from "../functions/api/notable-born";
 import { onRequestGet as inventionGet } from "../functions/api/invention-scene";
 import { onRequestGet as culturalGet } from "../functions/api/cultural-scene";
-import { MAX_GESTURE_NEARBY_YEAR_DISTANCE } from "../src/server/gestures/selectGesture";
-import { MAX_INVENTION_NEARBY_YEAR_DISTANCE } from "../src/server/inventions/selectInvention";
-import { MAX_CULTURAL_NEARBY_YEAR_DISTANCE } from "../src/server/cultural/selectCulturalMoment";
 import type { EditorialTheme } from "../src/content/editorialTheme";
-import { listNotableBirthsForYear } from "../src/content/notableBirths";
-
-const CURRENT_YEAR = new Date().getFullYear();
 
 type Card = {
   kind: "daily" | "person" | "invention" | "cultural";
@@ -58,13 +52,6 @@ function remember(state: SeenState, card: Card) {
   state.seenGestureRoots.push(card.gestureRoot);
   if (state.seenThemes.length > 6) state.seenThemes.shift();
   if (state.seenGestureRoots.length > 6) state.seenGestureRoots.shift();
-}
-
-function lastCompletePersonYear(): number {
-  for (let year = CURRENT_YEAR; year >= 1925; year -= 1) {
-    if (listNotableBirthsForYear(year, "fr").length > 0) return year;
-  }
-  return 1925;
 }
 
 async function fetchDaily(year: number, state: SeenState, rank = 1): Promise<Card> {
@@ -186,19 +173,15 @@ async function fetchCycle(year: number): Promise<Card[]> {
 }
 
 async function run() {
-  const years = [...new Set([1926, 1947, 1968, 2001, lastCompletePersonYear()])];
+  // Années où le catalogue FR a au moins une carte exacte par axe (geste, naissance, invention, culturel)
+  const years = [1968, 1982, 1994];
   const cards = (await Promise.all(years.map((year) => fetchCycle(year)))).flat();
 
   for (const card of cards) {
     assert.equal(Number(card.date.slice(0, 4)), card.matchedYear);
-    if (card.kind === "daily" && card.matchType === "nearby") {
-      assert.ok(Math.abs(card.matchedYear - card.expectedYear) <= MAX_GESTURE_NEARBY_YEAR_DISTANCE);
-    }
-    if (card.kind === "invention" && card.matchType === "nearby") {
-      assert.ok(Math.abs(card.matchedYear - card.expectedYear) <= MAX_INVENTION_NEARBY_YEAR_DISTANCE);
-    }
-    if (card.kind === "cultural" && card.matchType === "nearby") {
-      assert.ok(Math.abs(card.matchedYear - card.expectedYear) <= MAX_CULTURAL_NEARBY_YEAR_DISTANCE);
+    assert.equal(card.matchedYear, card.expectedYear, `${card.kind} year must match mirror year (premium)`);
+    if (card.kind !== "person") {
+      assert.equal(card.matchType, "exact");
     }
   }
 

@@ -27,6 +27,76 @@ export const FR_INVENTION_BACKFILL_1925_1949: InventionEntry[] = [
     quality: { strictPlace: true, strictDate: true, everydayUse: true, sourceCount: 2 }
   },
   {
+    id: "fr-1926-afnor",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "sappuyer-sur-des-normes-francaises-afnor",
+    itemLabel: "s'appuyer sur des normes françaises communes (AFNOR)",
+    theme: "administration",
+    gestureRoot: "normes_afnor",
+    editorialScore: 84,
+    objectType: "service",
+    category: "service",
+    releaseDate: "1926-06-22",
+    releaseYear: 1926,
+    datePrecision: "day",
+    placeName: "Paris",
+    placeType: "city",
+    placeQid: "Q90",
+    triggerLabel: "Création de l'Association française de normalisation (AFNOR)",
+    beforeState:
+      "Avant 1926, les cahiers des charges industriels et les formats techniques divergent encore fortement d'un fournisseur à l'autre.",
+    afterState:
+      "Après juin 1926, la normalisation française dispose d'un cadre associatif pour rapprocher normes, essais et usages.",
+    objectChanged:
+      "Tu peux t'appuyer sur des références communes pour les matériaux, les essais et les échanges entre industriels.",
+    materialAnchor: "Cahier des charges, éprouvette et cachet de conformité",
+    sceneText:
+      "22 juin 1926, à Paris. L'AFNOR naît pour rapprocher les règles techniques : moins de pièces incompatibles, plus de repères partagés entre ateliers. La normalisation cesse d'être seulement une habitude locale.",
+    fact: "Le 22 juin 1926 est créée l'Association française de normalisation (AFNOR), organisme chargé d'élaborer et de promouvoir les normes françaises.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Association_fran%C3%A7aise_de_normalisation", authority: false },
+      { label: "AFNOR", url: "https://www.afnor.org/", authority: true }
+    ],
+    tags: ["normes", "afnor", "industrie", "qualite"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1927-spirit-of-st-louis-bourget",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "voir-laviation-atlantique-au-bourget",
+    itemLabel: "voir l'aviation transatlantique accueillie au Bourget",
+    theme: "transport",
+    gestureRoot: "aviation_bourget",
+    editorialScore: 82,
+    objectType: "infrastructure",
+    category: "transport",
+    releaseDate: "1927-05-21",
+    releaseYear: 1927,
+    datePrecision: "day",
+    placeName: "Aéroport du Bourget, Le Bourget",
+    placeType: "site",
+    placeQid: null,
+    triggerLabel: "Atterrissage du Spirit of St. Louis après la traversée de l'Atlantique",
+    beforeState:
+      "Avant mai 1927, la traversée de l'Atlantique Nord en avion reste une prouesse rare et incertaine pour le grand public.",
+    afterState:
+      "Après le 21 mai 1927, l'atterrissage au Bourget rend l'aviation long courrier tangible pour des milliers de spectateurs.",
+    objectChanged:
+      "Tu peux voir un avion qui vient de relier New York à Paris sans escale, comme preuve que l'océan se traverse désormais par les airs.",
+    materialAnchor: "Piste du Bourget, foule et appareil à moteur à l'arrêt",
+    sceneText:
+      "21 mai 1927, au Bourget. Le Spirit of St. Louis se pose devant la foule : l'Atlantique vient d'être franchi en solo par les airs. À Paris, l'aviation cesse d'être un bruit de moteurs lointain pour devenir un spectacle national.",
+    fact: "Le 21 mai 1927, Charles Lindbergh atterrit au Bourget après la première traversée de l'Atlantique Nord sans escale en solitaire.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Spirit_of_Saint-Louis", authority: false },
+      { label: "1927 en France", url: "https://fr.wikipedia.org/wiki/1927_en_France", authority: false }
+    ],
+    tags: ["aviation", "bourget", "atlantique", "record"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: false, sourceCount: 2 }
+  },
+  {
     id: "fr-1931-demonstration-television",
     countryQid: "Q142", lang: "fr",
     itemKey: "voir-une-image-transmise-par-television-en-france",
@@ -216,6 +286,111 @@ export const FR_INVENTION_BACKFILL_1925_1949: InventionEntry[] = [
     quality: { strictPlace: false, strictDate: true, everydayUse: true, sourceCount: 1 }
   },
   {
+    id: "fr-1939-cnrs",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "structurer-la-recherche-avec-le-cnrs",
+    itemLabel: "structurer la recherche française avec le CNRS",
+    theme: "travail",
+    gestureRoot: "cnrs_recherche",
+    editorialScore: 90,
+    objectType: "service",
+    category: "service",
+    releaseDate: "1939-10-19",
+    releaseYear: 1939,
+    datePrecision: "day",
+    placeName: "Paris",
+    placeType: "city",
+    placeQid: "Q90",
+    triggerLabel: "Création du Centre national de la recherche scientifique (CNRS)",
+    beforeState:
+      "Avant octobre 1939, les laboratoires et financements de recherche restent morcelés entre plusieurs organismes et caisses.",
+    afterState:
+      "Après le décret du 19 octobre 1939, le CNRS coordonne la recherche scientifique française à l'échelle nationale.",
+    objectChanged:
+      "Tu peux rattacher un projet de laboratoire à un organisme public unique qui mutualise moyens et priorités.",
+    materialAnchor: "Décret au Journal officiel, laboratoire et budget de recherche",
+    sceneText:
+      "19 octobre 1939, à Paris. Le décret crée le CNRS au pire moment géopolitique, mais l'ambition est claire : donner à la science française un cadre national pour coordonner laboratoires et financements. La recherche cesse d'être seulement une somme d'initiatives isolées.",
+    fact: "Le 19 octobre 1939, un décret crée le Centre national de la recherche scientifique (CNRS) pour coordonner la recherche en France.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Centre_national_de_la_recherche_scientifique", authority: false },
+      { label: "CNRS", url: "https://www.cnrs.fr/fr/le-cnrs/histoire", authority: true }
+    ],
+    tags: ["recherche", "cnrs", "science", "laboratoire"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1940-eau-lourde-joliot",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "poursuivre-la-recherche-nucleaire-avec-de-leau-lourde",
+    itemLabel: "poursuivre la recherche nucléaire avec du stock d'eau lourde",
+    theme: "travail",
+    gestureRoot: "eau_lourde_nucleaire",
+    editorialScore: 86,
+    objectType: "service",
+    category: "service",
+    releaseDate: "1940-03-09",
+    releaseYear: 1940,
+    datePrecision: "day",
+    placeName: "Collège de France, Paris",
+    placeType: "institution",
+    placeQid: null,
+    triggerLabel: "Acquisition du stock norvégien d'eau lourde pour la chaîne nucléaire française",
+    beforeState:
+      "Avant mars 1940, l'équipe de Frédéric Joliot-Curie manque de matière première pour prolonger les expériences sur la réaction en chaîne.",
+    afterState:
+      "Après l'achat du stock norvégien, la France dispose d'eau lourde stratégique pour poursuivre la recherche nucléaire au Collège de France.",
+    objectChanged:
+      "Tu peux continuer des montages expérimentaux qui exigent un modérateur rare, au lieu de rester bloqué faute de matière.",
+    materialAnchor: "Flacons scellés, compteur Geiger et carnet de manipulations",
+    sceneText:
+      "9 mars 1940, à Paris. Le stock d'eau lourde acheté en Norvège arrive dans les labos du Collège de France : une matière rare qui permet de poursuivre les essais sur la réaction en chaîne. La recherche nucléaire française tient un levier technique décisif.",
+    fact: "En mars 1940, le gouvernement français rachète à la Norsk Hydro le stock d'eau lourde nécessaire aux travaux de Joliot-Curie sur la réaction en chaîne.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Fr%C3%A9d%C3%A9ric_Joliot-Curie", authority: false },
+      { label: "1939 en France", url: "https://fr.wikipedia.org/wiki/1939_en_France", authority: false }
+    ],
+    tags: ["physique", "nucleaire", "college-de-france", "recherche"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: false, sourceCount: 2 }
+  },
+  {
+    id: "fr-1944-le-monde",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "lire-le-journal-le-monde-des-son-premier-numero",
+    itemLabel: "lire le journal Le Monde dès son premier numéro",
+    theme: "communication",
+    gestureRoot: "presse_nationale",
+    editorialScore: 88,
+    objectType: "media",
+    category: "media",
+    releaseDate: "1944-12-18",
+    releaseYear: 1944,
+    datePrecision: "day",
+    placeName: "Paris",
+    placeType: "city",
+    placeQid: "Q90",
+    triggerLabel: "Parution du premier numéro du Monde",
+    beforeState:
+      "Avant fin 1944, la presse quotidienne nationale française reste fragmentée et marquée par l'Occupation ; un grand journal indépendant de référence ne s'impose pas encore.",
+    afterState:
+      "À partir du 18 décembre 1944, Le Monde offre une grande feuille quotidienne conçue comme un journal de référence, indépendant des partis.",
+    objectChanged:
+      "Tu peux acheter un quotidien national qui se présente dès l'origine comme un titre de fond, avec une maquette et une ambition éditoriale nouvelles.",
+    materialAnchor: "Une une du Monde, kiosque parisien et encres du lendemain de la Libération",
+    sceneText:
+      "18 décembre 1944, Paris. Le premier numéro du Monde sort en kiosque : une grande page, une ambition de journal de référence, une ligne éditoriale affichée dès le départ. La presse nationale se redonne un titre qui compte pour le pays tout entier.",
+    fact: "Le 18 décembre 1944 paraît le premier numéro du journal Le Monde, fondé par Hubert Beuve-Méry.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Le_Monde", authority: false },
+      { label: "Le Monde", url: "https://www.lemonde.fr/", authority: true }
+    ],
+    tags: ["presse", "le-monde", "paris", "media", "1944"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: true, sourceCount: 2 }
+  },
+  {
     id: "fr-1947-transistor",
     countryQid: "Q142", lang: "fr",
     itemKey: "utiliser-un-appareil-a-transistors",
@@ -231,13 +406,48 @@ export const FR_INVENTION_BACKFILL_1925_1949: InventionEntry[] = [
     objectChanged: "Tu peux porter un transistor radio dans ta poche au lieu de porter un poste lourd et encombrant.",
     materialAnchor: "Transistor radio, pile et oreillette",
     sceneText: "1947. En France, on ne le tient pas encore dans chaque poche, mais la promesse est deja claire: une electronique sans lampes, plus froide et plus petite. Les radios et les objets du quotidien vont retrecir jusque dans les foyers francais.",
-    fact: "Le 16 décembre 1947, le transistor est inventé aux Bell Labs, ouvrant la voie à toute l'électronique moderne.",
+    fact: "Le 16 décembre 1947, le transistor est inventé aux États-Unis par une équipe de Bell Telephone Laboratories, ouvrant la voie à toute l'électronique moderne.",
     sources: [
       { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Transistor", authority: false },
       { label: "Nobel Prize", url: "https://www.nobelprize.org/prizes/physics/1956/summary/", authority: true }
     ],
     tags: ["electronique", "radio", "transistor", "miniaturisation"],
     quality: { strictPlace: false, strictDate: true, everydayUse: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1949-reacteur-zoe",
+    countryQid: "Q142",
+    lang: "fr",
+    itemKey: "suivre-la-recherche-nucleaire-civile-a-saclay",
+    itemLabel: "suivre la recherche nucléaire civile autour du réacteur Zoé",
+    theme: "travail",
+    gestureRoot: "reacteur_zoe",
+    editorialScore: 88,
+    objectType: "infrastructure",
+    category: "network",
+    releaseDate: "1949-01-01",
+    releaseYear: 1949,
+    datePrecision: "year",
+    placeName: "Fort de Châtillon, Saclay",
+    placeType: "site",
+    placeQid: null,
+    triggerLabel: "Exploitation du réacteur nucléaire Zoé au Fort de Châtillon",
+    beforeState:
+      "Avant 1949, la France n'a pas encore stabilisé un premier réacteur nucléaire civil au service de la recherche fondamentale.",
+    afterState:
+      "En 1949, Zoé prolonge au quotidien la première criticité obtenue fin 1948 et ancre Saclay dans la recherche nucléaire.",
+    objectChanged:
+      "Tu peux mesurer des chaînages neutroniques sur un banc national plutôt que seulement sur des montages préparatoires isolés.",
+    materialAnchor: "Bâtiment du réacteur, instrumentation et registre de criticité",
+    sceneText:
+      "1949, au Fort de Châtillon. Zoé tourne pour la science : le premier réacteur nucléaire français à criticité obtenue en 1948 devient un outil de recherche régulier. Les équipes mesurent, calibrent et préparent ce que sera la filière nucléaire nationale.",
+    fact: "Le réacteur nucléaire Zoé, mis en criticité en décembre 1948 au Fort de Châtillon, est le premier réacteur nucléaire français ; son exploitation se poursuit en 1949 comme pilier de la recherche au CEA.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Zo%C3%A9_(r%C3%A9acteur)", authority: false },
+      { label: "CEA", url: "https://www.cea.fr/", authority: true }
+    ],
+    tags: ["nucleaire", "cea", "saclay", "reacteur"],
+    quality: { strictPlace: true, strictDate: false, everydayUse: false, sourceCount: 2 }
   },
   {
     id: "fr-1949-deux-chevaux",
@@ -262,5 +472,167 @@ export const FR_INVENTION_BACKFILL_1925_1949: InventionEntry[] = [
     ],
     tags: ["voiture", "2cv", "citroen", "automobile"],
     quality: { strictPlace: true, strictDate: true, everydayUse: true, sourceCount: 2 }
+  },
+  {
+    id: "fr-1929-plan-young-franc",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "accepter-les-conditions-du-plan-young",
+    itemLabel: "accepter les conditions du Plan Young sur les réparations",
+    theme: "travail", gestureRoot: "plan_young",
+    editorialScore: 78,
+    objectType: "service", category: "service",
+    releaseDate: "1929-06-07", releaseYear: 1929, datePrecision: "day",
+    placeName: "Paris", placeType: "institution", placeQid: "Q142",
+    triggerLabel: "Signature du Plan Young à Paris sur les réparations allemandes",
+    beforeState: "Avant juin 1929, le plan Dawes régit les réparations allemandes — un montant encore élevé et des échéances incertaines.",
+    afterState: "Après le Plan Young, la somme des réparations est réduite et étalée sur 59 ans, allégeant la pression économique.",
+    objectChanged: "Les économies européennes peuvent planifier plus sereinement leurs finances avec un calendrier de réparations révisé.",
+    materialAnchor: "Documents signés, colonne de chiffres et manchettes de presse",
+    sceneText: "7 juin 1929, Paris. Le Plan Young remplace le Plan Dawes. Les réparations allemandes sont réduites et étalées sur soixante ans. Pour la France, c'est une négociation diplomatico-financière qui allégerait l'instabilité européenne.",
+    fact: "Le 7 juin 1929, le Plan Young est signé à Paris, révisant à la baisse les réparations de guerre imposées à l'Allemagne.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Plan_Young", authority: false }
+    ],
+    tags: ["economie", "reparations", "plan-young", "diplomatie"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1930-ligne-maginot-construction",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "financer-la-construction-de-la-ligne-maginot",
+    itemLabel: "financer et construire la ligne Maginot",
+    theme: "administration", gestureRoot: "ligne_maginot",
+    editorialScore: 82,
+    objectType: "infrastructure", category: "device",
+    releaseDate: "1930-01-14", releaseYear: 1930, datePrecision: "day",
+    placeName: "Frontière franco-allemande, Alsace-Lorraine", placeType: "site", placeQid: null,
+    triggerLabel: "Vote du crédit de 3 milliards pour la ligne Maginot",
+    beforeState: "Avant 1930, la frontière franco-allemande n'est défendue que par des fortifications vieillissantes.",
+    afterState: "Après le vote du 14 janvier 1930, la France engage la construction de la plus grande ligne de fortification moderne d'Europe.",
+    objectChanged: "La France dispose d'une ligne de défense souterraine et bétonée longue de centaines de kilomètres sur sa frontière est.",
+    materialAnchor: "Ouvrage fortifié, couloir souterrain et casemate bétonnée",
+    sceneText: "Janvier 1930. La loi vote 3 milliards de francs. Les chantiers s'ouvrent le long de la frontière franco-allemande. Des milliers d'ouvriers creusent, bétonnent, installent des coupoles. La France construit ce qu'elle croit être un rempart définitif.",
+    fact: "Le 14 janvier 1930, la loi allouant les crédits pour la ligne Maginot est votée, lançant la construction de la plus grande fortification de l'Europe d'entre-deux-guerres.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Ligne_Maginot", authority: false }
+    ],
+    tags: ["maginot", "fortification", "defense", "frontiere"],
+    quality: { strictPlace: true, strictDate: true, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1941-requisitions-et-marche-noir",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "se-debrouiller-avec-les-tickets-de-rationnement",
+    itemLabel: "se débrouiller avec les tickets de rationnement sous l'Occupation",
+    theme: "maison", gestureRoot: "rationnement_occupation",
+    editorialScore: 84,
+    objectType: "service", category: "service",
+    releaseDate: "1940-09-01", releaseYear: 1941, datePrecision: "year",
+    placeName: "Épiceries et marchés, France occupée", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Généralisation du rationnement alimentaire sous l'Occupation",
+    beforeState: "Avant l'Occupation, les Français font leurs courses librement selon leurs moyens.",
+    afterState: "Dès l'automne 1940, les cartes et tickets de rationnement conditionnent l'accès à la nourriture, au charbon et à l'habillement.",
+    objectChanged: "Tu dois présenter tes tickets de rationnement pour acheter pain, sucre, beurre ou viande — et gérer pénurie et troc.",
+    materialAnchor: "Carnet de tickets, comptoir de l'épicier et queue devant la boulangerie",
+    sceneText: "1941, épicerie française. Les étagères sont à moitié vides. Tu présentes tes tickets pour un peu de beurre et de sucre. Derrière le comptoir, l'épicier coupe les coupons. La vie quotidienne se mesure en points de rationnement.",
+    fact: "Dès 1940, le régime de Vichy organise le rationnement alimentaire en France occupée : pain, sucre, viande et charbon sont distribués par tickets.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Rationnement_alimentaire_en_France_(1939-1949)", authority: false }
+    ],
+    tags: ["rationnement", "occupation", "guerre", "alimentation"],
+    quality: { strictPlace: false, strictDate: false, everydayUse: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1942-debarquement-allies-afrique-nord",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "apprendre-le-debarquement-allie-en-afrique-du-nord",
+    itemLabel: "apprendre le débarquement allié en Afrique du Nord",
+    theme: "administration", gestureRoot: "debarquement_afn",
+    editorialScore: 82,
+    objectType: "service", category: "service",
+    releaseDate: "1942-11-08", releaseYear: 1942, datePrecision: "day",
+    placeName: "Algérie et Maroc français", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Opération Torch — débarquement allié en Afrique du Nord française",
+    beforeState: "Avant novembre 1942, l'Afrique du Nord française reste sous contrôle de Vichy.",
+    afterState: "Après l'opération Torch, l'Afrique du Nord bascule progressivement dans le camp allié.",
+    objectChanged: "Les populations d'Afrique du Nord française voient des soldats américains et britanniques sur leur sol — le vent tourne.",
+    materialAnchor: "Carte militaire, drapeaux alliés et annonce radiophonique",
+    sceneText: "8 novembre 1942. Des soldats américains et britanniques débarquent en Algérie et au Maroc. L'opération Torch ouvre un nouveau front. Pour la France libre, c'est le signe que la libération est possible.",
+    fact: "Le 8 novembre 1942, l'opération Torch voit les Alliés débarquer en Afrique du Nord française, retournant la situation en faveur des Alliés.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Op%C3%A9ration_Torch", authority: false }
+    ],
+    tags: ["guerre", "allies", "debarquement", "afrique-du-nord"],
+    quality: { strictPlace: false, strictDate: true, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1943-milice-sto-organisation",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "eviter-le-service-du-travail-obligatoire-sto",
+    itemLabel: "éviter ou subir le Service du travail obligatoire (STO)",
+    theme: "travail", gestureRoot: "sto_travail_obligatoire",
+    editorialScore: 84,
+    objectType: "service", category: "service",
+    releaseDate: "1943-02-16", releaseYear: 1943, datePrecision: "day",
+    placeName: "France occupée", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Instauration du Service du travail obligatoire (STO)",
+    beforeState: "Avant le 16 février 1943, certains Français partent volontairement travailler en Allemagne.",
+    afterState: "Après la création du STO, des centaines de milliers de Français sont contraints de travailler dans les usines allemandes.",
+    objectChanged: "Tu risques d'être convoqué au STO et d'être envoyé travailler en Allemagne sous peine d'emprisonnement.",
+    materialAnchor: "Convocation STO, carte d'identité et usine allemande",
+    sceneText: "16 février 1943. La loi STO est signée. Des jeunes hommes reçoivent des convocations. Certains partent en Allemagne ; d'autres rejoignent le maquis pour échapper à la réquisition. Le STO alimente la Résistance autant qu'il pille la main-d'œuvre française.",
+    fact: "Le 16 février 1943, le Service du travail obligatoire (STO) est instauré en France, envoyant des centaines de milliers de travailleurs en Allemagne.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Service_du_travail_obligatoire", authority: false }
+    ],
+    tags: ["sto", "occupation", "travail", "guerre"],
+    quality: { strictPlace: false, strictDate: true, everydayUse: true, sourceCount: 1 }
+  },
+  {
+    id: "fr-1945-plan-monnet-reconstruction",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "voir-la-france-se-reconstruire-sous-le-plan-monnet",
+    itemLabel: "voir la France se reconstruire sous le Plan Monnet",
+    theme: "travail", gestureRoot: "plan_monnet",
+    editorialScore: 84,
+    objectType: "service", category: "service",
+    releaseDate: "1946-01-03", releaseYear: 1945, datePrecision: "year",
+    placeName: "France", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Création du Commissariat général du Plan (Plan Monnet)",
+    beforeState: "Avant 1946, la France sort dévastée de la guerre sans stratégie économique nationale coordonnée.",
+    afterState: "Après le plan Monnet, la France dispose d'un cadre de reconstruction planifiée qui guidera les Trente Glorieuses.",
+    objectChanged: "Les entreprises et les ménages peuvent espérer une reconstruction ordonnée avec des priorités définies par l'État.",
+    materialAnchor: "Rapport du Plan, usine en reconstruction et carte des chantiers",
+    sceneText: "Janvier 1946. Jean Monnet prend la tête du Commissariat général du Plan. L'État fixe des priorités de reconstruction : industrie lourde, transports, énergie. Les Trente Glorieuses commencent ici, dans un bureau, avec un tableau de bord.",
+    fact: "Le 3 janvier 1946, le Commissariat général du Plan est créé sous la direction de Jean Monnet, posant les bases de la reconstruction économique française.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Plan_Monnet", authority: false }
+    ],
+    tags: ["reconstruction", "plan-monnet", "economie", "trente-glorieuses"],
+    quality: { strictPlace: false, strictDate: true, everydayUse: false, sourceCount: 1 }
+  },
+  {
+    id: "fr-1946-electricite-nationalisation",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "payer-son-electricite-a-edf",
+    itemLabel: "payer son électricité à EDF après la nationalisation",
+    theme: "science", gestureRoot: "nationalisation_edf",
+    editorialScore: 86,
+    objectType: "infrastructure", category: "service",
+    releaseDate: "1946-04-08", releaseYear: 1946, datePrecision: "day",
+    placeName: "Foyers français", placeType: "country", placeQid: "Q142",
+    triggerLabel: "Nationalisation de l'électricité et création d'EDF",
+    beforeState: "Avant le 8 avril 1946, l'électricité est distribuée par des centaines de sociétés privées avec des tarifs disparates.",
+    afterState: "Après la nationalisation, EDF unifie la distribution et les tarifs de l'électricité dans toute la France.",
+    objectChanged: "Tu reçois une facture EDF avec un tarif unifié, quel que soit le village ou la ville où tu habites.",
+    materialAnchor: "Compteur électrique, facture EDF et pylône à haute tension",
+    sceneText: "8 avril 1946. La loi nationalise l'électricité et crée EDF. Désormais un seul organisme fournit le courant à toute la France. La facture s'unifie. Pour des millions de foyers ruraux mal desservis, la promesse d'un accès égal à l'électricité.",
+    fact: "Le 8 avril 1946, la loi nationalise l'électricité française et crée EDF, unifiant la distribution sous un monopole public.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/%C3%89lectricit%C3%A9_de_France", authority: false },
+      { label: "EDF", url: "https://www.edf.fr/groupe-edf/nos-energies/histoire", authority: true }
+    ],
+    tags: ["electricite", "edf", "nationalisation", "energie"],
+    quality: { strictPlace: false, strictDate: true, everydayUse: true, sourceCount: 2 }
   },
 ];

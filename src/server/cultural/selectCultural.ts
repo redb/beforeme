@@ -1,6 +1,7 @@
 import type { EditorialTheme } from "../../content/editorialTheme";
 import type { CulturalMomentEntry } from "../../content/culturalMoments/types";
 import { listCulturalEntries } from "../../content/culturalMoments";
+import { isCatalogPlaceholderCultural } from "../../lib/editorialCatalogPlaceholders";
 
 export type CulturalSelectionContext = {
   year: number;
@@ -26,7 +27,9 @@ export function getCulturalSelectionContext(params: {
     year: params.year,
     countryQid: params.countryQid,
     lang: params.lang,
-    entries: listCulturalEntries(params.countryQid, params.lang)
+    entries: listCulturalEntries(params.countryQid, params.lang).filter(
+      (entry) => !isCatalogPlaceholderCultural(entry)
+    )
   };
 }
 
