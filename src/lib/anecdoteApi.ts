@@ -1,4 +1,5 @@
 import type { Lang } from "./i18n";
+import { t } from "./i18n";
 import type { CountryCode } from "./locale";
 import { countryToQid } from "./locale";
 import { fetchNotableBirthMatch } from "./notableBirthApi";
@@ -370,19 +371,12 @@ function buildNotableBirthSlot(input: {
       : achievement
         ? `${input.match.name} is born in ${input.year}. ${achievement} ${age} years later, that is your birth year.`
         : `${input.match.name} is born in ${input.year}. ${age} years later, that is your birth year.`;
-  const fact =
-    input.lang === "fr"
-      ? achievement
-        ? `${input.match.name} naît en ${input.year}. ${achievement}`
-        : `${input.match.name} naît le ${input.match.birthDate}.`
-      : achievement
-        ? `${input.match.name} is born in ${input.year}. ${achievement}`
-        : `${input.match.name} is born on ${input.match.birthDate}.`;
+  const fact = cleanSentence(t(input.lang, "historicalNotableBirthSummary").replace("{name}", input.match.name));
 
   return {
     slot: input.slot,
     narrative: cleanSentence(narrative),
-    fact: cleanSentence(fact),
+    fact,
     url: input.match.wikipediaUrl,
     eventQid: input.match.qid,
     sources: [{ label: "Wikipedia", url: input.match.wikipediaUrl }],

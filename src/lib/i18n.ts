@@ -41,6 +41,7 @@ export type UiKey =
   | 'shareCopied'
   | 'shareFailed'
   | 'historicalInspired'
+  | 'historicalNotableBirthSummary'
   | 'historicalSource'
   | 'historicalMoreSources'
   | 'storyUnavailable'
@@ -91,6 +92,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     shareCopied: 'Lien copié dans le presse-papiers.',
     shareFailed: 'partage indisponible sur cet appareil.',
     historicalInspired: "inspire d'un evenement reel",
+    historicalNotableBirthSummary: 'Synthèse à partir de l’article Wikipedia sur {name}.',
     historicalSource: 'source',
     historicalMoreSources: '+ {count} autres sources',
     storyUnavailable: 'Cette scène n’a pas pu être créée pour le moment.',
@@ -140,6 +142,7 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     shareCopied: 'Link copied to clipboard.',
     shareFailed: 'sharing is unavailable on this device.',
     historicalInspired: 'inspired by a real event',
+    historicalNotableBirthSummary: 'Summary from the Wikipedia article on {name}.',
     historicalSource: 'source',
     historicalMoreSources: '+ {count} more sources',
     storyUnavailable: 'This scene could not be created for now.',
