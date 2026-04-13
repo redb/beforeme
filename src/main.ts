@@ -863,7 +863,7 @@ function renderResult(
                      ? `<p class="share-invite">${escapeHtml(t(lang, 'sharePrompt'))}</p>`
                      : ''
                  }
-                 <button id="share-btn" class="ghost${storyRoundComplete ? ' share-btn--pulse' : ''}" type="button">${escapeHtml(t(lang, 'shareAction'))}</button>
+                 <button id="share-btn" class="${storyRoundComplete ? 'share-btn share-btn--pulse' : 'ghost'}" type="button">${escapeHtml(t(lang, 'shareAction'))}</button>
                  <p class="feedback" id="share-feedback">${escapeHtml(storySession.shareFeedback)}</p>
                </div>`
             : ''
@@ -902,7 +902,7 @@ function renderResult(
   shareButton?.addEventListener('click', async () => {
     const shareTitle = t(lang, 'shareTitle');
     const shareText = t(lang, 'shareTextTemplate').replace('{year}', String(storySession.mirrorYear));
-    const shareUrl = window.location.href;
+    const shareUrl = `${window.location.origin}${window.location.pathname}`;
     const slotToShare = storySession.slotCache.get(storySession.currentSlot) ?? null;
     const entryId = slotToShare?.editorialId ?? slotToShare?.eventQid ?? null;
 

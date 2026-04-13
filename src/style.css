@@ -9,6 +9,9 @@
   --shadow: 0 16px 40px rgba(18, 22, 26, 0.08);
   /* Bleu du titre résultat "Tu es en …" (plus foncé pour lisibilité) */
   --year-display-blue: #122639;
+  --share-blue: #2d6fd0;
+  --share-blue-deep: #1f5bb8;
+  --share-blue-glow: rgba(45, 111, 208, 0.42);
 }
 
 * {
@@ -536,14 +539,50 @@ a:focus-visible {
   line-height: 1.35;
 }
 
+/* Dernière scène : CTA partage mis en avant (bleu) */
+.share-btn {
+  border: 1px solid var(--share-blue-deep);
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  cursor: pointer;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(180deg, #4a8ae8 0%, var(--share-blue) 48%, var(--share-blue-deep) 100%);
+  box-shadow:
+    0 4px 16px var(--share-blue-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.share-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 20px var(--share-blue-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.share-btn:focus-visible {
+  outline: 2px solid var(--share-blue);
+  outline-offset: 3px;
+}
+
+.share-btn:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  .ghost.share-btn--pulse {
+  .share-btn.share-btn--pulse {
     animation: shareBtnPulse 2.4s ease-in-out infinite;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ghost.share-btn--pulse {
+  .share-btn.share-btn--pulse {
     animation: none;
   }
 }
@@ -551,12 +590,16 @@ a:focus-visible {
 @keyframes shareBtnPulse {
   0%,
   100% {
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
-    border-color: var(--line);
+    box-shadow:
+      0 4px 16px var(--share-blue-glow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    filter: brightness(1);
   }
   50% {
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    border-color: var(--ink);
+    box-shadow:
+      0 8px 28px rgba(45, 111, 208, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    filter: brightness(1.09);
   }
 }
 
