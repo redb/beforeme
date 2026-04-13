@@ -102,7 +102,7 @@ function cacheKey(year: number, lang: "fr" | "en", limit: number): string {
 }
 
 function r2CacheKey(year: number, lang: "fr" | "en", limit: number): string {
-  return `notable-born/v4/${lang}/${year}/${limit}.json`;
+  return `notable-born/v5/${lang}/${year}/${limit}.json`;
 }
 
 function buildSparqlQuery(year: number, lang: "fr" | "en", limit: number): string {
@@ -390,6 +390,35 @@ function selectItems(params: {
   };
 }
 
+/** Reprend les faits d'arme du catalogue quand l'item vient du WDQS ou d'un cache sans achievement. */
+function enrichItemsWithCatalogAchievements(
+  items: NotableBornItem[],
+  year: number,
+  lang: "fr" | "en"
+): NotableBornItem[] {
+  const catalog = listNotableBirthsForYear(year, lang);
+  const byQid = new Map<string, (typeof catalog)[0]>();
+  const byName = new Map<string, (typeof catalog)[0]>();
+  for (const entry of catalog) {
+    const q = entry.qid?.trim();
+    if (q) {
+      byQid.set(q, entry);
+    }
+    byName.set(entry.name.toLowerCase().trim(), entry);
+  }
+  return items.map((item) => {
+    const achExisting = item.achievement?.trim();
+    if (achExisting) return item;
+    const fromQid =
+      item.qid && !item.qid.startsWith("CATALOG-") ? byQid.get(item.qid) : undefined;
+    const fromName = byName.get(item.label.toLowerCase().trim());
+    const src = fromQid || fromName;
+    const ach = src?.achievement?.trim();
+    if (!ach) return item;
+    return { ...item, achievement: ach };
+  });
+}
+
 export async function onRequestOptions(): Promise<Response> {
   return new Response(null, { status: 204, headers: headers("text/plain; charset=utf-8") });
 }
@@ -442,13 +471,18 @@ export async function onRequestGet(context: { request: Request; env?: Env }): Pr
     seenGestureRoots
   });
 
+  const enriched: NotableBornPayload = {
+    ...payload,
+    items: enrichItemsWithCatalogAchievements(payload.items, year, lang)
+  };
+
   log("notable_born_served", {
     year,
     lang,
     limit,
-    count: payload.items.length,
+    count: enriched.items.length,
     source: memory && now - memory.ts < MEMORY_CACHE_TTL_MS ? "memory" : "upstream"
   });
 
-  return json(200, payload);
+  return json(200, enriched);
 }

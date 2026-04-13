@@ -1,7 +1,7 @@
 {
   "name": "beforeme",
   "private": true,
-  "version": "0.17.168",
+  "version": "0.17.181",
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/bump-version.mjs",
@@ -34,6 +34,7 @@
     "editorial:scan": "npx tsx scripts/editorial/scan_every_record.ts",
     "editorial:gap-report": "npx tsx scripts/editorial/catalog_gap_report.ts",
     "editorial:gap-report:ci": "npx tsx scripts/editorial/catalog_gap_report.ts --fail-if-any-gap",
+    "editorial:notable-achievement-missing": "npx tsx scripts/list_notable_birth_missing_achievement.ts",
     "audit:cards-per-year": "npx tsx scripts/count_cards_per_year.mjs"
   },
   "devDependencies": {

@@ -36,6 +36,7 @@ export type UiKey =
   | 'legalLink'
   | 'sharePrompt'
   | 'shareAction'
+  | 'shareTitle'
   | 'shareTextTemplate'
   | 'shareCopied'
   | 'shareFailed'
@@ -44,16 +45,17 @@ export type UiKey =
   | 'historicalMoreSources'
   | 'storyUnavailable'
   | 'storyExhausted'
-  | 'storyRetry';
+  | 'storyRetry'
+  | 'ageConvertedHint';
 
 const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
   fr: {
     siteTitle: 'AvantMoi.com',
     heroTitle: 'Rejoins ton année miroir',
     heroTagline: 'Tu vas savoir.',
-    ageOrBirthYearLabel: 'ton âge ou ton année de naissance',
-    ageOrBirthYearPlaceholder: 'Entre ton âge ou ton année de naissance',
-    ageOrBirthYearPlaceholderMobile: 'ton âge ou ton année',
+    ageOrBirthYearLabel: 'ton année de naissance (ou ton âge)',
+    ageOrBirthYearPlaceholder: 'Ton année de naissance ou ton âge, ex : 1968 ou 35',
+    ageOrBirthYearPlaceholderMobile: 'année ou âge, ex : 1968 ou 35',
     locationLabel: '',
     locationPlaceholder: 'Entre ton pays (monde par defaut)',
     locationPlaceholderMobile: 'Ton pays',
@@ -81,25 +83,28 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     adSponsored: 'Proposé par avantmoi.com',
     legalLine: 'Expérience ludique sans prétention académique. Aucune donnée personnelle n’est collectée.',
     legalLink: 'Mentions Legales',
-    sharePrompt: 'envoie cette année à un ami',
+    sharePrompt: 'Envoie cette année à un ami',
     shareAction: 'Partager mon année miroir',
-    shareTextTemplate: 'Je viens de voir mon année miroir : {year}',
-    shareCopied: 'lien copié dans le presse-papiers.',
+    shareTitle: 'AvantMoi — ton année miroir',
+    shareTextTemplate:
+      "J’ai exploré mon année miroir en {year} sur AvantMoi : des scènes courtes inspirées d’histoire réelle. Viens voir la tienne.",
+    shareCopied: 'Lien copié dans le presse-papiers.',
     shareFailed: 'partage indisponible sur cet appareil.',
     historicalInspired: "inspire d'un evenement reel",
     historicalSource: 'source',
     historicalMoreSources: '+ {count} autres sources',
     storyUnavailable: 'Cette scène n’a pas pu être créée pour le moment.',
     storyExhausted: 'Tu as vu toutes les scènes pour cette année.',
-    storyRetry: 'Réessayer'
+    storyRetry: 'Réessayer',
+    ageConvertedHint: 'Né(e) en {year} ? Corrige si besoin.'
   },
   en: {
     siteTitle: 'AvantMoi.com',
     heroTitle: 'Join your mirror year',
     heroTagline: 'You are about to know.',
-    ageOrBirthYearLabel: 'your age or your birth year',
-    ageOrBirthYearPlaceholder: 'Enter your age or your birth year',
-    ageOrBirthYearPlaceholderMobile: 'your age or year',
+    ageOrBirthYearLabel: 'your birth year (or your age)',
+    ageOrBirthYearPlaceholder: 'Your birth year or age, e.g. 1968 or 35',
+    ageOrBirthYearPlaceholderMobile: 'year or age, e.g. 1968 or 35',
     locationLabel: '',
     locationPlaceholder: 'Enter your country (world by default)',
     locationPlaceholderMobile: 'Your country',
@@ -127,17 +132,20 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     adSponsored: 'Presented by avantmoi.com',
     legalLine: '©avantmoi.com — Playful experience with no academic claim. No personal data is collected.',
     legalLink: 'Legal Notice',
-    sharePrompt: 'show this year to someone',
+    sharePrompt: 'Send this year to a friend',
     shareAction: 'Share my mirror year',
-    shareTextTemplate: 'I just saw my mirror year: {year}',
-    shareCopied: 'link copied to clipboard.',
+    shareTitle: 'AvantMoi — your mirror year',
+    shareTextTemplate:
+      "I explored my mirror year on AvantMoi ({year}) — short scenes inspired by real history. Try yours.",
+    shareCopied: 'Link copied to clipboard.',
     shareFailed: 'sharing is unavailable on this device.',
     historicalInspired: 'inspired by a real event',
     historicalSource: 'source',
     historicalMoreSources: '+ {count} more sources',
     storyUnavailable: 'This scene could not be created for now.',
     storyExhausted: 'You’ve seen all the scenes for this year.',
-    storyRetry: 'Retry'
+    storyRetry: 'Retry',
+    ageConvertedHint: 'Born in {year}? Correct if needed.'
   }
 };
 

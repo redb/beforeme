@@ -1,4 +1,5 @@
 import type { NotableBirthEntry } from "../../../types";
+import { FR_NOTABLE_BIRTH_BACKFILL_1826_1924 } from "./1826_1924";
 import { FR_NOTABLE_BIRTH_BACKFILL_1925_1949 } from "./1925_1949";
 import { FR_NOTABLE_BIRTH_BACKFILL_1950_1969 } from "./1950_1969";
 import { FR_NOTABLE_BIRTH_BACKFILL_1970_1989 } from "./1970_1989";
@@ -7,6 +8,7 @@ import { FR_NOTABLE_BIRTH_BACKFILL_2010_current } from "./2010_current";
 import { FR_NOTABLE_BIRTH_MINIMUM_DENSITY } from "./minimum_density";
 
 export const FR_NOTABLE_BIRTH_PERIOD_ENTRIES: NotableBirthEntry[] = [
+  ...FR_NOTABLE_BIRTH_BACKFILL_1826_1924,
   ...FR_NOTABLE_BIRTH_BACKFILL_1925_1949,
   ...FR_NOTABLE_BIRTH_BACKFILL_1950_1969,
   ...FR_NOTABLE_BIRTH_BACKFILL_1970_1989,

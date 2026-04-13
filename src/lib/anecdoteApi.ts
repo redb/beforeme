@@ -20,6 +20,8 @@ export interface AnecdoteSlot {
   theme?: string;
   gestureRoot?: string;
   editorialScore?: number;
+  /** Présent sur les réponses éditoriales ; année d’alignement catalogue (peut différer de l’année dans `date`). */
+  matchedYear?: number;
 }
 
 type SlotFamily = "daily_life" | "person" | "invention" | "cultural";
@@ -325,12 +327,17 @@ function parseStableScene(payload: unknown, slot: number): AnecdoteSlot | null {
     placeName: placeName || undefined,
     theme: theme || undefined,
     gestureRoot: gestureRoot || undefined,
-    editorialScore: editorialScore || undefined
+    editorialScore: editorialScore || undefined,
+    matchedYear
   };
 }
 
-function slotMatchesYear(slot: Pick<AnecdoteSlot, "date"> | null, targetYear: number): boolean {
-  if (!slot?.date) return false;
+function slotMatchesYear(slot: Pick<AnecdoteSlot, "date" | "matchedYear"> | null, targetYear: number): boolean {
+  if (!slot) return false;
+  if (typeof slot.matchedYear === "number") {
+    return slot.matchedYear === targetYear;
+  }
+  if (!slot.date) return false;
   return extractYear(slot.date) === targetYear;
 }
 

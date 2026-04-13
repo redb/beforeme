@@ -18,7 +18,7 @@ import { listGestureEntries } from "../../src/content/gestures/index.ts";
 import { listInventionEntries } from "../../src/content/inventions/index.ts";
 import { listNotableBirthsForYear } from "../../src/content/notableBirths/index.ts";
 
-const START_YEAR = 1925;
+const START_YEAR = 1826;
 /** Plafond catalogue : au-delà (ex. 2026 sans naissances notables), ne pas exiger les 4 axes. */
 const END_YEAR = Math.min(2025, new Date().getFullYear());
 const COUNTRY = "Q142" as const;

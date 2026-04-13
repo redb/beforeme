@@ -165,7 +165,7 @@ export const FR_CULTURAL_BACKFILL_1970_1989: CulturalMomentEntry[] = [
     quality: { strictPlace: false, strictDate: true, dailyLife: false, sourceCount: 1 }
   },
   {
-    id: "fr-1974-star-trek-france",
+    id: "fr-1968-mai-68",
     countryQid: "Q142", lang: "fr",
     momentKey: "mai-68-revolution-culturelle",
     momentLabel: "Mai 68 — la révolution culturelle française",

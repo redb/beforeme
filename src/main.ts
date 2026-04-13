@@ -16,6 +16,12 @@ const app = (() => {
 
 const CURRENT_YEAR = Math.floor(new Date().getFullYear());
 const APP_VERSION = `V${__APP_VERSION__} (${__APP_BUILD_ID__})`;
+
+const versionBadge = document.getElementById('version-badge');
+if (versionBadge) {
+  versionBadge.textContent = APP_VERSION;
+}
+
 const PUBLIC_LANG: Lang = 'fr';
 const PUBLIC_COUNTRY: CountryCode = 'FR';
 const PUBLIC_COUNTRY_LINE = 'en France';
@@ -51,6 +57,8 @@ let adConfigLoaded = false;
 let adConfigLoadedAt = 0;
 const AD_CONFIG_REFRESH_MS = 30_000;
 const prefetchedFirstSlots = new Map<string, AnecdoteSlot>();
+const prefetchedFirstSlotPromises = new Map<string, Promise<void>>();
+const FIRST_SCENE_PREFETCH_WAIT_MS = 1_200;
 const pulseTimers: number[] = [];
 let revealOnNextResult = false;
 const videoBackground = new VideoBackground('.bgVideo', document.body);
@@ -108,6 +116,10 @@ function isValidDateParts(year: number, month: number, day: number): boolean {
     date.getUTCMonth() === month - 1 &&
     date.getUTCDate() === day
   );
+}
+
+function isAgeInput(rawInput: string): boolean {
+  return /^\d{1,3}$/.test(rawInput.trim());
 }
 
 function parseBirthYearInput(rawInput: string, lang: Lang): number | null {
@@ -408,13 +420,17 @@ function createSession(mirrorYear: number, lang: Lang, country: CountryCode): St
   };
 }
 
-function prefetchFirstSlot(mirrorYear: number, lang: Lang, country: CountryCode) {
+function prefetchFirstSlot(mirrorYear: number, lang: Lang, country: CountryCode): Promise<void> {
   const key = createSessionKey(mirrorYear, lang, country);
   if (prefetchedFirstSlots.has(key)) {
-    return;
+    return Promise.resolve();
+  }
+  const pending = prefetchedFirstSlotPromises.get(key);
+  if (pending) {
+    return pending;
   }
 
-  fetchAnecdoteSlot({
+  const task = fetchAnecdoteSlot({
     year: mirrorYear,
     lang,
     country,
@@ -428,7 +444,22 @@ function prefetchFirstSlot(mirrorYear: number, lang: Lang, country: CountryCode)
     })
     .catch(() => {
       // Keep runtime loading fallback if prefetch fails.
+    })
+    .finally(() => {
+      prefetchedFirstSlotPromises.delete(key);
     });
+
+  prefetchedFirstSlotPromises.set(key, task);
+  return task;
+}
+
+async function waitForPrefetchOrTimeout(task: Promise<void>, timeoutMs: number) {
+  await Promise.race([
+    task,
+    new Promise<void>((resolve) => {
+      globalThis.setTimeout(resolve, timeoutMs);
+    })
+  ]);
 }
 
 function ensureSession(mirrorYear: number, lang: Lang, country: CountryCode): StorySession {
@@ -605,7 +636,7 @@ function renderHome(lang: Lang) {
     ageOrBirthYearInput.value = ageOrBirthYearInput.value.replace(/[^\dA-Za-zÀ-ÿ/\-\s,]/g, '');
   });
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     errorNode.textContent = '';
     const selectedLang = PUBLIC_LANG;
@@ -616,9 +647,28 @@ function renderHome(lang: Lang) {
       return;
     }
 
+    // Si l'utilisateur a entré un âge (1-3 chiffres), on convertit en année
+    // et on lui demande de confirmer avant de lancer, car l'âge est ambigu
+    // d'un an selon que l'anniversaire a eu lieu ou non cette année.
+    if (isAgeInput(rawInput)) {
+      const birthYear = parseBirthYearInput(rawInput, selectedLang);
+      if (!birthYear) {
+        errorNode.textContent = t(selectedLang, 'yearError');
+        return;
+      }
+      // Remplace l'âge par l'année dans le champ et affiche le hint
+      ageOrBirthYearInput.value = String(birthYear);
+      errorNode.textContent = t(selectedLang, 'ageConvertedHint').replace('{year}', String(birthYear));
+      errorNode.style.color = 'var(--color-accent, #a0c4ff)';
+      ageOrBirthYearInput.focus();
+      ageOrBirthYearInput.select();
+      return;
+    }
+
     const birthYear = parseBirthYearInput(rawInput, selectedLang);
     if (!birthYear) {
       errorNode.textContent = t(selectedLang, 'yearError');
+      errorNode.style.color = '';
       return;
     }
 
@@ -626,12 +676,15 @@ function renderHome(lang: Lang) {
 
     if (!Number.isInteger(mirrorYear) || mirrorYear < 1 || mirrorYear > CURRENT_YEAR) {
       errorNode.textContent = t(selectedLang, 'yearError');
+      errorNode.style.color = '';
       return;
     }
 
+    errorNode.style.color = '';
     submitButton.disabled = true;
     submitButton.textContent = t(selectedLang, 'ctaLoading');
-    prefetchFirstSlot(mirrorYear, selectedLang, PUBLIC_COUNTRY);
+    const prefetchTask = prefetchFirstSlot(mirrorYear, selectedLang, PUBLIC_COUNTRY);
+    await waitForPrefetchOrTimeout(prefetchTask, FIRST_SCENE_PREFETCH_WAIT_MS);
     startTransition(() => {
       session = null;
       revealOnNextResult = true;
@@ -764,11 +817,6 @@ function renderResult(
       <section class="card story-card">
         <p class="story-label">${escapeHtml(t(lang, 'storyLabel'))} ${storySession.currentSlot}</p>
         <p class="story-text">${escapeHtml(storyContent)}</p>
-        ${
-          storyRoundComplete
-            ? `<p class="story-footnote" style="margin-top:0.75rem;opacity:0.85;font-size:0.95em">${escapeHtml(t(lang, 'storyExhausted'))}</p>`
-            : ''
-        }
 
         ${
           showRetry
@@ -800,7 +848,12 @@ function renderResult(
         ${
           canShare
             ? `<div class="share-call">
-                 <button id="share-btn" class="ghost" type="button">${escapeHtml(t(lang, 'shareAction'))}</button>
+                 ${
+                   storyRoundComplete
+                     ? `<p class="share-invite">${escapeHtml(t(lang, 'sharePrompt'))}</p>`
+                     : ''
+                 }
+                 <button id="share-btn" class="share-btn${storyRoundComplete ? ' share-btn--pulse' : ''}" type="button">${escapeHtml(t(lang, 'shareAction'))}</button>
                  <p class="feedback" id="share-feedback">${escapeHtml(storySession.shareFeedback)}</p>
                </div>`
             : ''
@@ -848,7 +901,9 @@ function renderResult(
   });
 
   shareButton?.addEventListener('click', async () => {
+    const shareTitle = t(lang, 'shareTitle');
     const shareText = t(lang, 'shareTextTemplate').replace('{year}', String(storySession.mirrorYear));
+    const shareUrl = window.location.href;
     const slotToShare = storySession.slotCache.get(storySession.currentSlot) ?? null;
     const entryId = slotToShare?.editorialId ?? slotToShare?.eventQid ?? null;
 
@@ -868,8 +923,9 @@ function renderResult(
     if (navigator.share) {
       try {
         await navigator.share({
+          title: shareTitle,
           text: shareText,
-          url: window.location.href
+          url: shareUrl
         });
         return;
       } catch {
@@ -878,7 +934,7 @@ function renderResult(
     }
 
     try {
-      await navigator.clipboard.writeText(`${shareText}\n${window.location.href}`);
+      await navigator.clipboard.writeText(`${shareTitle}\n\n${shareText}\n\n${shareUrl}`);
       storySession.shareFeedback = t(lang, 'shareCopied');
     } catch {
       storySession.shareFeedback = t(lang, 'shareFailed');
@@ -936,7 +992,6 @@ function renderSiteFooter(lang: Lang) {
     <footer class="site-footer">
       <p>
         <a href="https://avantmoi.com" target="_blank" rel="noopener noreferrer">©avantmoi.com</a>
-        <strong> ${APP_VERSION}</strong>
         — ${escapeHtml(t(lang, 'legalLine'))}
         <a href="/mentions-legales.html">${escapeHtml(t(lang, 'legalLink'))}</a>
       </p>

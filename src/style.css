@@ -9,6 +9,9 @@
   --shadow: 0 16px 40px rgba(18, 22, 26, 0.08);
   /* Bleu du titre résultat "Tu es en …" (plus foncé pour lisibilité) */
   --year-display-blue: #122639;
+  --share-blue: #2d6fd0;
+  --share-blue-deep: #1f5bb8;
+  --share-blue-glow: rgba(45, 111, 208, 0.42);
 }
 
 * {
@@ -442,6 +445,8 @@ a:focus-visible {
   font-size: 1.02rem;
   max-width: 50rem;
   margin-inline: auto;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .historical-note {
@@ -522,6 +527,77 @@ a:focus-visible {
 
 .share-call p {
   margin: 0;
+}
+
+.share-invite {
+  margin: 0 0 0.1rem;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.share-btn {
+  border: 1px solid var(--share-blue-deep);
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  cursor: pointer;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(180deg, #4a8ae8 0%, var(--share-blue) 48%, var(--share-blue-deep) 100%);
+  box-shadow:
+    0 4px 16px var(--share-blue-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.share-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 20px var(--share-blue-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.share-btn:focus-visible {
+  outline: 2px solid var(--share-blue);
+  outline-offset: 3px;
+}
+
+.share-btn:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .share-btn--pulse {
+    animation: shareBtnPulse 2.4s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .share-btn--pulse {
+    animation: none;
+  }
+}
+
+@keyframes shareBtnPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 4px 16px var(--share-blue-glow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 8px 28px rgba(45, 111, 208, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    filter: brightness(1.09);
+  }
 }
 
 .feedback {
@@ -613,6 +689,26 @@ a:focus-visible {
   width: min(520px, 100%);
   background: #fff;
   color: var(--muted);
+}
+
+/* Toujours visible (le footer peut être hors écran après scroll) */
+.version-badge {
+  position: fixed;
+  right: max(0.5rem, env(safe-area-inset-right, 0px));
+  bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  max-width: min(100vw - 1rem, 22rem);
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  background: rgba(8, 12, 24, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e8eefc;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  text-align: right;
+  backdrop-filter: blur(6px);
 }
 
 .site-footer {
