@@ -844,20 +844,6 @@ function renderResult(
                </div>`
             : ''
         }
-
-        ${
-          canShare
-            ? `<div class="share-call">
-                 ${
-                   storyRoundComplete
-                     ? `<p class="share-invite">${escapeHtml(t(lang, 'sharePrompt'))}</p>`
-                     : ''
-                 }
-                 <button id="share-btn" class="share-btn${storyRoundComplete ? ' share-btn--pulse' : ''}" type="button">${escapeHtml(t(lang, 'shareAction'))}</button>
-                 <p class="feedback" id="share-feedback">${escapeHtml(storySession.shareFeedback)}</p>
-               </div>`
-            : ''
-        }
       </section>
 
       <section class="result-actions-plain">
@@ -869,6 +855,19 @@ function renderResult(
               : `<button id="continue" class="ghost" type="button">${escapeHtml(t(lang, 'continue'))}</button>`
           }
         </div>
+        ${
+          canShare
+            ? `<div class="share-call">
+                 ${
+                   storyRoundComplete
+                     ? `<p class="share-invite">${escapeHtml(t(lang, 'sharePrompt'))}</p>`
+                     : ''
+                 }
+                 <button id="share-btn" class="ghost${storyRoundComplete ? ' share-btn--pulse' : ''}" type="button">${escapeHtml(t(lang, 'shareAction'))}</button>
+                 <p class="feedback" id="share-feedback">${escapeHtml(storySession.shareFeedback)}</p>
+               </div>`
+            : ''
+        }
       </section>
 
       ${renderFooterAd(lang)}
