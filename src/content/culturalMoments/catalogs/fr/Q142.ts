@@ -287,40 +287,44 @@ export const FR_CULTURAL_CATALOG: CulturalMomentCatalog = {
       }
     },
     {
-      id: "fr-1986-la-cinq",
+      id: "fr-1986-jean-de-florette-cinema",
       countryQid: "Q142",
       lang: "fr",
-      momentKey: "la-cinq",
-      momentLabel: "lancement de La Cinq",
-      label: "lancement de La Cinq",
-      category: "work_release",
+      momentKey: "jean-de-florette-premiere",
+      momentLabel: "sortie de Jean de Florette en salles",
+      label: "sortie de Jean de Florette en salles",
+      category: "public_premiere",
       theme: "loisirs",
-      gestureRoot: "la_cinq",
-      editorialScore: 80,
-      date: "1986-02-20",
+      gestureRoot: "jean_de_florette_film",
+      editorialCluster: "jean_de_florette_1986",
+      editorialScore: 88,
+      date: "1986-08-27",
       year: 1986,
       datePrecision: "day",
-      placeName: "France",
+      placeName: "Salles de cinéma, France",
       placeType: "country",
       placeQid: "Q142",
-      triggerLabel: "Lancement de La Cinq",
-      beforeState: "Avant le 20 fevrier 1986, La Cinq n'existe pas dans le paysage audiovisuel francais.",
-      afterState: "Apres le 20 fevrier 1986, une nouvelle chaine privee nationale entre dans les conversations et les soirees.",
-      gestureChanged: "Tu peux parler d'une nouvelle chaine privee que tout le monde decouvre le meme soir.",
-      materialAnchor: "Poste de television et logo de chaine",
+      triggerLabel: "Sortie nationale du film Jean de Florette (Claude Berri)",
+      beforeState:
+        "Avant l'été 1986, l'adaptation au cinéma de L'Eau des collines n'a pas encore rempli les salles ni structuré le débat culturel de la rentrée.",
+      afterState:
+        "Après le 27 août 1986, le film devient un phénomène de fréquentation et de conversation — premier volet du diptyque avec Manon des sources.",
+      gestureChanged:
+        "Tu peux faire la queue pour une séance où salle comble et critiques s'accordent sur un événement cinématographique national.",
+      materialAnchor: "Affiche de film, salle obscure et projecteur 35 mm",
       sceneText:
-        "20 fevrier 1986, dans les salons. Un nouveau logo apparait a l'ecran et fait parler des programmes des la premiere semaine. Une chaine de plus devient un repere commun.",
-      fact: "Le 20 fevrier 1986, La Cinq commence a emettre en France.",
+        "27 août 1986, cinéma. Les salles affichent complet pour le retour de Pagnol à l'écran. Montand, Depardieu, Auteuil : la France entière découvre le drame provençal le plus commenté de l'année.",
+      fact: "Le 27 août 1986, Jean de Florette de Claude Berri sort en France — adaptation majeure de Marcel Pagnol, premier volet du diptyque avec Manon des sources.",
       sources: [
         {
           label: "Wikipedia",
-          url: "https://fr.wikipedia.org/wiki/La_Cinq",
+          url: "https://fr.wikipedia.org/wiki/Jean_de_Florette_(film)",
           authority: false
         }
       ],
-      tags: ["television", "chaine", "la-cinq", "culture"],
+      tags: ["cinema", "berri", "pagnol", "provence"],
       quality: {
-        strictPlace: true,
+        strictPlace: false,
         strictDate: true,
         dailyLife: false,
         sourceCount: 1

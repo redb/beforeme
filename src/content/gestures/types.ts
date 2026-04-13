@@ -30,6 +30,8 @@ export type GestureRupture = {
   gestureLabel: string;
   theme: EditorialTheme;
   gestureRoot: string;
+  /** Si défini, une seule carte de ce cluster par parcours (toutes familles éditoriales confondues). */
+  editorialCluster?: string;
   editorialScore: number;
   category: GestureCategory;
   direction: GestureDirection;

@@ -2,6 +2,7 @@ import { listGestureEntries } from "../../content/gestures";
 import type { EditorialTheme } from "../../content/editorialTheme";
 import type { GestureRupture } from "../../content/gestures/types";
 import { isCatalogPlaceholderGesture } from "../../lib/editorialCatalogPlaceholders";
+import { passesEditorialClusterFilter } from "../../lib/editorialCluster";
 
 export type GestureSelection = {
   exact: GestureRupture[];
@@ -50,11 +51,12 @@ function scoreEntry(
   seenGestureRoots: string[] = [],
   shareBonus?: Map<string, number>
 ): number {
+  const bonus = shareBonus instanceof Map ? (shareBonus.get(entry.id) ?? 0) : 0;
   return (
     computeBaseYearScore(entry, targetYear) +
     entry.editorialScore +
     computeDiversityBonus(entry, previousTheme) +
-    (shareBonus?.get(entry.id) ?? 0) -
+    bonus -
     computeRepetitionPenalty(entry, previousTheme, previousGestureRoot, seenThemes, seenGestureRoots)
   );
 }
@@ -69,11 +71,14 @@ export function selectGesturesForYear(params: {
   previousGestureRoot?: string | null;
   seenThemes?: EditorialTheme[];
   seenGestureRoots?: string[];
+  /** Clusters éditoriaux déjà servis dans ce parcours (autres familles incluses). */
+  seenClusters?: string[];
   shareBonus?: Map<string, number>;
 }): GestureSelection {
-  const entries = listGestureEntries(params.countryQid, params.lang).filter(
-    (entry) => !isCatalogPlaceholderGesture(entry)
-  );
+  const seenClusters = params.seenClusters ?? [];
+  const entries = listGestureEntries(params.countryQid, params.lang)
+    .filter((entry) => !isCatalogPlaceholderGesture(entry))
+    .filter((entry) => passesEditorialClusterFilter(entry, seenClusters));
   const compareEntries = (left: GestureRupture, right: GestureRupture) => {
     const scoreDiff =
       scoreEntry(

@@ -32,6 +32,7 @@ type CulturalMomentPayload = {
   sources: Array<{ label: string; url: string }>;
   generated_at: string;
   source_mode: "editorial_cultural_moment_catalog";
+  editorial_cluster?: string;
 };
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -113,7 +114,8 @@ function pickCulturalMoment(
   previousTheme: EditorialTheme | null,
   previousGestureRoot: string | null,
   seenThemes: EditorialTheme[],
-  seenGestureRoots: string[]
+  seenGestureRoots: string[],
+  seenClusters: string[]
 ): CulturalMomentEntry | null {
   const context = getCulturalMomentSelectionContext({ year, countryQid, lang });
   return selectCulturalMomentForYear(context, {
@@ -121,7 +123,8 @@ function pickCulturalMoment(
     previousTheme,
     previousGestureRoot,
     seenThemes,
-    seenGestureRoots
+    seenGestureRoots,
+    seenClusters
   });
 }
 
@@ -153,7 +156,8 @@ function buildPayload(entry: CulturalMomentEntry, params: { year: number; countr
     narrative_text: entry.sceneText,
     sources: entry.sources.map((source) => ({ label: source.label, url: source.url })),
     generated_at: new Date().toISOString(),
-    source_mode: "editorial_cultural_moment_catalog"
+    source_mode: "editorial_cultural_moment_catalog",
+    ...(entry.editorialCluster ? { editorial_cluster: entry.editorialCluster } : {})
   };
 }
 
@@ -171,6 +175,7 @@ export async function onRequestGet(context: { request: Request }): Promise<Respo
   const previousGestureRoot = requestUrl.searchParams.get("previousGestureRoot");
   const seenThemes = parseSeenThemes(requestUrl.searchParams.get("seenThemes"));
   const seenGestureRoots = parseCsvList(requestUrl.searchParams.get("seenGestureRoots"));
+  const seenClusters = parseCsvList(requestUrl.searchParams.get("seenClusters"));
 
   if (!year || !countryQid) {
     return json(400, { error: "invalid_params", message: "Expected year and country." });
@@ -181,7 +186,17 @@ export async function onRequestGet(context: { request: Request }): Promise<Respo
     return json(429, { error: "rate_limited", retryAfterMs: limiter.retryAfterMs });
   }
 
-  const entry = pickCulturalMoment(year, countryQid, lang, slot, previousTheme, previousGestureRoot, seenThemes, seenGestureRoots);
+  const entry = pickCulturalMoment(
+    year,
+    countryQid,
+    lang,
+    slot,
+    previousTheme,
+    previousGestureRoot,
+    seenThemes,
+    seenGestureRoots,
+    seenClusters
+  );
   if (!entry) {
     log("cultural_moment_missing", { year, countryQid, lang, slot });
     return json(404, { error: "cultural_moment_not_found", message: "No editorial cultural moment found." });

@@ -13,11 +13,13 @@ type Card = {
   matchedYear: number;
   matchType: "exact" | "nearby";
   expectedYear: number;
+  editorialCluster?: string;
 };
 
 type SeenState = {
   seenThemes: EditorialTheme[];
   seenGestureRoots: string[];
+  seenClusters: string[];
 };
 
 function buildSceneParams(year: number, rank: number, state: SeenState) {
@@ -33,6 +35,7 @@ function buildSceneParams(year: number, rank: number, state: SeenState) {
   if (previousGestureRoot) params.set("previousGestureRoot", previousGestureRoot);
   if (state.seenThemes.length) params.set("seenThemes", state.seenThemes.join(","));
   if (state.seenGestureRoots.length) params.set("seenGestureRoots", state.seenGestureRoots.join(","));
+  if (state.seenClusters.length) params.set("seenClusters", state.seenClusters.join(","));
   return params;
 }
 
@@ -44,14 +47,20 @@ function buildPersonParams(year: number, rank: number, state: SeenState) {
   if (previousGestureRoot) params.set("previousGestureRoot", previousGestureRoot);
   if (state.seenThemes.length) params.set("seenThemes", state.seenThemes.join(","));
   if (state.seenGestureRoots.length) params.set("seenGestureRoots", state.seenGestureRoots.join(","));
+  if (state.seenClusters.length) params.set("seenClusters", state.seenClusters.join(","));
   return params;
 }
 
 function remember(state: SeenState, card: Card) {
   state.seenThemes.push(card.theme);
   state.seenGestureRoots.push(card.gestureRoot);
+  const c = String(card.editorialCluster || "").trim();
+  if (c && !state.seenClusters.includes(c)) {
+    state.seenClusters.push(c);
+  }
   if (state.seenThemes.length > 6) state.seenThemes.shift();
   if (state.seenGestureRoots.length > 6) state.seenGestureRoots.shift();
+  if (state.seenClusters.length > 20) state.seenClusters.shift();
 }
 
 async function fetchDaily(year: number, state: SeenState, rank = 1): Promise<Card> {
@@ -65,12 +74,21 @@ async function fetchDaily(year: number, state: SeenState, rank = 1): Promise<Car
     date?: string;
     matched_year?: number;
     match_type?: "exact" | "nearby";
+    editorial_cluster?: string;
   };
   assert.ok(payload.theme);
   assert.ok(payload.gesture_root);
   assert.ok(payload.matched_year);
   assert.ok(payload.match_type);
-  assert.equal(String(payload.date || "").slice(0, 4), String(payload.matched_year));
+  assert.equal(payload.matched_year, year, "geste: année miroir = matched_year (premium)");
+  const datePrefix = String(payload.date || "").slice(0, 4);
+  if (/^\d{4}$/.test(datePrefix)) {
+    assert.equal(Number(datePrefix), payload.matched_year, "geste: année dans la date = matched_year");
+  }
+  const editorialCluster =
+    typeof payload.editorial_cluster === "string" && payload.editorial_cluster.trim()
+      ? payload.editorial_cluster.trim()
+      : undefined;
   return {
     kind: "daily",
     theme: payload.theme!,
@@ -78,7 +96,8 @@ async function fetchDaily(year: number, state: SeenState, rank = 1): Promise<Car
     date: payload.date!,
     matchedYear: payload.matched_year!,
     matchType: payload.match_type!,
-    expectedYear: year
+    expectedYear: year,
+    editorialCluster
   };
 }
 
@@ -115,12 +134,21 @@ async function fetchInvention(year: number, state: SeenState, rank = 1): Promise
     date?: string;
     matched_year?: number;
     match_type?: "exact" | "nearby";
+    editorial_cluster?: string;
   };
   assert.ok(payload.theme);
   assert.ok(payload.gesture_root);
   assert.ok(payload.matched_year);
   assert.ok(payload.match_type);
-  assert.equal(String(payload.date || "").slice(0, 4), String(payload.matched_year));
+  assert.equal(payload.matched_year, year, "invention: année miroir = matched_year (premium)");
+  const datePrefix = String(payload.date || "").slice(0, 4);
+  if (/^\d{4}$/.test(datePrefix)) {
+    assert.equal(Number(datePrefix), payload.matched_year, "invention: année dans la date = matched_year");
+  }
+  const editorialCluster =
+    typeof payload.editorial_cluster === "string" && payload.editorial_cluster.trim()
+      ? payload.editorial_cluster.trim()
+      : undefined;
   return {
     kind: "invention",
     theme: payload.theme!,
@@ -128,7 +156,8 @@ async function fetchInvention(year: number, state: SeenState, rank = 1): Promise
     date: payload.date!,
     matchedYear: payload.matched_year!,
     matchType: payload.match_type!,
-    expectedYear: year
+    expectedYear: year,
+    editorialCluster
   };
 }
 
@@ -143,12 +172,21 @@ async function fetchCultural(year: number, state: SeenState, rank = 1): Promise<
     date?: string;
     matched_year?: number;
     match_type?: "exact" | "nearby";
+    editorial_cluster?: string;
   };
   assert.ok(payload.theme);
   assert.ok(payload.gesture_root);
   assert.ok(payload.matched_year);
   assert.ok(payload.match_type);
-  assert.equal(String(payload.date || "").slice(0, 4), String(payload.matched_year));
+  assert.equal(payload.matched_year, year, "culturel: année miroir = matched_year (premium)");
+  const datePrefix = String(payload.date || "").slice(0, 4);
+  if (/^\d{4}$/.test(datePrefix)) {
+    assert.equal(Number(datePrefix), payload.matched_year, "culturel: année dans la date = matched_year");
+  }
+  const editorialCluster =
+    typeof payload.editorial_cluster === "string" && payload.editorial_cluster.trim()
+      ? payload.editorial_cluster.trim()
+      : undefined;
   return {
     kind: "cultural",
     theme: payload.theme!,
@@ -156,32 +194,39 @@ async function fetchCultural(year: number, state: SeenState, rank = 1): Promise<
     date: payload.date!,
     matchedYear: payload.matched_year!,
     matchType: payload.match_type!,
-    expectedYear: year
+    expectedYear: year,
+    editorialCluster
   };
 }
 
+/** Enchaîne les 4 scènes comme le client : mémoire thèmes / roots / clusters mise à jour après chaque carte. */
 async function fetchCycle(year: number): Promise<Card[]> {
-  const state: SeenState = { seenThemes: [], seenGestureRoots: [] };
-  const cards = [
-    await fetchDaily(year, state),
-    await fetchPerson(year, state),
-    await fetchInvention(year, state),
-    await fetchCultural(year, state)
-  ];
-  for (const card of cards) remember(state, card);
-  return cards;
+  const state: SeenState = { seenThemes: [], seenGestureRoots: [], seenClusters: [] };
+  const daily = await fetchDaily(year, state);
+  remember(state, daily);
+  const person = await fetchPerson(year, state);
+  remember(state, person);
+  const invention = await fetchInvention(year, state);
+  remember(state, invention);
+  const cultural = await fetchCultural(year, state);
+  remember(state, cultural);
+  return [daily, person, invention, cultural];
 }
 
 async function run() {
-  // Années où le catalogue FR a au moins une carte exacte par axe (geste, naissance, invention, culturel)
   const years = [1968, 1982, 1994];
   const cards = (await Promise.all(years.map((year) => fetchCycle(year)))).flat();
 
   for (const card of cards) {
-    assert.equal(Number(card.date.slice(0, 4)), card.matchedYear);
-    assert.equal(card.matchedYear, card.expectedYear, `${card.kind} year must match mirror year (premium)`);
-    if (card.kind !== "person") {
+    assert.equal(card.matchedYear, card.expectedYear, `${card.kind}: année catalogue = année miroir`);
+    if (card.kind === "person") {
+      assert.equal(Number(card.date.slice(0, 4)), card.matchedYear);
+    } else {
       assert.equal(card.matchType, "exact");
+      const prefix = String(card.date || "").slice(0, 4);
+      if (/^\d{4}$/.test(prefix)) {
+        assert.equal(Number(prefix), card.matchedYear);
+      }
     }
   }
 

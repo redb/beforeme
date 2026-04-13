@@ -2,6 +2,7 @@ import { listInventionEntries } from "../../content/inventions";
 import type { EditorialTheme } from "../../content/editorialTheme";
 import type { InventionEntry } from "../../content/inventions/types";
 import { isCatalogPlaceholderInvention } from "../../lib/editorialCatalogPlaceholders";
+import { passesEditorialClusterFilter } from "../../lib/editorialCluster";
 
 export type InventionSelection = {
   exact: InventionEntry[];
@@ -50,11 +51,12 @@ function scoreEntry(
   seenGestureRoots: string[] = [],
   shareBonus?: Map<string, number>
 ): number {
+  const bonus = shareBonus instanceof Map ? (shareBonus.get(entry.id) ?? 0) : 0;
   return (
     computeBaseYearScore(entry, targetYear) +
     entry.editorialScore +
     computeDiversityBonus(entry, previousTheme) +
-    (shareBonus?.get(entry.id) ?? 0) -
+    bonus -
     computeRepetitionPenalty(entry, previousTheme, previousGestureRoot, seenThemes, seenGestureRoots)
   );
 }
@@ -69,11 +71,13 @@ export function selectInventionsForYear(params: {
   previousGestureRoot?: string | null;
   seenThemes?: EditorialTheme[];
   seenGestureRoots?: string[];
+  seenClusters?: string[];
   shareBonus?: Map<string, number>;
 }): InventionSelection {
-  const entries = listInventionEntries(params.countryQid, params.lang).filter(
-    (entry) => !isCatalogPlaceholderInvention(entry)
-  );
+  const seenClusters = params.seenClusters ?? [];
+  const entries = listInventionEntries(params.countryQid, params.lang)
+    .filter((entry) => !isCatalogPlaceholderInvention(entry))
+    .filter((entry) => passesEditorialClusterFilter(entry, seenClusters));
   const compareEntries = (left: InventionEntry, right: InventionEntry) => {
     const scoreDiff =
       scoreEntry(

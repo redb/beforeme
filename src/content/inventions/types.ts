@@ -24,6 +24,8 @@ export type InventionEntry = {
   itemLabel: string;
   theme: EditorialTheme;
   gestureRoot: string;
+  /** Si défini, une seule carte de ce cluster par parcours (gestes / inventions / culturels). */
+  editorialCluster?: string;
   editorialScore: number;
   objectType: "service" | "device" | "infrastructure" | "media" | "payment_tool" | "domestic_object";
   category: InventionCategory;

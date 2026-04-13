@@ -22,6 +22,8 @@ export interface AnecdoteSlot {
   editorialScore?: number;
   /** Présent sur les réponses éditoriales ; année d’alignement catalogue (peut différer de l’année dans `date`). */
   matchedYear?: number;
+  /** Clé transversale pour éviter deux scènes sur le même fait (voir catalogues `editorialCluster`). */
+  editorialCluster?: string;
 }
 
 type SlotFamily = "daily_life" | "person" | "invention" | "cultural";
@@ -72,6 +74,7 @@ interface StableSceneResponse {
   theme?: string;
   gesture_root?: string;
   editorial_score?: number;
+  editorial_cluster?: string;
 }
 
 function extractYear(value?: string): number | null {
@@ -86,6 +89,7 @@ const batchPending = new Map<string, Promise<BatchCandidate[]>>();
 const sessionMemory = {
   seenThemes: [] as string[],
   seenGestureRoots: [] as string[],
+  seenEditorialClusters: [] as string[],
   seenEventKeys: [] as string[],
   seenSceneFingerprints: [] as string[]
 };
@@ -96,6 +100,7 @@ export function resetAnecdoteSessionMemory() {
   sessionMemoryKey = "";
   sessionMemory.seenThemes.length = 0;
   sessionMemory.seenGestureRoots.length = 0;
+  sessionMemory.seenEditorialClusters.length = 0;
   sessionMemory.seenEventKeys.length = 0;
   sessionMemory.seenSceneFingerprints.length = 0;
   rememberedSlots.clear();
@@ -286,6 +291,10 @@ function parseStableScene(payload: unknown, slot: number): AnecdoteSlot | null {
     (typeof data.invention_id === "string" && data.invention_id.trim()) ||
     (typeof data.moment_id === "string" && data.moment_id.trim()) ||
     undefined;
+  const editorialCluster =
+    typeof data.editorial_cluster === "string" && data.editorial_cluster.trim()
+      ? data.editorial_cluster.trim()
+      : undefined;
   const narrative =
     narrativeText && !looksMechanicalNarrative(narrativeText)
       ? narrativeText
@@ -328,7 +337,8 @@ function parseStableScene(payload: unknown, slot: number): AnecdoteSlot | null {
     theme: theme || undefined,
     gestureRoot: gestureRoot || undefined,
     editorialScore: editorialScore || undefined,
-    matchedYear
+    matchedYear,
+    editorialCluster
   };
 }
 
@@ -390,6 +400,7 @@ function ensureSessionMemory(input: { year: number; lang: Lang; country: Country
   sessionMemoryKey = nextKey;
   sessionMemory.seenThemes.length = 0;
   sessionMemory.seenGestureRoots.length = 0;
+  sessionMemory.seenEditorialClusters.length = 0;
   sessionMemory.seenEventKeys.length = 0;
   sessionMemory.seenSceneFingerprints.length = 0;
   rememberedSlots.clear();
@@ -440,6 +451,14 @@ function rememberSlot(input: { year: number; lang: Lang; country: CountryCode; s
     sessionMemory.seenGestureRoots.push(input.slot.gestureRoot);
     if (sessionMemory.seenGestureRoots.length > 5) {
       sessionMemory.seenGestureRoots.splice(0, sessionMemory.seenGestureRoots.length - 5);
+    }
+  }
+
+  const cluster = String(input.slot.editorialCluster || "").trim();
+  if (cluster && !sessionMemory.seenEditorialClusters.includes(cluster)) {
+    sessionMemory.seenEditorialClusters.push(cluster);
+    if (sessionMemory.seenEditorialClusters.length > 20) {
+      sessionMemory.seenEditorialClusters.splice(0, sessionMemory.seenEditorialClusters.length - 20);
     }
   }
 
@@ -556,7 +575,8 @@ export async function fetchAnecdoteSlot(input: {
       previousTheme,
       previousGestureRoot,
       seenThemes: sessionMemory.seenThemes.join(","),
-      seenGestureRoots: sessionMemory.seenGestureRoots.join(",")
+      seenGestureRoots: sessionMemory.seenGestureRoots.join(","),
+      seenClusters: sessionMemory.seenEditorialClusters.join(",")
     });
     const editorialResponse = await fetchWithTimeout(`${editorialPath}?${editorialParams.toString()}`, 10_000);
     const editorialRaw = await editorialResponse.text();

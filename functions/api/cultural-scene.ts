@@ -36,6 +36,7 @@ type CulturalScenePayload = {
   sources: Array<{ label: string; url: string }>;
   generated_at: string;
   source_mode: "editorial_cultural_catalog";
+  editorial_cluster?: string;
 };
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -162,7 +163,8 @@ function buildPayload(entry: CulturalMomentEntry, params: { year: number; countr
     narrative_text: entry.sceneText,
     sources: entry.sources.map((source) => ({ label: source.label, url: source.url })),
     generated_at: new Date().toISOString(),
-    source_mode: "editorial_cultural_catalog"
+    source_mode: "editorial_cultural_catalog",
+    ...(entry.editorialCluster ? { editorial_cluster: entry.editorialCluster } : {})
   };
 }
 
@@ -180,6 +182,7 @@ export async function onRequestGet(context: { request: Request; env?: ShareEnv }
   const previousGestureRoot = requestUrl.searchParams.get("previousGestureRoot");
   const seenThemes = parseSeenThemes(requestUrl.searchParams.get("seenThemes"));
   const seenGestureRoots = parseCsvList(requestUrl.searchParams.get("seenGestureRoots"));
+  const seenClusters = parseCsvList(requestUrl.searchParams.get("seenClusters"));
 
   if (!year || !countryQid) {
     return json(400, { error: "invalid_params", message: "Expected year and country." });
@@ -192,7 +195,18 @@ export async function onRequestGet(context: { request: Request; env?: ShareEnv }
 
   const env = context.env || {};
   const shareBonus = await buildShareBonusMap(env, countryQid, year);
-  const entry = pickCultural(year, countryQid, lang, slot, previousTheme, previousGestureRoot, seenThemes, seenGestureRoots, shareBonus);
+  const entry = pickCultural(
+    year,
+    countryQid,
+    lang,
+    slot,
+    previousTheme,
+    previousGestureRoot,
+    seenThemes,
+    seenGestureRoots,
+    seenClusters,
+    shareBonus
+  );
   if (!entry) {
     log("cultural_scene_missing", { year, countryQid, lang, slot });
     return json(404, { error: "cultural_not_found", message: "No editorial cultural scene found." });

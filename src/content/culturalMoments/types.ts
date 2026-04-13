@@ -18,6 +18,8 @@ export type CulturalMomentEntry = {
   category: CulturalMomentCategory;
   theme: EditorialTheme;
   gestureRoot: string;
+  /** Si défini, une seule carte de ce cluster par parcours (gestes / inventions / culturels). */
+  editorialCluster?: string;
   editorialScore: number;
   date: string;
   year: number;

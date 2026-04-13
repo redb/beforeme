@@ -2,6 +2,7 @@ import type { EditorialTheme } from "../../content/editorialTheme";
 import type { CulturalMomentEntry } from "../../content/culturalMoments/types";
 import { listCulturalEntries } from "../../content/culturalMoments";
 import { isCatalogPlaceholderCultural } from "../../lib/editorialCatalogPlaceholders";
+import { passesEditorialClusterFilter } from "../../lib/editorialCluster";
 
 export type CulturalMomentSelectionContext = {
   year: number;
@@ -16,6 +17,7 @@ export type CulturalMomentSelectionParams = {
   previousGestureRoot?: string | null;
   seenThemes?: EditorialTheme[];
   seenGestureRoots?: string[];
+  seenClusters?: string[];
   shareBonus?: Map<string, number>;
 };
 
@@ -72,41 +74,47 @@ function scoreEntry(
     params.seenGestureRoots?.includes(entry.gestureRoot) ? 12 : 0
   ].reduce((sum, value) => sum + value, 0);
 
-  return baseYearScore(year, entry) + entry.editorialScore + diversityBonus + (params.shareBonus?.get(entry.id) ?? 0) - repetitionPenalty;
+  const shareBonus =
+    params.shareBonus instanceof Map ? (params.shareBonus.get(entry.id) ?? 0) : 0;
+  return baseYearScore(year, entry) + entry.editorialScore + diversityBonus + shareBonus - repetitionPenalty;
 }
 
 export function selectCulturalMomentForYear(
   context: CulturalMomentSelectionContext,
   params: CulturalMomentSelectionParams
 ): CulturalMomentEntry | null {
+  const seenClusters = params.seenClusters ?? [];
+  const baseEntries = context.entries.filter((entry) => passesEditorialClusterFilter(entry, seenClusters));
+  const scoped: CulturalMomentSelectionContext = { ...context, entries: baseEntries };
+
   const rankExact = (input: CulturalMomentEntry[]) =>
     [...input]
-      .filter((entry) => entry.year === context.year)
+      .filter((entry) => entry.year === scoped.year)
       .filter((entry) => isValid(entry))
       .sort((left, right) => {
-        const scoreDiff = scoreEntry(context.year, right, params) - scoreEntry(context.year, left, params);
+        const scoreDiff = scoreEntry(scoped.year, right, params) - scoreEntry(scoped.year, left, params);
         if (scoreDiff !== 0) return scoreDiff;
         return left.id.localeCompare(right.id);
       });
 
   const rankNearby = (input: CulturalMomentEntry[]) =>
     [...input]
-      .filter((entry) => entry.year !== context.year)
-      .filter((entry) => Math.abs(entry.year - context.year) <= MAX_CULTURAL_NEARBY_YEAR_DISTANCE)
+      .filter((entry) => entry.year !== scoped.year)
+      .filter((entry) => Math.abs(entry.year - scoped.year) <= MAX_CULTURAL_NEARBY_YEAR_DISTANCE)
       .filter((entry) => isValid(entry))
       .sort((left, right) => {
-        const distanceDiff = Math.abs(left.year - context.year) - Math.abs(right.year - context.year);
+        const distanceDiff = Math.abs(left.year - scoped.year) - Math.abs(right.year - scoped.year);
         if (distanceDiff !== 0) return distanceDiff;
         if (left.year !== right.year) return left.year - right.year;
-        const scoreDiff = scoreEntry(context.year, right, params) - scoreEntry(context.year, left, params);
+        const scoreDiff = scoreEntry(scoped.year, right, params) - scoreEntry(scoped.year, left, params);
         if (scoreDiff !== 0) return scoreDiff;
         return left.id.localeCompare(right.id);
       });
 
-  const ranked = rankExact(context.entries.filter((entry) => isAllowed(entry, params.previousTheme)));
-  const fallbackRanked = ranked.length ? ranked : rankExact(context.entries);
-  const nearby = rankNearby(context.entries.filter((entry) => isAllowed(entry, params.previousTheme)));
-  const fallbackNearby = nearby.length ? nearby : rankNearby(context.entries);
+  const ranked = rankExact(scoped.entries.filter((entry) => isAllowed(entry, params.previousTheme)));
+  const fallbackRanked = ranked.length ? ranked : rankExact(scoped.entries);
+  const nearby = rankNearby(scoped.entries.filter((entry) => isAllowed(entry, params.previousTheme)));
+  const fallbackNearby = nearby.length ? nearby : rankNearby(scoped.entries);
   const combined = [...fallbackRanked, ...fallbackNearby];
 
   const index = Math.max(0, params.slot - 1);

@@ -791,6 +791,7 @@ export const FR_GESTURE_CATALOG: GestureCatalog = {
       gestureLabel: "zapper vers La Cinq",
       theme: "loisirs",
       gestureRoot: "zapper_vers_la_cinq",
+      editorialCluster: "la_cinq_1986",
       editorialScore: 70,
       category: "media",
       direction: "impossible_to_possible",

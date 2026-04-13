@@ -35,6 +35,7 @@ type InventionScenePayload = {
   sources: Array<{ label: string; url: string }>;
   generated_at: string;
   source_mode: "editorial_invention_catalog";
+  editorial_cluster?: string;
 };
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -117,6 +118,7 @@ function pickInvention(
   previousGestureRoot: string | null,
   seenThemes: EditorialTheme[],
   seenGestureRoots: string[],
+  seenClusters: string[],
   shareBonus: Map<string, number>
 ): InventionEntry | null {
   const selection = selectInventionsForYear({
@@ -129,6 +131,7 @@ function pickInvention(
     previousGestureRoot,
     seenThemes,
     seenGestureRoots,
+    seenClusters,
     shareBonus
   });
   const ranked = [...selection.exact, ...selection.nearby];
@@ -183,6 +186,7 @@ export async function onRequestGet(context: { request: Request; env?: ShareEnv }
   const previousGestureRoot = requestUrl.searchParams.get("previousGestureRoot");
   const seenThemes = parseSeenThemes(requestUrl.searchParams.get("seenThemes"));
   const seenGestureRoots = parseCsvList(requestUrl.searchParams.get("seenGestureRoots"));
+  const seenClusters = parseCsvList(requestUrl.searchParams.get("seenClusters"));
 
   if (!year || !countryQid) {
     return json(400, { error: "invalid_params", message: "Expected year and country." });
@@ -195,7 +199,18 @@ export async function onRequestGet(context: { request: Request; env?: ShareEnv }
 
   const env = context.env || {};
   const shareBonus = await buildShareBonusMap(env, countryQid, year);
-  const entry = pickInvention(year, countryQid, lang, slot, previousTheme, previousGestureRoot, seenThemes, seenGestureRoots, shareBonus);
+  const entry = pickInvention(
+    year,
+    countryQid,
+    lang,
+    slot,
+    previousTheme,
+    previousGestureRoot,
+    seenThemes,
+    seenGestureRoots,
+    seenClusters,
+    shareBonus
+  );
   if (!entry) {
     log("invention_scene_missing", { year, countryQid, lang, slot });
     return json(404, { error: "invention_not_found", message: "No editorial invention scene found." });
