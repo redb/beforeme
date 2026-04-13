@@ -149,8 +149,8 @@ export const FR_CULTURAL_CATALOG: CulturalMomentCatalog = {
       gestureChanged: "Tu peux aller voir l'art moderne dans un batiment qui devient un symbole parisien.",
       materialAnchor: "Facade tubulaire, piazza et escalator exterieur",
       sceneText:
-        "31 janvier 1977, a Beaubourg. La grande structure apparait comme un objet culturel inedit, et les files se forment. Paris se dote d'un nouveau lieu pour regarder, discuter, flaner.",
-      fact: "Le 31 janvier 1977, le Centre Pompidou ouvre au public a Paris.",
+        "31 janvier 1977, à Beaubourg. La grande structure apparaît comme un objet culturel inédit, et les files se forment. Paris se dote d'un nouveau lieu pour regarder, discuter, flâner.",
+      fact: "Le 31 janvier 1977, le Centre Pompidou ouvre au public à Paris.",
       sources: [
         {
           label: "Wikipedia",

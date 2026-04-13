@@ -437,11 +437,11 @@ export const FR_CULTURAL_BACKFILL_1990_2009: CulturalMomentEntry[] = [
     "placeType": "site",
     "placeQid": "Q134437",
     "triggerLabel": "Centre Pompidou",
-    "beforeState": "Avant janvier 2000, Beaubourg manque a la promenade culturelle parisienne depuis plus de deux ans.",
-    "afterState": "En 2000, le Centre Pompidou retrouve sa place de repere parisien et national.",
-    "gestureChanged": "On peut a nouveau se donner rendez-vous a Beaubourg comme a un reflexe culturel ordinaire.",
+    "beforeState": "Avant janvier 2000, Beaubourg manque à la promenade culturelle parisienne depuis plus de deux ans.",
+    "afterState": "En 2000, le Centre Pompidou retrouve sa place de repère parisien et national.",
+    "gestureChanged": "On peut à nouveau se donner rendez-vous à Beaubourg comme à un réflexe culturel ordinaire.",
     "materialAnchor": "Centre Pompidou, une image publique et un souvenir collectif",
-    "sceneText": "27 janvier 2000, a Beaubourg. Apres plus de deux ans de travaux, les tuyaux colores rouvrent derriere une foule dense. Le Centre Pompidou redevient d'un coup un lieu de promenade, d'exposition et de rendez-vous.",
+    "sceneText": "27 janvier 2000, à Beaubourg. Après plus de deux ans de travaux, les tuyaux colorés rouvrent derrière une foule dense. Le Centre Pompidou redevient d'un coup un lieu de promenade, d'exposition et de rendez-vous.",
     "fact": "réouverture du Centre Pompidou après 27 mois de travaux.",
     "sources": [
       {
