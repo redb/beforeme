@@ -174,6 +174,31 @@ export const FR_GESTURE_BACKFILL_1970_1989: GestureRupture[] = [
     quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 2 }
   },
   {
+    id: "fr-1977-rer-b-chatelet-les-halles",
+    countryQid: "Q142", lang: "fr",
+    gestureKey: "emprunter-le-rer-b-via-chatelet-les-halles",
+    gestureLabel: "emprunter le RER B via Châtelet – Les Halles",
+    theme: "transport", gestureRoot: "rer_b_troncon_central",
+    editorialCluster: "rer_b_centre_1977",
+    editorialScore: 83,
+    category: "transport", direction: "impossible_to_possible",
+    ruptureDate: "1977-12-08", ruptureYear: 1977, datePrecision: "day",
+    placeName: "Châtelet – Les Halles, Paris", placeType: "site", placeQid: null,
+    triggerLabel: "Mise en service du tronçon central du RER B (jonction avec la ligne de Sceaux)",
+    triggerType: "public_rollout",
+    beforeState: "Avant décembre 1977, la ligne de Sceaux ne se connecte pas encore au nouveau nœud souterrain du centre de Paris.",
+    afterState: "À partir du 8 décembre 1977, le RER B traverse Châtelet – Les Halles et relie banlieue sud et nord dans un même réseau express.",
+    gestureChanged: "Tu peux changer de branche sans remonter à la surface : le même billet relie le nord et le sud de l'agglomération via le cœur de Paris.",
+    materialAnchor: "Couloirs du RER, panneaux ligne B et salle des pas perdus",
+    sceneText: "8 décembre 1977, sous Paris. Les correspondances s'organisent dans un gigantesque nœud souterrain. La ligne de Sceaux devient le RER B : pour des milliers de banlieusards, le trajet quotidien change de topologie.",
+    fact: "Le 8 décembre 1977, la ligne de Sceaux est intégrée au RER B avec l'ouverture du tronçon central passant par Châtelet – Les Halles.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/Ligne_B_du_RER_d%27%C3%8Ele-de-France", authority: false }
+    ],
+    tags: ["rer", "transport", "paris", "sceaux"],
+    quality: { strictPlace: false, strictDate: true, dailyLife: true, sourceCount: 1 }
+  },
+  {
     id: "fr-1982-ivg-remboursement-secu",
     countryQid: "Q142", lang: "fr",
     gestureKey: "beneficier-du-remboursement-de-livg-par-la-secu",

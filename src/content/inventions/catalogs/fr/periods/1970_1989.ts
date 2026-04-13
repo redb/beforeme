@@ -308,6 +308,31 @@ export const FR_INVENTION_BACKFILL_1970_1989: InventionEntry[] = [
     quality: { strictPlace: true, strictDate: false, everydayUse: true, sourceCount: 2 }
   },
   {
+    id: "fr-1972-tgv-001-prototype-essais",
+    countryQid: "Q142", lang: "fr",
+    itemKey: "voir-le-tgv-001-en-essais-grande-vitesse",
+    itemLabel: "voir le TGV 001 en essais à grande vitesse sur le réseau français",
+    theme: "transport", gestureRoot: "tgv_prototype_001",
+    editorialScore: 87,
+    objectType: "infrastructure", category: "transport",
+    releaseDate: "1972-12-08", releaseYear: 1972, datePrecision: "day",
+    placeName: "Réseau SNCF (lignes d'essais), France", placeType: "country", placeQid: "Q142",
+    editorialCluster: "tgv_001_prototype_1972",
+    triggerLabel: "Essais du turbotrain expérimental TGV 001 (records de vitesse sur lignes classiques)",
+    beforeState: "Avant 1972, aucune rame française ne dépasse systématiquement 200 km/h sur lignes classiques pour préparer un futur réseau grande vitesse.",
+    afterState: "En 1972, le TGV 001 enchaîne les essais et fixe un record mondial pour un automoteur — preuve de faisabilité du futur TGV.",
+    objectChanged: "Tu peux suivre dans la presse et les essais SNCF une rame orange et grise qui pousse les limites du ferroviaire avant la ligne dédiée Paris–Lyon.",
+    materialAnchor: "Rame TGV 001, voie d'essai et chronomètre de vitesse",
+    sceneText: "1972, France. Le TGV 001 quitte Belfort pour enchaîner essais et expositions. En décembre, la rame frôle les 320 km/h sur rail : ce n'est pas encore le service voyageurs, mais le futur TGV est déjà en train de naître sur les lignes existantes.",
+    fact: "En 1972, le turbotrain expérimental TGV 001 de la SNCF bat plusieurs records de vitesse sur le réseau français, préfigurant le TGV commercial.",
+    sources: [
+      { label: "Wikipedia", url: "https://fr.wikipedia.org/wiki/TGV_001", authority: false },
+      { label: "SNCF — Histoire du TGV", url: "https://www.sncf.com/fr/groupe/histoire-du-groupe/histoire-tgv", authority: true }
+    ],
+    tags: ["tgv", "sncf", "grande-vitesse", "essais", "1972"],
+    quality: { strictPlace: false, strictDate: true, everydayUse: false, sourceCount: 2 }
+  },
+  {
     id: "fr-1979-tgv-paris-lyon",
     countryQid: "Q142", lang: "fr",
     itemKey: "prendre-le-tgv",
