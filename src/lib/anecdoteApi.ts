@@ -144,7 +144,10 @@ function formatDateLabel(isoDay: string, lang: Lang): string {
   return `${year}-${month}-${day}`;
 }
 
-function formatEnglishBirthDate(isoDay: string): string {
+function formatBirthDateLong(isoDay: string, lang: Lang): string {
+  if (lang === "fr") {
+    return formatDateLabel(isoDay, "fr");
+  }
   const match = String(isoDay || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) return String(isoDay || "").trim();
   const [, year, month, day] = match;
@@ -165,101 +168,9 @@ function formatEnglishBirthDate(isoDay: string): string {
   return `${months[Number(month) - 1]} ${Number(day)}, ${year}`;
 }
 
-/** Réécrit l'achievement narratif (futur, mise en scène) en légende factuelle (passé / acquis). */
-function achievementToFactualLegend(text: string, lang: Lang): string {
-  let s = String(text || "").trim();
-  if (!s) return s;
-  if (lang === "fr") {
-    const pairs: Array<[RegExp, string]> = [
-      [/^Elle sera la première\b/i, "Elle a été la première"],
-      [/^Il sera le premier\b/i, "Il a été le premier"],
-      [/^Il sera président\b/i, "Il a été président"],
-      [/^Elle sera reine\b/i, "Elle a été reine"],
-      [/^Il remportera\b/i, "Il a remporté"],
-      [/^Elle remportera\b/i, "Elle a remporté"],
-      [/^Il recevra\b/i, "Il a reçu"],
-      [/^Elle recevra\b/i, "Elle a reçu"],
-      [/^Il écrira\b/i, "Il a écrit"],
-      [/^Elle écrira\b/i, "Elle a écrit"],
-      [/^Il réalisera\b/i, "Il a réalisé"],
-      [/^Elle réalisera\b/i, "Elle a réalisé"],
-      [/^Il créera\b/i, "Il a créé"],
-      [/^Il cofondra\b/i, "Il a cofondé"],
-      [/^Il fondera\b/i, "Il a fondé"],
-      [/^Il portera\b/i, "Il a porté"],
-      [/^Il chantera\b/i, "Il a chanté"],
-      [/^Elle chantera\b/i, "Elle a chanté"],
-      [/^Il vendra\b/i, "Il a vendu"],
-      [/^Elle vendra\b/i, "Elle a vendu"],
-      [/^Il tournera\b/i, "Il a tourné"],
-      [/^Elle tournera\b/i, "Elle a tourné"],
-      [/^Il composera\b/i, "Il a composé"],
-      [/^Il incarnera\b/i, "Il a incarné"],
-      [/^Elle incarnera\b/i, "Elle a incarné"],
-      [/^Elle quittera\b/i, "Elle a quitté"],
-      [/^Il popularisera\b/i, "Il a popularisé"],
-      [/^Il inventera\b/i, "Il a lancé"],
-      [/^Il deviendra\b/i, "Il est devenu"],
-      [/^Elle deviendra\b/i, "Elle est devenue"],
-      [/^Elle fera\b/i, "Elle a fait"],
-      [/^Il fera\b/i, "Il a fait"],
-      [/^Il construira\b/i, "Il a construit"],
-      [/^Il marchera\b/i, "Il a marché"],
-      [/^Il épousera\b/i, "Il a épousé"],
-      [/^Elle sera\b/i, "Elle a été"],
-      [/^Il sera\b/i, "Il a été"],
-      [/^Il triomphera\b/i, "Il a triomphé"],
-      [/^Elle triomphera\b/i, "Elle a triomphé"],
-      [/^Il redéfinira\b/i, "Il a redéfini"],
-      [/^Il transformera\b/i, "Il a transformé"],
-      [/^Elle transformera\b/i, "Elle a transformé"]
-    ];
-    for (const [re, rep] of pairs) {
-      if (re.test(s)) {
-        s = s.replace(re, rep);
-        break;
-      }
-    }
-    return s;
-  }
-  const pairsEn: Array<[RegExp, string]> = [
-    [/^She will win\b/i, "She has won"],
-    [/^He will win\b/i, "He has won"],
-    [/^She will become\b/i, "She became"],
-    [/^He will become\b/i, "He became"],
-    [/^She will receive\b/i, "She received"],
-    [/^He will receive\b/i, "He received"],
-    [/^She will have\b/i, "She had"],
-    [/^He will have\b/i, "He had"]
-  ];
-  for (const [re, rep] of pairsEn) {
-    if (re.test(s)) {
-      s = s.replace(re, rep);
-      break;
-    }
-  }
-  return s;
-}
-
-function polishNotableBirthLegend(text: string): string {
-  return String(text || "")
-    .replace(/,\s*une performance sans précédent\b/gi, "")
-    .trim();
-}
-
-function buildNotableBirthLegendFact(match: NotableBirthMatch, mirrorYear: number, lang: Lang): string {
-  const achievement = String(match.achievement || "").trim();
-  if (!achievement) {
-    return cleanSentence(
-      lang === "fr"
-        ? `${match.name}, né le ${formatDateLabel(match.birthDate, "fr")}.`
-        : `${match.name}, born on ${formatEnglishBirthDate(match.birthDate)}.`
-    );
-  }
-  const body = polishNotableBirthLegend(achievementToFactualLegend(achievement, lang));
-  const head =
-    lang === "fr" ? `${match.name}, né en ${mirrorYear}.` : `${match.name}, born in ${mirrorYear}.`;
-  return cleanSentence(`${head} ${body}`);
+/** Une seule ligne identité + date : pas de répétition du corps de scène. */
+function notableBirthFactLine(match: NotableBirthMatch, lang: Lang): string {
+  return cleanSentence(`${match.name} — ${formatBirthDateLong(match.birthDate, lang)}`);
 }
 
 function stripPrefix(value: string): string {
@@ -488,7 +399,7 @@ function buildNotableBirthSlot(input: {
       : achievement
         ? `${input.match.name} is born in ${input.year}. ${achievement} ${age} years later, that is your birth year.`
         : `${input.match.name} is born in ${input.year}. ${age} years later, that is your birth year.`;
-  const fact = buildNotableBirthLegendFact(input.match, input.year, input.lang);
+  const fact = notableBirthFactLine(input.match, input.lang);
 
   return {
     slot: input.slot,
