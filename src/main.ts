@@ -894,6 +894,17 @@ function renderResult(
   });
 
   restartButton?.addEventListener('click', () => {
+    if (storySession.currentSlot === 4) {
+      const y = storySession.mirrorYear;
+      const lang = storySession.lang;
+      const country = storySession.country;
+      session = createSession(y, lang, country);
+      loadSlot(session, 1);
+      updateUrl({ year: y });
+      revealOnNextResult = true;
+      renderResult(y, lang, country);
+      return;
+    }
     updateUrl({});
     session = null;
     render();
