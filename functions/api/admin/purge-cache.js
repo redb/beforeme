@@ -1,4 +1,5 @@
 import { getPrismaClient } from '../../lib/prisma.js';
+import { requireAdminSession } from '../../lib/admin-auth.js';
 
 function responseHeaders() {
   return {
@@ -6,7 +7,7 @@ function responseHeaders() {
     'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization'
   };
 }
 
@@ -24,6 +25,11 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestPost(context) {
+  const auth = await requireAdminSession(context.request, context.env);
+  if (!auth.ok) {
+    return json(auth.status || 401, { error: auth.error || 'unauthorized' });
+  }
+
   const url = new URL(context.request.url);
   const confirm = String(url.searchParams.get('confirm') || '').trim();
   if (confirm !== 'YES_DELETE_CACHE') {

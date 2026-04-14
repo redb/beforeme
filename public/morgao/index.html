@@ -80,17 +80,33 @@
 
       <section class="card">
         <h2>Stats de consultation (Google Analytics)</h2>
-        <p class="muted">Connexion simple a Google, style Site Kit. Tu peux ensuite charger les stats GA4.</p>
+        <p class="muted">
+          Apres connexion Google, charge la liste de tes proprietes GA4 puis choisis-en une. Tu peux aussi saisir l ID a la main.
+        </p>
         <div class="row">
           <label>
-            GA4 Property ID
-            <input id="ga-property-id" type="text" placeholder="123456789" />
+            Propriete GA4
+            <select id="ga-property-select" aria-label="Propriete Google Analytics 4">
+              <option value="">-- Charger la liste ci-dessous --</option>
+            </select>
+          </label>
+          <label>
+            ID numerique (optionnel)
+            <input id="ga-property-id" type="text" placeholder="ex. 123456789" autocomplete="off" />
           </label>
         </div>
         <div class="actions">
+          <button id="ga-list-properties" type="button">Charger mes proprietes GA4</button>
           <button id="ga-refresh" type="button">Rafraichir les stats</button>
         </div>
         <p id="ga-status" class="muted status"></p>
+        <details class="muted" style="margin-top: 8px; font-size: 13px; max-width: 42rem">
+          <summary style="cursor: pointer">API Google Cloud</summary>
+          <p style="margin: 8px 0 0">
+            Active <strong>Google Analytics Admin API</strong> sur le meme projet que ton client OAuth (APIs &amp; Services → Bibliotheque).
+            Le scope <code>analytics.readonly</code> suffit pour lister les proprietes et lire les rapports.
+          </p>
+        </details>
 
         <div id="ga-panel">
           <div class="stats-grid">
@@ -236,6 +252,8 @@
       let gaTokenClient = null;
       let gaAccessToken = '';
       let gaTokenExpiresAt = 0;
+      /** Si defini, appele apres obtention du jeton OAuth GA a la place du chargement auto des stats. */
+      let gaTokenFollowup = null;
       let googleIdentityInitialized = false;
 
       function authHeaders() {
@@ -359,7 +377,8 @@
 
           applyAdminSession(result.email, result.sessionToken);
           setGaStatus('Connexion admin ok. Autorise maintenant l acces Analytics...');
-          if (ensureGaClient()) {
+          if (initGaTokenClientOnce()) {
+            gaTokenFollowup = null;
             gaTokenClient.requestAccessToken({ prompt: 'consent' });
           }
         } catch (error) {
@@ -429,7 +448,24 @@
       }
 
       function loadGaSettings() {
-        gaPropertyInput().value = localStorage.getItem(GA_STORAGE_PROPERTY_ID) || '';
+        const raw = localStorage.getItem(GA_STORAGE_PROPERTY_ID) || '';
+        gaPropertyInput().value = raw;
+        const sel = document.getElementById('ga-property-select');
+        if (sel && raw) {
+          const id = normalizePropertyId(raw);
+          if (id && [...sel.options].some((o) => o.value === id)) {
+            sel.value = id;
+          }
+        }
+      }
+
+      function syncGaPropertyFromSelect() {
+        const sel = document.getElementById('ga-property-select');
+        const v = String(sel?.value || '').trim();
+        if (v) {
+          gaPropertyInput().value = v;
+        }
+        saveGaSettings();
       }
 
       function normalizePropertyId(value) {
@@ -462,7 +498,10 @@
         return Boolean(gaAccessToken) && Date.now() < gaTokenExpiresAt;
       }
 
-      function ensureGaClient() {
+      function initGaTokenClientOnce() {
+        if (gaTokenClient) {
+          return true;
+        }
         const clientId = String(adminGoogleClientId || '').trim();
         if (!clientId) {
           setGaStatus('Connexion Google admin non initialisee. Recharge et reconnecte-toi.', true);
@@ -480,12 +519,21 @@
           callback: (response) => {
             if (!response || !response.access_token) {
               setGaStatus('Connexion Google refusee ou invalide.', true);
+              gaTokenFollowup = null;
               return;
             }
 
             gaAccessToken = response.access_token;
             const expiresIn = Number(response.expires_in || 3600);
             gaTokenExpiresAt = Date.now() + expiresIn * 1000 - 10000;
+
+            const follow = gaTokenFollowup;
+            gaTokenFollowup = null;
+            if (typeof follow === 'function') {
+              follow();
+              return;
+            }
+
             setGaStatus('Google connecte. Tu peux rafraichir les stats.');
             loadGaStats().catch((error) => {
               setGaStatus(error.message || 'Impossible de charger les stats.', true);
@@ -494,6 +542,98 @@
         });
 
         return true;
+      }
+
+      function ensureGaClient() {
+        return initGaTokenClientOnce();
+      }
+
+      async function populateGaPropertySelect() {
+        if (!hasValidGaToken()) {
+          setGaStatus('Jeton Google Analytics manquant. Reessaie « Charger mes proprietes GA4 ».', true);
+          return;
+        }
+
+        const select = document.getElementById('ga-property-select');
+        select.innerHTML = '<option value="">-- Choisir une propriete --</option>';
+        setGaStatus('Chargement des proprietes GA4...');
+
+        let nextPageToken = '';
+        let total = 0;
+
+        do {
+          const url = new URL('https://analyticsadmin.googleapis.com/v1beta/accountSummaries');
+          url.searchParams.set('pageSize', '200');
+          if (nextPageToken) {
+            url.searchParams.set('pageToken', nextPageToken);
+          }
+
+          const res = await fetch(url.toString(), {
+            headers: {
+              Authorization: `Bearer ${gaAccessToken}`,
+              accept: 'application/json'
+            }
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const reason = data?.error?.message || `Erreur Analytics Admin API (${res.status})`;
+            throw new Error(reason);
+          }
+
+          for (const acc of data.accountSummaries || []) {
+            const accName = String(acc.displayName || '').trim() || String(acc.account || '');
+            for (const ps of acc.propertySummaries || []) {
+              const propResource = String(ps.property || '');
+              const m = propResource.match(/properties\/(\d+)/);
+              const id = m ? m[1] : '';
+              if (!id) continue;
+              const propLabel = String(ps.displayName || '').trim() || id;
+              const opt = document.createElement('option');
+              opt.value = id;
+              opt.textContent = `${accName} — ${propLabel} (${id})`;
+              select.appendChild(opt);
+              total += 1;
+            }
+          }
+
+          nextPageToken = data.nextPageToken || '';
+        } while (nextPageToken);
+
+        const saved = normalizePropertyId(gaPropertyInput().value);
+        if (saved) {
+          const opt = [...select.options].find((o) => o.value === saved);
+          if (opt) {
+            select.value = saved;
+          }
+        }
+
+        setGaStatus(
+          total
+            ? `${total} propriete(s) GA4. Choisis-en une puis « Rafraichir les stats ».`
+            : 'Aucune propriete GA4 trouvee (compte ou droits). Verifie l acces dans Google Analytics.'
+        );
+      }
+
+      function startLoadGaPropertyList() {
+        if (!initGaTokenClientOnce()) {
+          return;
+        }
+
+        const run = () => {
+          populateGaPropertySelect().catch((error) => {
+            setGaStatus(error.message || 'Impossible de charger la liste GA4.', true);
+          });
+        };
+
+        if (hasValidGaToken()) {
+          run();
+          return;
+        }
+
+        gaTokenFollowup = run;
+        setGaStatus('Connexion a Google pour les statistiques...');
+        gaTokenClient.requestAccessToken({ prompt: 'consent' });
       }
 
       async function runGaReport(body) {
@@ -612,6 +752,7 @@
         }
 
         setGaStatus('Renouvellement de session Google...');
+        gaTokenFollowup = null;
         gaTokenClient.requestAccessToken({ prompt: '' });
       }
 
@@ -745,6 +886,18 @@
         refreshGaStats().catch((error) => {
           setGaStatus(error.message || 'Chargement des stats impossible.', true);
         });
+      });
+      document.getElementById('ga-list-properties').addEventListener('click', () => {
+        startLoadGaPropertyList();
+      });
+      document.getElementById('ga-property-select').addEventListener('change', syncGaPropertyFromSelect);
+      document.getElementById('ga-property-id').addEventListener('change', () => {
+        saveGaSettings();
+        const id = normalizePropertyId(gaPropertyInput().value);
+        const sel = document.getElementById('ga-property-select');
+        if (sel && id) {
+          sel.value = id;
+        }
       });
       setupUpload();
       loadGaSettings();

@@ -17,6 +17,10 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestGet(context) {
+  if (String(context.env?.DEBUG_ENV_ENABLED || '').trim() !== '1') {
+    return new Response(null, { status: 404 });
+  }
+
   return json(200, {
     hasOpenAIKey: Boolean(String(context.env?.OPENAI_API_KEY || '').trim()),
     hasOpenAIModel: Boolean(String(context.env?.OPENAI_MODEL || '').trim()),

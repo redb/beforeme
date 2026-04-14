@@ -457,6 +457,33 @@ function json(status: number, payload: unknown, headers: HeadersInit = noStoreHe
   return new Response(JSON.stringify(payload), { status, headers });
 }
 
+const SCENE_RATE_LIMIT_WINDOW_MS = 60_000;
+const SCENE_RATE_LIMIT_MAX = 25;
+const sceneRateState = new Map<string, { count: number; resetAt: number }>();
+
+function sceneRateKey(request: Request): string {
+  return (
+    request.headers.get("cf-connecting-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown"
+  );
+}
+
+function checkSceneRateLimit(request: Request): { allowed: true } | { allowed: false; retryAfterMs: number } {
+  const key = sceneRateKey(request);
+  const now = Date.now();
+  const current = sceneRateState.get(key);
+  if (!current || current.resetAt <= now) {
+    sceneRateState.set(key, { count: 1, resetAt: now + SCENE_RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+  if (current.count >= SCENE_RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfterMs: current.resetAt - now };
+  }
+  current.count += 1;
+  return { allowed: true };
+}
+
 function responseFromSceneError(error: unknown): Response | null {
   const e = error as { status?: number; code?: string; message?: string; validationFlags?: string[] };
   const status = Number(e?.status || 500);
@@ -1789,6 +1816,10 @@ async function buildStableScene(
 async function handler(context: { request: Request; env: Env }): Promise<Response> {
   if (!context.env.R2) {
     return json(500, { error: "missing_r2_binding" });
+  }
+  const sceneLimit = checkSceneRateLimit(context.request);
+  if (!sceneLimit.allowed) {
+    return json(429, { error: "rate_limited", retryAfterMs: sceneLimit.retryAfterMs });
   }
   const requestUrl = new URL(context.request.url);
   const year = parseYear(requestUrl.searchParams.get("year"));
