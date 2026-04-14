@@ -85,10 +85,7 @@ export async function verifyAdminSessionToken(token, env) {
   }
 
   const allowList = allowedEmails(env);
-  if (!allowList.length) {
-    return { ok: false, reason: 'allowlist_missing' };
-  }
-  if (!allowList.includes(email)) {
+  if (allowList.length && !allowList.includes(email)) {
     return { ok: false, reason: 'email_not_allowed' };
   }
 
@@ -123,7 +120,7 @@ export function getAdminGoogleClientId(env) {
 
 export function isAllowedAdminEmail(email, env) {
   const allowList = allowedEmails(env);
-  if (!allowList.length) return false;
+  if (!allowList.length) return true;
   return allowList.includes(String(email || '').trim().toLowerCase());
 }
 

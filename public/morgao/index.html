@@ -42,6 +42,15 @@
       <section class="card">
         <h1>Admin AvantMoi</h1>
         <p class="muted">Connexion admin via ton compte Google autorisé.</p>
+        <div class="row">
+          <label>
+            Google OAuth Client ID (Admin)
+            <input id="admin-client-id" type="text" placeholder="xxxxxx.apps.googleusercontent.com" />
+          </label>
+          <div style="display:flex;align-items:end;gap:10px;">
+            <button id="admin-client-id-save" type="button">Enregistrer Client ID</button>
+          </div>
+        </div>
         <div class="actions">
           <div id="google-login-button"></div>
           <button id="admin-logout" type="button" style="display:none;">Se deconnecter</button>
@@ -194,12 +203,32 @@
 
     <script>
       const ADMIN_SESSION_STORAGE = 'beforeme.admin.sessionToken';
+      const ADMIN_CLIENT_ID_STORAGE = 'beforeme.admin.googleClientId';
       const GA_STORAGE_CLIENT_ID = 'beforeme.admin.gaClientId';
       const GA_STORAGE_PROPERTY_ID = 'beforeme.admin.gaPropertyId';
       const GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
       let adminSessionToken = localStorage.getItem(ADMIN_SESSION_STORAGE) || '';
-      let adminGoogleClientId = '';
+      let adminGoogleClientId = localStorage.getItem(ADMIN_CLIENT_ID_STORAGE) || '';
       let isAdminAuthenticated = false;
+
+
+      function adminClientIdInput() {
+        return document.getElementById('admin-client-id');
+      }
+
+      function saveAdminClientId() {
+        const value = String(adminClientIdInput()?.value || '').trim();
+        if (value) {
+          localStorage.setItem(ADMIN_CLIENT_ID_STORAGE, value);
+          adminGoogleClientId = value;
+          setAdminStatus('Client ID admin enregistre localement.');
+          initGoogleAdminLogin();
+          return;
+        }
+        localStorage.removeItem(ADMIN_CLIENT_ID_STORAGE);
+        adminGoogleClientId = '';
+        setAdminStatus('Client ID admin vide. Ajoute un Client ID Web.', true);
+      }
 
       function humanizeAdminApiError(raw) {
         const key = String(raw || '').trim();
@@ -300,7 +329,12 @@
       async function verifyAdminSession() {
         try {
           const data = await fetchJson('/api/admin/session');
-          adminGoogleClientId = String(data.googleClientId || '');
+          const serverClientId = String(data.googleClientId || '').trim();
+          const localClientId = String(localStorage.getItem(ADMIN_CLIENT_ID_STORAGE) || '').trim();
+          adminGoogleClientId = serverClientId || localClientId;
+          if (adminClientIdInput()) {
+            adminClientIdInput().value = adminGoogleClientId;
+          }
           if (data.authenticated) {
             applyAdminSession(String(data.email || ''), '');
             return;
@@ -312,8 +346,9 @@
       }
 
       function initGoogleAdminLogin() {
+        adminGoogleClientId = String(adminGoogleClientId || '').trim();
         if (!adminGoogleClientId) {
-          setAdminStatus(humanizeAdminApiError('google_client_id_missing'), true);
+          setAdminStatus('Ajoute un Client ID OAuth Web (champ admin) puis reconnecte-toi.', true);
           return;
         }
         if (!window.google || !window.google.accounts || !window.google.accounts.id) {
@@ -691,6 +726,8 @@
         });
       }
 
+      document.getElementById('admin-client-id-save').addEventListener('click', saveAdminClientId);
+      adminClientIdInput().value = adminGoogleClientId;
       document.getElementById('save-ad').addEventListener('click', () => {
         saveAdConfig().catch((error) => {
           setAdStatus(error.message || 'Impossible d’enregistrer la pub.', true);

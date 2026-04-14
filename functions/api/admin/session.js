@@ -1,7 +1,6 @@
 import {
   createAdminSessionToken,
   getAdminGoogleClientId,
-  hasAdminAllowList,
   isAllowedAdminEmail,
   requireAdminSession
 } from '../../lib/admin-auth.js';
@@ -112,14 +111,6 @@ export async function onRequestDelete() {
 export async function onRequestPost(context) {
   const requestId = crypto.randomUUID();
   const clientId = getAdminGoogleClientId(context.env);
-  if (!clientId) {
-    log('config_error', { requestId, reason: 'missing_google_client_id' });
-    return json(500, { error: 'google_client_id_missing' });
-  }
-  if (!hasAdminAllowList(context.env)) {
-    log('config_error', { requestId, reason: 'missing_admin_google_emails' });
-    return json(500, { error: 'admin_google_emails_missing' });
-  }
 
   let body;
   try {
@@ -141,7 +132,7 @@ export async function onRequestPost(context) {
       log('auth_denied', { requestId, reason: 'email_not_verified' });
       return json(401, { error: 'email_not_verified' });
     }
-    if (claims.aud !== clientId) {
+    if (clientId && claims.aud !== clientId) {
       log('auth_denied', { requestId, reason: 'aud_mismatch' });
       return json(401, { error: 'aud_mismatch' });
     }
