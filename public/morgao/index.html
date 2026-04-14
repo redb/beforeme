@@ -47,6 +47,22 @@
           <button id="admin-logout" type="button" style="display:none;">Se deconnecter</button>
         </div>
         <p id="admin-auth-status" class="muted status">Connexion requise.</p>
+        <details class="muted" style="margin-top: 10px; font-size: 13px; max-width: 42rem">
+          <summary style="cursor: pointer">Si la connexion echoue (Cloudflare)</summary>
+          <ul style="margin: 8px 0 0 18px; padding: 0">
+            <li>
+              Dans <strong>Workers &amp; Pages → avantmoi → Settings → Variables</strong>, definis en <strong>Production</strong> :
+              <code>ADMIN_GOOGLE_CLIENT_ID</code> (client OAuth <em>Web</em>),
+              <code>ADMIN_GOOGLE_EMAILS</code> (ton email exact),
+              <code>ADMIN_SESSION_SECRET</code> (chaine aleatoire longue).
+            </li>
+            <li>
+              Google Cloud Console → identifiants OAuth : <strong>Origines JavaScript autorisees</strong> =
+              <code>https://avantmoi.com</code> (et la preview Pages si besoin).
+            </li>
+            <li>Redeploie ou attend la prise en compte des variables, puis recharge cette page.</li>
+          </ul>
+        </details>
       </section>
 
       <section class="card">
@@ -184,6 +200,30 @@
       let adminSessionToken = localStorage.getItem(ADMIN_SESSION_STORAGE) || '';
       let adminGoogleClientId = '';
       let isAdminAuthenticated = false;
+
+      function humanizeAdminApiError(raw) {
+        const key = String(raw || '').trim();
+        const map = {
+          google_client_id_missing:
+            'Cote serveur : variable ADMIN_GOOGLE_CLIENT_ID manquante (Cloudflare Pages → Variables → Production).',
+          admin_google_emails_missing:
+            'Cote serveur : ADMIN_GOOGLE_EMAILS manquant — ajoute au moins un email autorise (liste separee par des virgules).',
+          admin_session_secret_missing:
+            'Cote serveur : ADMIN_SESSION_SECRET manquant — cle secrete pour signer la session admin.',
+          email_not_verified: 'Ton compte Google doit avoir une adresse email verifiee.',
+          aud_mismatch:
+            'Le jeton ne correspond pas au Client ID : verifie ADMIN_GOOGLE_CLIENT_ID et dans Google Cloud les « Origines JavaScript » pour https://avantmoi.com',
+          email_not_allowed:
+            'Ton email n est pas dans ADMIN_GOOGLE_EMAILS — ajoute exactement la meme adresse (minuscules).',
+          google_verification_failed:
+            'Echec de verification aupres de Google (reseau, jeton, ou mauvais type de Client ID). Utilise un identifiant OAuth « Application Web », pas Android/iOS.',
+          missing_id_token: 'Pas de jeton de connexion. Recharge la page et reessaie.',
+          id_token_too_long: 'Jeton invalide (trop long).',
+          invalid_json: 'Requete invalide.',
+          'Session admin invalide': 'Reponse serveur incomplete (sessionToken ou email manquant).'
+        };
+        return map[key] || key;
+      }
       let gaTokenClient = null;
       let gaAccessToken = '';
       let gaTokenExpiresAt = 0;
@@ -273,7 +313,7 @@
 
       function initGoogleAdminLogin() {
         if (!adminGoogleClientId) {
-          setAdminStatus('ADMIN_GOOGLE_CLIENT_ID manquant cote serveur.', true);
+          setAdminStatus(humanizeAdminApiError('google_client_id_missing'), true);
           return;
         }
         if (!window.google || !window.google.accounts || !window.google.accounts.id) {
@@ -307,8 +347,8 @@
 
               applyAdminSession(result.email, result.sessionToken);
             } catch (error) {
-              const message = error instanceof Error ? error.message : 'Connexion Google refusee.';
-              clearAdminSession(message);
+              const raw = error instanceof Error ? error.message : 'Connexion Google refusee.';
+              clearAdminSession(humanizeAdminApiError(raw));
             }
           }
         });
