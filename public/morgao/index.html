@@ -28,7 +28,20 @@
       .stat-card .value { font-size: 22px; font-weight: 700; }
       .status { min-height: 20px; margin-top: 8px; }
       .status.error { color: #ff9d9d; }
-      #google-login-button { min-height: 40px; }
+      #google-login-button { min-height: 48px; min-width: 200px; }
+      .google-login-row { align-items: center; }
+      .btn-google-fallback {
+        background: #fff;
+        color: #1f1f1f;
+        border: 1px solid #747775;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-google-fallback:hover { background: #f8f9fa; }
       #ga-panel { display: none; margin-top: 12px; }
       #ga-panel h3 { margin: 16px 0 8px; font-size: 16px; }
       @media (max-width: 760px) {
@@ -223,6 +236,7 @@
       let gaTokenClient = null;
       let gaAccessToken = '';
       let gaTokenExpiresAt = 0;
+      let googleIdentityInitialized = false;
 
       function authHeaders() {
         return adminSessionToken ? { Authorization: `Bearer ${adminSessionToken}` } : {};
@@ -243,7 +257,12 @@
 
       function updateAuthUi() {
         const logoutBtn = document.getElementById('admin-logout');
+        const fallbackBtn = document.getElementById('google-login-fallback');
+        const googleBox = document.getElementById('google-login-button');
         logoutBtn.style.display = isAdminAuthenticated ? 'inline-flex' : 'none';
+        const showGoogle = !isAdminAuthenticated && String(adminGoogleClientId || '').trim();
+        if (fallbackBtn) fallbackBtn.style.display = showGoogle ? 'inline-flex' : 'none';
+        if (googleBox) googleBox.style.display = isAdminAuthenticated ? 'none' : 'block';
         setAdminLocked(!isAdminAuthenticated);
       }
 
@@ -307,59 +326,91 @@
         }
       }
 
-      function initGoogleAdminLogin() {
+      /** Le script gsi/client est en async defer : il arrive souvent apres ce script et empechait renderButton. */
+      async function waitForGoogleIdentityServices(timeoutMs = 20000) {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+          if (window.google?.accounts?.id && window.google?.accounts?.oauth2) {
+            return true;
+          }
+          await new Promise((r) => setTimeout(r, 60));
+        }
+        return false;
+      }
+
+      async function handleGoogleCredential(response) {
+        const idToken = String(response?.credential || '').trim();
+        if (!idToken) {
+          setAdminStatus('Jeton Google invalide.', true);
+          return;
+        }
+
+        try {
+          setAdminStatus('Verification de ton compte Google...');
+          const result = await fetchJson('/api/admin/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken })
+          });
+
+          if (!result.sessionToken || !result.email) {
+            throw new Error('Session admin invalide');
+          }
+
+          applyAdminSession(result.email, result.sessionToken);
+          setGaStatus('Connexion admin ok. Autorise maintenant l acces Analytics...');
+          if (ensureGaClient()) {
+            gaTokenClient.requestAccessToken({ prompt: 'consent' });
+          }
+        } catch (error) {
+          const raw = error instanceof Error ? error.message : 'Connexion Google refusee.';
+          clearAdminSession(humanizeAdminApiError(raw));
+        }
+      }
+
+      function ensureGoogleIdentityInitialized() {
         adminGoogleClientId = String(adminGoogleClientId || '').trim();
-        if (!adminGoogleClientId) {
-          setAdminStatus(humanizeAdminApiError('google_client_id_missing'), true);
+        if (!adminGoogleClientId || googleIdentityInitialized) {
           return;
         }
-        if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-          setAdminStatus('Le script Google n est pas encore charge.', true);
-          return;
-        }
-
-        const container = document.getElementById('google-login-button');
-        container.innerHTML = '';
-
         window.google.accounts.id.initialize({
           client_id: adminGoogleClientId,
-          callback: async (response) => {
-            const idToken = String(response?.credential || '').trim();
-            if (!idToken) {
-              setAdminStatus('Jeton Google invalide.', true);
-              return;
-            }
-
-            try {
-              setAdminStatus('Verification de ton compte Google...');
-              const result = await fetchJson('/api/admin/session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken })
-              });
-
-              if (!result.sessionToken || !result.email) {
-                throw new Error('Session admin invalide');
-              }
-
-              applyAdminSession(result.email, result.sessionToken);
-              setGaStatus('Connexion admin ok. Autorise maintenant l acces Analytics...');
-              if (ensureGaClient()) {
-                gaTokenClient.requestAccessToken({ prompt: 'consent' });
-              }
-            } catch (error) {
-              const raw = error instanceof Error ? error.message : 'Connexion Google refusee.';
-              clearAdminSession(humanizeAdminApiError(raw));
-            }
-          }
+          callback: handleGoogleCredential,
+          auto_select: false,
+          cancel_on_tap_outside: true
         });
+        googleIdentityInitialized = true;
+      }
+
+      function mountGoogleSignInWidgets() {
+        if (!window.google?.accounts?.id) {
+          return;
+        }
+        ensureGoogleIdentityInitialized();
+        const container = document.getElementById('google-login-button');
+        container.innerHTML = '';
 
         window.google.accounts.id.renderButton(container, {
           theme: 'outline',
           size: 'large',
           text: 'signin_with',
-          shape: 'pill'
+          shape: 'pill',
+          width: 280
         });
+
+        const fallback = document.getElementById('google-login-fallback');
+        if (fallback) {
+          fallback.onclick = () => {
+            window.google.accounts.id.prompt((notification) => {
+              if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
+                setAdminStatus(
+                  'Fenetre Google non affichee : bloqueur ou cookies tiers. Recharge ou essaie un autre navigateur.',
+                  true
+                );
+              }
+            });
+          };
+        }
       }
 
       function gaPropertyInput() {
@@ -684,6 +735,10 @@
         try {
           await fetchJson('/api/admin/session', { method: 'DELETE' });
         } catch {}
+        if (window.google?.accounts?.id && String(adminGoogleClientId || '').trim()) {
+          mountGoogleSignInWidgets();
+        }
+        updateAuthUi();
       });
       document.getElementById('load-events').addEventListener('click', loadEvents);
       document.getElementById('ga-refresh').addEventListener('click', () => {
@@ -698,8 +753,26 @@
         setAdStatus(error.message || 'Impossible de charger la config pub.', true);
       });
       verifyAdminSession()
-        .then(() => {
-          initGoogleAdminLogin();
+        .then(async () => {
+          const gsiOk = await waitForGoogleIdentityServices();
+          if (!gsiOk) {
+            setAdminStatus(
+              'Le script Google (accounts.google.com) ne se charge pas. Verifie reseau, bloqueur de pub, ou recharge la page.',
+              true
+            );
+            updateAuthUi();
+            return;
+          }
+          if (!String(adminGoogleClientId || '').trim()) {
+            setAdminStatus(humanizeAdminApiError('google_client_id_missing'), true);
+            updateAuthUi();
+            return;
+          }
+          ensureGoogleIdentityInitialized();
+          if (!isAdminAuthenticated) {
+            mountGoogleSignInWidgets();
+          }
+          updateAuthUi();
         })
         .catch(() => {
           setAdminStatus('Erreur d initialisation de la connexion Google.', true);
