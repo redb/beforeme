@@ -1,7 +1,7 @@
 {
   "name": "beforeme",
   "private": true,
-  "version": "0.17.198",
+  "version": "0.17.199",
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/bump-version.mjs",
@@ -12,6 +12,7 @@
     "cf:deploy": "npm run build:cf && npx wrangler pages deploy dist --project-name avantmoi --branch main && npm run verify:cf-binding",
     "preview": "vite preview",
     "verify:cf-binding": "node scripts/verify_cloudflare_binding.mjs",
+    "verify:share-images": "node scripts/verify_share_year_images.mjs",
     "test:place": "node scripts/smoke_place_resolver.mjs",
     "test:scene": "node scripts/smoke_scene_hybrid.mjs",
     "test:scene-lock": "node scripts/smoke_scene_lock.mjs",

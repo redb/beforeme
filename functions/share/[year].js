@@ -7,30 +7,12 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+import { fetchYearOgImage } from '../lib/wikipedia-year-og.js';
+
 function parseYear(raw) {
   const year = Number(String(raw || '').trim());
   if (!Number.isInteger(year) || year < 1000 || year > 2100) return null;
   return year;
-}
-
-async function fetchWikipediaThumbnail(year) {
-  const pageTitle = `${year}_en_France`;
-  const apiUrl =
-    `https://fr.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&pithumbsize=1200&piprop=thumbnail&redirects=1&titles=${encodeURIComponent(pageTitle)}&origin=*`;
-  try {
-    const response = await fetch(apiUrl, {
-      headers: { accept: 'application/json' }
-    });
-    if (!response.ok) return '';
-    const payload = await response.json();
-    const pages = payload?.query?.pages || {};
-    const firstPage = Object.values(pages)[0];
-    if (firstPage?.missing) return '';
-    const source = String(firstPage?.thumbnail?.source || '').trim();
-    return source || '';
-  } catch {
-    return '';
-  }
 }
 
 /** Les robots de prévisualisation doivent recevoir l HTML sans redirection instantanée ; sinon ils suivent l accueil et perdent l og:image spécifique à l année. */
@@ -86,7 +68,12 @@ export async function onRequestGet(context) {
   }
 
   const shareUrl = `https://avantmoi.com/share/${year}`;
-  const ogImage = await fetchWikipediaThumbnail(year);
+  let ogImage = '';
+  try {
+    ogImage = await fetchYearOgImage(year);
+  } catch {
+    ogImage = '';
+  }
   const ua = context.request.headers.get('user-agent') || '';
   const crawler = isSocialCrawler(ua);
   const html = buildHtml({ year, shareUrl, ogImage, crawler });
