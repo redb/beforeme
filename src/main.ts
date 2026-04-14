@@ -913,7 +913,7 @@ function renderResult(
   shareButton?.addEventListener('click', async () => {
     const shareTitle = t(lang, 'shareTitle');
     const shareText = t(lang, 'shareTextTemplate').replace('{year}', String(storySession.mirrorYear));
-    const shareUrl = `${window.location.origin}${window.location.pathname}`;
+    const shareUrl = `${window.location.origin}/share/${storySession.mirrorYear}`;
     const slotToShare = storySession.slotCache.get(storySession.currentSlot) ?? null;
     const entryId = slotToShare?.editorialId ?? slotToShare?.eventQid ?? null;
 

@@ -18,10 +18,12 @@ function getSessionSecret(env) {
 
 function allowedEmails(env) {
   const raw = String(env?.ADMIN_GOOGLE_EMAILS || env?.ADMIN_GOOGLE_EMAIL || '').trim();
-  return raw
+  const configured = raw
     .split(',')
     .map((entry) => entry.trim().toLowerCase())
     .filter(Boolean);
+  if (configured.length) return configured;
+  return ['redb68@gmail.com'];
 }
 
 function googleClientId(env) {
@@ -120,7 +122,6 @@ export function getAdminGoogleClientId(env) {
 
 export function isAllowedAdminEmail(email, env) {
   const allowList = allowedEmails(env);
-  if (!allowList.length) return true;
   return allowList.includes(String(email || '').trim().toLowerCase());
 }
 

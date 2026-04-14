@@ -17,7 +17,7 @@ async function safeCopy(source, destination) {
 /** Invoquer les Functions uniquement pour /api/* (évite que /* → index.html prenne le pas). */
 const routesConfig = {
   version: 1,
-  include: ['/api/*'],
+  include: ['/api/*', '/share/*'],
   exclude: []
 };
 
