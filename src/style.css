@@ -527,6 +527,13 @@ a:focus-visible {
   padding-top: 1rem;
 }
 
+.result-actions-plain > .share-call:first-child {
+  border-top: none;
+  padding-top: 0;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 1rem;
+}
+
 .share-call p {
   margin: 0;
 }

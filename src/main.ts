@@ -847,14 +847,6 @@ function renderResult(
       </section>
 
       <section class="result-actions-plain">
-        <div class="buttons">
-          <button id="restart" class="cta" type="button">${escapeHtml(t(lang, 'restart'))}</button>
-          ${
-            hideContinue
-              ? ''
-              : `<button id="continue" class="ghost" type="button">${escapeHtml(t(lang, 'continue'))}</button>`
-          }
-        </div>
         ${
           canShare
             ? `<div class="share-call">
@@ -868,6 +860,14 @@ function renderResult(
                </div>`
             : ''
         }
+        <div class="buttons">
+          <button id="restart" class="cta" type="button">${escapeHtml(t(lang, 'restart'))}</button>
+          ${
+            hideContinue
+              ? ''
+              : `<button id="continue" class="ghost" type="button">${escapeHtml(t(lang, 'continue'))}</button>`
+          }
+        </div>
       </section>
 
       ${renderFooterAd(lang)}
