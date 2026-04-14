@@ -42,15 +42,6 @@
       <section class="card">
         <h1>Admin AvantMoi</h1>
         <p class="muted">Connexion admin via ton compte Google autorisé.</p>
-        <div class="row">
-          <label>
-            Google OAuth Client ID (Admin)
-            <input id="admin-client-id" type="text" placeholder="xxxxxx.apps.googleusercontent.com" />
-          </label>
-          <div style="display:flex;align-items:end;gap:10px;">
-            <button id="admin-client-id-save" type="button">Enregistrer Client ID</button>
-          </div>
-        </div>
         <div class="actions">
           <div id="google-login-button"></div>
           <button id="admin-logout" type="button" style="display:none;">Se deconnecter</button>
@@ -79,16 +70,11 @@
         <p class="muted">Connexion simple a Google, style Site Kit. Tu peux ensuite charger les stats GA4.</p>
         <div class="row">
           <label>
-            Google OAuth Client ID
-            <input id="ga-client-id" type="text" placeholder="xxxxxx.apps.googleusercontent.com" />
-          </label>
-          <label>
             GA4 Property ID
             <input id="ga-property-id" type="text" placeholder="123456789" />
           </label>
         </div>
         <div class="actions">
-          <button id="ga-connect" type="button">Connecter Google</button>
           <button id="ga-refresh" type="button">Rafraichir les stats</button>
         </div>
         <p id="ga-status" class="muted status"></p>
@@ -203,32 +189,13 @@
 
     <script>
       const ADMIN_SESSION_STORAGE = 'beforeme.admin.sessionToken';
-      const ADMIN_CLIENT_ID_STORAGE = 'beforeme.admin.googleClientId';
       const GA_STORAGE_CLIENT_ID = 'beforeme.admin.gaClientId';
       const GA_STORAGE_PROPERTY_ID = 'beforeme.admin.gaPropertyId';
       const GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
       let adminSessionToken = localStorage.getItem(ADMIN_SESSION_STORAGE) || '';
-      let adminGoogleClientId = localStorage.getItem(ADMIN_CLIENT_ID_STORAGE) || '';
+      let adminGoogleClientId = '';
       let isAdminAuthenticated = false;
 
-
-      function adminClientIdInput() {
-        return document.getElementById('admin-client-id');
-      }
-
-      function saveAdminClientId() {
-        const value = String(adminClientIdInput()?.value || '').trim();
-        if (value) {
-          localStorage.setItem(ADMIN_CLIENT_ID_STORAGE, value);
-          adminGoogleClientId = value;
-          setAdminStatus('Client ID admin enregistre localement.');
-          initGoogleAdminLogin();
-          return;
-        }
-        localStorage.removeItem(ADMIN_CLIENT_ID_STORAGE);
-        adminGoogleClientId = '';
-        setAdminStatus('Client ID admin vide. Ajoute un Client ID Web.', true);
-      }
 
       function humanizeAdminApiError(raw) {
         const key = String(raw || '').trim();
@@ -329,12 +296,7 @@
       async function verifyAdminSession() {
         try {
           const data = await fetchJson('/api/admin/session');
-          const serverClientId = String(data.googleClientId || '').trim();
-          const localClientId = String(localStorage.getItem(ADMIN_CLIENT_ID_STORAGE) || '').trim();
-          adminGoogleClientId = serverClientId || localClientId;
-          if (adminClientIdInput()) {
-            adminClientIdInput().value = adminGoogleClientId;
-          }
+          adminGoogleClientId = String(data.googleClientId || '').trim();
           if (data.authenticated) {
             applyAdminSession(String(data.email || ''), '');
             return;
@@ -348,7 +310,7 @@
       function initGoogleAdminLogin() {
         adminGoogleClientId = String(adminGoogleClientId || '').trim();
         if (!adminGoogleClientId) {
-          setAdminStatus('Ajoute un Client ID OAuth Web (champ admin) puis reconnecte-toi.', true);
+          setAdminStatus(humanizeAdminApiError('google_client_id_missing'), true);
           return;
         }
         if (!window.google || !window.google.accounts || !window.google.accounts.id) {
@@ -381,6 +343,10 @@
               }
 
               applyAdminSession(result.email, result.sessionToken);
+              setGaStatus('Connexion admin ok. Autorise maintenant l acces Analytics...');
+              if (ensureGaClient()) {
+                gaTokenClient.requestAccessToken({ prompt: 'consent' });
+              }
             } catch (error) {
               const raw = error instanceof Error ? error.message : 'Connexion Google refusee.';
               clearAdminSession(humanizeAdminApiError(raw));
@@ -396,10 +362,6 @@
         });
       }
 
-      function gaClientInput() {
-        return document.getElementById('ga-client-id');
-      }
-
       function gaPropertyInput() {
         return document.getElementById('ga-property-id');
       }
@@ -411,14 +373,11 @@
       }
 
       function saveGaSettings() {
-        const clientId = gaClientInput().value.trim();
         const propertyId = gaPropertyInput().value.trim();
-        localStorage.setItem(GA_STORAGE_CLIENT_ID, clientId);
         localStorage.setItem(GA_STORAGE_PROPERTY_ID, propertyId);
       }
 
       function loadGaSettings() {
-        gaClientInput().value = localStorage.getItem(GA_STORAGE_CLIENT_ID) || '';
         gaPropertyInput().value = localStorage.getItem(GA_STORAGE_PROPERTY_ID) || '';
       }
 
@@ -453,9 +412,9 @@
       }
 
       function ensureGaClient() {
-        const clientId = gaClientInput().value.trim();
+        const clientId = String(adminGoogleClientId || '').trim();
         if (!clientId) {
-          setGaStatus('Ajoute ton Google OAuth Client ID.', true);
+          setGaStatus('Connexion Google admin non initialisee. Recharge et reconnecte-toi.', true);
           return false;
         }
 
@@ -589,17 +548,6 @@
         setGaStatus('Stats chargees avec succes.');
       }
 
-      async function connectGoogle() {
-        saveGaSettings();
-
-        if (!ensureGaClient()) {
-          return;
-        }
-
-        setGaStatus('Ouverture de la connexion Google...');
-        gaTokenClient.requestAccessToken({ prompt: 'consent' });
-      }
-
       async function refreshGaStats() {
         saveGaSettings();
 
@@ -726,8 +674,6 @@
         });
       }
 
-      document.getElementById('admin-client-id-save').addEventListener('click', saveAdminClientId);
-      adminClientIdInput().value = adminGoogleClientId;
       document.getElementById('save-ad').addEventListener('click', () => {
         saveAdConfig().catch((error) => {
           setAdStatus(error.message || 'Impossible d’enregistrer la pub.', true);
@@ -740,11 +686,6 @@
         } catch {}
       });
       document.getElementById('load-events').addEventListener('click', loadEvents);
-      document.getElementById('ga-connect').addEventListener('click', () => {
-        connectGoogle().catch((error) => {
-          setGaStatus(error.message || 'Connexion Google impossible.', true);
-        });
-      });
       document.getElementById('ga-refresh').addEventListener('click', () => {
         refreshGaStats().catch((error) => {
           setGaStatus(error.message || 'Chargement des stats impossible.', true);
