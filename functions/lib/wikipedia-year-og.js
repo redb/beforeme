@@ -7,7 +7,7 @@ const FR_WIKI_API =
   'https://fr.wikipedia.org/w/api.php?action=query&format=json&origin=*';
 
 /** Obligatoire : sans User-Agent, l API renvoie 403 (les Workers Cloudflare ont souvent un UA vide). */
-const WIKI_USER_AGENT = 'AvantMoi/1.0 (https://avantmoi.com/)';
+export const WIKI_USER_AGENT = 'AvantMoi/1.0 (https://avantmoi.com/)';
 
 /** Eviter drapeaux, pictos de maintenance (ambox), sabliers « en cours », etc. */
 const SKIP_FILE_REGEX =

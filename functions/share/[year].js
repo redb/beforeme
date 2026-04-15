@@ -23,7 +23,11 @@ function parseYear(raw) {
 function buildHtml({ year, shareUrl, ogImage }) {
   const title = `AvantMoi.com — ${year} en France`;
   const description = `Explore ton annee miroir ${year} sur AvantMoi : des scenes courtes inspirees d'evenements reels.`;
-  const image = ogImage || 'https://avantmoi.com/avantmoimachine.png';
+  const displayImage = ogImage || 'https://avantmoi.com/avantmoimachine.png';
+  /** og:image sur le meme domaine : meilleure prise en charge par Meta / WhatsApp que Wikimedia en direct. */
+  const metaImage = ogImage
+    ? `https://avantmoi.com/api/share-og-image/${year}`
+    : displayImage;
   const homeWithYear = `https://avantmoi.com/?year=${encodeURIComponent(String(year))}`;
 
   return `<!doctype html>
@@ -58,7 +62,7 @@ function buildHtml({ year, shareUrl, ogImage }) {
   </head>
   <body>
     <div class="card">
-      <p><img class="hero" src="${escapeHtml(image)}" alt="" loading="eager" /></p>
+      <p><img class="hero" src="${escapeHtml(displayImage)}" alt="" loading="eager" /></p>
       <h1 style="font-size: 1.15rem; font-weight: 600;">${escapeHtml(title)}</h1>
       <p class="muted">${escapeHtml(description)}</p>
       <a class="cta" href="${escapeHtml(homeWithYear)}">Ouvrir dans AvantMoi</a>
@@ -87,7 +91,7 @@ export async function onRequestGet(context) {
     status: 200,
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, max-age=300, s-maxage=300'
+      'cache-control': 'private, no-cache, must-revalidate'
     }
   });
 }
