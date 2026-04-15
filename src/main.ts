@@ -26,6 +26,22 @@ const PUBLIC_LANG: Lang = 'fr';
 const PUBLIC_COUNTRY: CountryCode = 'FR';
 const PUBLIC_COUNTRY_LINE = 'en France';
 
+/** noindex sur les vues resultat (?year=) — l accueil reste indexable (canonical fixe dans index.html). */
+function applyRouteIndexingMeta(mode: 'home' | 'result') {
+  let metaRobots = document.querySelector<HTMLMetaElement>('meta[name="robots"][data-avantmoi-route]');
+  if (mode === 'result') {
+    if (!metaRobots) {
+      metaRobots = document.createElement('meta');
+      metaRobots.setAttribute('name', 'robots');
+      metaRobots.setAttribute('data-avantmoi-route', '1');
+      document.head.appendChild(metaRobots);
+    }
+    metaRobots.setAttribute('content', 'noindex, follow');
+    return;
+  }
+  metaRobots?.remove();
+}
+
 interface StorySession {
   key: string;
   mirrorYear: number;
@@ -700,6 +716,7 @@ function renderResult(
   country: CountryCode,
   options: { animateStory?: boolean } = {}
 ) {
+  applyRouteIndexingMeta('result');
   setViewMode('result');
   const storySession = ensureSession(mirrorYear, lang, country);
   const ageBeforeBirth = computeAgeBeforeBirth(mirrorYear);

@@ -4,3 +4,5 @@ Disallow: /admin
 Disallow: /admin.html
 Disallow: /api/admin/events
 Disallow: /api/ad-config
+# Sessions resultat (annee miroir) : ne pas crawler les URLs parametrees (anecdotes)
+Disallow: /*?year=

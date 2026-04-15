@@ -15,25 +15,16 @@ function parseYear(raw) {
   return year;
 }
 
-/** Les robots de prévisualisation doivent recevoir l HTML sans redirection instantanée ; sinon ils suivent l accueil et perdent l og:image spécifique à l année. */
-function isSocialCrawler(userAgent) {
-  const ua = String(userAgent || '').toLowerCase();
-  return /facebookexternalhit|facebot|facebookcatalog|twitterbot|linkedinbot|slackbot|whatsapp|telegram|discordbot|pinterest|skypeuripreview|vkshare|embedly|outbrain|quora|slack-img|slackbot-linkpreview|opengraph|ia_archiver|vkshare|redditbot|applebot|slackbot|preview/i.test(
-    ua
-  );
-}
-
-function buildHtml({ year, shareUrl, ogImage, crawler }) {
+/**
+ * Pas de redirection automatique : les aperçus (Messenger, iOS, etc.) utilisent souvent
+ * un UA « navigateur » ; une redirect immédiate les envoie vers l accueil et l og:image
+ * redevient générique. Tout le monde reçoit le même HTML avec les meta OG complètes.
+ */
+function buildHtml({ year, shareUrl, ogImage }) {
   const title = `AvantMoi.com — ${year} en France`;
   const description = `Explore ton annee miroir ${year} sur AvantMoi : des scenes courtes inspirees d'evenements reels.`;
   const image = ogImage || 'https://avantmoi.com/avantmoimachine.png';
-
-  const redirectHead = crawler
-    ? ''
-    : `<meta http-equiv="refresh" content="0; url=https://avantmoi.com/" />`;
-  const redirectBody = crawler
-    ? `<p><a href="https://avantmoi.com/">Continuer vers AvantMoi.com</a></p>`
-    : `<script>window.location.replace('https://avantmoi.com/');</script>`;
+  const homeWithYear = `https://avantmoi.com/?year=${encodeURIComponent(String(year))}`;
 
   return `<!doctype html>
 <html lang="fr">
@@ -53,10 +44,26 @@ function buildHtml({ year, shareUrl, ogImage, crawler }) {
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${escapeHtml(image)}" />
-    ${redirectHead}
+    <link rel="canonical" href="${escapeHtml(shareUrl)}" />
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; text-align: center;
+        background: #0e1322; color: #f5f7fb; min-height: 100vh; box-sizing: border-box; }
+      .card { max-width: 420px; margin: 0 auto; }
+      img.hero { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #334060; }
+      a.cta { display: inline-block; margin-top: 20px; padding: 12px 24px; background: #fff; color: #111;
+        text-decoration: none; border-radius: 999px; font-weight: 600; }
+      a.cta:hover { opacity: 0.92; }
+      p.muted { color: #9dadcc; font-size: 14px; margin-top: 16px; }
+    </style>
   </head>
   <body>
-    ${redirectBody}
+    <div class="card">
+      <p><img class="hero" src="${escapeHtml(image)}" alt="" loading="eager" /></p>
+      <h1 style="font-size: 1.15rem; font-weight: 600;">${escapeHtml(title)}</h1>
+      <p class="muted">${escapeHtml(description)}</p>
+      <a class="cta" href="${escapeHtml(homeWithYear)}">Ouvrir dans AvantMoi</a>
+      <p class="muted"><a href="https://avantmoi.com/" style="color: #7ab6ff;">avantmoi.com</a></p>
+    </div>
   </body>
 </html>`;
 }
@@ -74,17 +81,13 @@ export async function onRequestGet(context) {
   } catch {
     ogImage = '';
   }
-  const ua = context.request.headers.get('user-agent') || '';
-  const crawler = isSocialCrawler(ua);
-  const html = buildHtml({ year, shareUrl, ogImage, crawler });
+  const html = buildHtml({ year, shareUrl, ogImage });
 
   return new Response(html, {
     status: 200,
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, max-age=300, s-maxage=300',
-      vary: 'User-Agent'
+      'cache-control': 'public, max-age=300, s-maxage=300'
     }
   });
 }
-
