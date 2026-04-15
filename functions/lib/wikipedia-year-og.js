@@ -6,13 +6,20 @@
 const FR_WIKI_API =
   'https://fr.wikipedia.org/w/api.php?action=query&format=json&origin=*';
 
+/** Obligatoire : sans User-Agent, l API renvoie 403 (les Workers Cloudflare ont souvent un UA vide). */
+const WIKI_USER_AGENT = 'AvantMoi/1.0 (https://avantmoi.com/)';
+
 /** Eviter drapeaux, pictos de maintenance (ambox), sabliers « en cours », etc. */
 const SKIP_FILE_REGEX =
   /ambox|circle-icons|hourglass|clock\.svg|currentevent|lock-|info_simple|wikimedia|commons-logo|pd-icon|flag|drapeau|fleur-de-lis|logo|coat of arms|armoiries|symbol|emblem|portal[-_]/i;
 
 async function fetchJson(url, attempt = 1) {
   const response = await fetch(url, {
-    headers: { accept: 'application/json' }
+    headers: {
+      accept: 'application/json',
+      'User-Agent': WIKI_USER_AGENT,
+      'Api-User-Agent': WIKI_USER_AGENT
+    }
   });
   if (response.status === 429 || response.status === 503) {
     if (attempt < 4) {
