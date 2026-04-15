@@ -43,11 +43,11 @@ function buildHtml({ year, shareUrl, ogImage }) {
     <meta property="og:url" content="${escapeHtml(shareUrl)}" />
     <meta property="og:site_name" content="AvantMoi.com" />
     <meta property="og:locale" content="fr_FR" />
-    <meta property="og:image" content="${escapeHtml(image)}" />
+    <meta property="og:image" content="${escapeHtml(metaImage)}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />
-    <meta name="twitter:image" content="${escapeHtml(image)}" />
+    <meta name="twitter:image" content="${escapeHtml(metaImage)}" />
     <link rel="canonical" href="${escapeHtml(shareUrl)}" />
     <style>
       body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; text-align: center;
