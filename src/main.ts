@@ -478,6 +478,88 @@ async function waitForPrefetchOrTimeout(task: Promise<void>, timeoutMs: number) 
   ]);
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+/** Durée max par phase de compte à rebours (répartie sur toutes les années affichées). */
+const COUNTDOWN_MAX_PHASE_MS = 1_400;
+/** Pause entre « jusqu’à la naissance » et « jusqu’à l’année miroir ». */
+const COUNTDOWN_PAUSE_MS = 320;
+
+async function animateYearRange(
+  yearEl: HTMLElement,
+  fromYear: number,
+  toYear: number,
+  maxDurationMs: number
+): Promise<void> {
+  if (fromYear < toYear) {
+    return;
+  }
+  if (fromYear === toYear) {
+    yearEl.textContent = String(toYear);
+    return;
+  }
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) {
+    yearEl.textContent = String(toYear);
+    await sleep(120);
+    return;
+  }
+  const steps = fromYear - toYear + 1;
+  const stepMs = Math.min(95, Math.max(22, Math.floor(maxDurationMs / Math.max(1, steps))));
+  for (let y = fromYear; y >= toYear; y--) {
+    yearEl.textContent = String(y);
+    if (y > toYear) {
+      await sleep(stepMs);
+    }
+  }
+}
+
+function mountYearCountdownOverlay(): {
+  root: HTMLElement;
+  yearEl: HTMLElement;
+  phaseEl: HTMLElement;
+} {
+  const root = document.createElement('div');
+  root.className = 'year-countdown-overlay';
+  root.setAttribute('role', 'status');
+  root.setAttribute('aria-live', 'polite');
+  const inner = document.createElement('div');
+  inner.className = 'year-countdown-inner';
+  const phaseEl = document.createElement('p');
+  phaseEl.className = 'year-countdown-phase';
+  const yearEl = document.createElement('div');
+  yearEl.className = 'year-countdown-year';
+  yearEl.textContent = String(CURRENT_YEAR);
+  inner.appendChild(phaseEl);
+  inner.appendChild(yearEl);
+  root.appendChild(inner);
+  document.body.appendChild(root);
+  return { root, yearEl, phaseEl };
+}
+
+async function runMirrorLaunchCountdown(lang: Lang, birthYear: number, mirrorYear: number): Promise<void> {
+  const { root, yearEl, phaseEl } = mountYearCountdownOverlay();
+  try {
+    phaseEl.textContent = t(lang, 'yearCountdownPhaseBirth');
+    await animateYearRange(yearEl, CURRENT_YEAR, birthYear, COUNTDOWN_MAX_PHASE_MS);
+    await sleep(COUNTDOWN_PAUSE_MS);
+
+    phaseEl.textContent = t(lang, 'yearCountdownPhaseMirror');
+    if (mirrorYear < birthYear) {
+      await animateYearRange(yearEl, birthYear - 1, mirrorYear, COUNTDOWN_MAX_PHASE_MS);
+    } else {
+      yearEl.textContent = String(mirrorYear);
+      await sleep(200);
+    }
+  } finally {
+    root.remove();
+  }
+}
+
 function ensureSession(mirrorYear: number, lang: Lang, country: CountryCode): StorySession {
   const key = createSessionKey(mirrorYear, lang, country);
 
@@ -700,6 +782,7 @@ function renderHome(lang: Lang) {
     submitButton.disabled = true;
     submitButton.textContent = t(selectedLang, 'ctaLoading');
     const prefetchTask = prefetchFirstSlot(mirrorYear, selectedLang, PUBLIC_COUNTRY);
+    await runMirrorLaunchCountdown(selectedLang, birthYear, mirrorYear);
     await waitForPrefetchOrTimeout(prefetchTask, FIRST_SCENE_PREFETCH_WAIT_MS);
     startTransition(() => {
       session = null;

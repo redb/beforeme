@@ -46,7 +46,9 @@ export type UiKey =
   | 'storyUnavailable'
   | 'storyExhausted'
   | 'storyRetry'
-  | 'ageConvertedHint';
+  | 'ageConvertedHint'
+  | 'yearCountdownPhaseBirth'
+  | 'yearCountdownPhaseMirror';
 
 const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
   fr: {
@@ -96,7 +98,9 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     storyUnavailable: 'Cette scène n’a pas pu être créée pour le moment.',
     storyExhausted: 'Tu as vu toutes les scènes pour cette année.',
     storyRetry: 'Réessayer',
-    ageConvertedHint: 'Né(e) en {year} ? Corrige si besoin.'
+    ageConvertedHint: 'Né(e) en {year} ? Corrige si besoin.',
+    yearCountdownPhaseBirth: 'vers ta naissance',
+    yearCountdownPhaseMirror: 'vers ton année miroir'
   },
   en: {
     siteTitle: 'AvantMoi.com',
@@ -145,7 +149,9 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     storyUnavailable: 'This scene could not be created for now.',
     storyExhausted: 'You’ve seen all the scenes for this year.',
     storyRetry: 'Retry',
-    ageConvertedHint: 'Born in {year}? Correct if needed.'
+    ageConvertedHint: 'Born in {year}? Correct if needed.',
+    yearCountdownPhaseBirth: 'toward your birth year',
+    yearCountdownPhaseMirror: 'toward your mirror year'
   }
 };
 

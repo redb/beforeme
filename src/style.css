@@ -728,6 +728,43 @@ a:focus-visible {
   backdrop-filter: blur(6px);
 }
 
+/* Double compte à rebours (année courante → naissance → année miroir) avant la propulsion */
+.year-countdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(6, 9, 17, 0.52);
+  backdrop-filter: blur(10px);
+}
+
+.year-countdown-inner {
+  text-align: center;
+  padding: 1rem;
+  max-width: 100%;
+}
+
+.year-countdown-phase {
+  margin: 0 0 0.35rem;
+  font-size: clamp(0.82rem, 2.6vw, 0.98rem);
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: rgba(232, 238, 252, 0.7);
+  font-weight: 500;
+}
+
+.year-countdown-year {
+  font-size: clamp(2.75rem, 13vw, 5.25rem);
+  font-weight: 700;
+  line-height: 1.05;
+  color: #f0f5ff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 48px rgba(100, 150, 255, 0.38);
+}
+
 .site-footer {
   text-align: center;
   color: #d8deea;
