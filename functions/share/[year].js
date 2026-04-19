@@ -53,7 +53,37 @@ function buildHtml({ year, shareUrl, ogImage }) {
       body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; text-align: center;
         background: #0e1322; color: #f5f7fb; min-height: 100vh; box-sizing: border-box; }
       .card { max-width: 420px; margin: 0 auto; }
-      img.hero { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #334060; }
+      .hero-wrap {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+        margin-bottom: 12px;
+        border-radius: 14px;
+      }
+      .hero-wrap::before {
+        content: '';
+        position: absolute;
+        inset: -10px;
+        border-radius: 18px;
+        z-index: 0;
+        background: radial-gradient(
+          ellipse 85% 85% at 50% 45%,
+          rgba(122, 182, 255, 0.22) 0%,
+          rgba(51, 64, 96, 0.14) 42%,
+          rgba(14, 19, 34, 0) 72%
+        );
+        filter: blur(14px);
+        pointer-events: none;
+      }
+      img.hero {
+        position: relative;
+        z-index: 1;
+        display: block;
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 0 0 1px rgba(51, 64, 96, 0.35), 0 12px 40px rgba(0, 0, 0, 0.35);
+      }
       a.cta { display: inline-block; margin-top: 20px; padding: 12px 24px; background: #fff; color: #111;
         text-decoration: none; border-radius: 999px; font-weight: 600; }
       a.cta:hover { opacity: 0.92; }
@@ -62,7 +92,9 @@ function buildHtml({ year, shareUrl, ogImage }) {
   </head>
   <body>
     <div class="card">
-      <p><img class="hero" src="${escapeHtml(displayImage)}" alt="" loading="eager" /></p>
+      <div class="hero-wrap">
+        <img class="hero" src="${escapeHtml(displayImage)}" alt="" loading="eager" />
+      </div>
       <h1 style="font-size: 1.15rem; font-weight: 600;">${escapeHtml(title)}</h1>
       <p class="muted">${escapeHtml(description)}</p>
       <a class="cta" href="${escapeHtml(homeWithYear)}">Ouvrir dans AvantMoi</a>
