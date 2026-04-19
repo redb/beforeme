@@ -543,11 +543,14 @@ function mountYearCountdownOverlay(): {
 
 async function runMirrorLaunchCountdown(lang: Lang, birthYear: number, mirrorYear: number): Promise<void> {
   const { root, yearEl, phaseEl } = mountYearCountdownOverlay();
+  document.body.classList.add('year-countdown-active', 'year-countdown-phase-birth');
   try {
     phaseEl.textContent = t(lang, 'yearCountdownPhaseBirth');
     await animateYearRange(yearEl, CURRENT_YEAR, birthYear, COUNTDOWN_MAX_PHASE_MS);
     await sleep(COUNTDOWN_PAUSE_MS);
 
+    document.body.classList.remove('year-countdown-phase-birth');
+    document.body.classList.add('year-countdown-phase-mirror');
     phaseEl.textContent = t(lang, 'yearCountdownPhaseMirror');
     if (mirrorYear < birthYear) {
       await animateYearRange(yearEl, birthYear - 1, mirrorYear, COUNTDOWN_MAX_PHASE_MS);
@@ -556,6 +559,7 @@ async function runMirrorLaunchCountdown(lang: Lang, birthYear: number, mirrorYea
       await sleep(200);
     }
   } finally {
+    document.body.classList.remove('year-countdown-active', 'year-countdown-phase-birth', 'year-countdown-phase-mirror');
     root.remove();
   }
 }

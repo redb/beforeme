@@ -223,6 +223,46 @@ body.fx-active .fxRingThree {
   animation-delay: 0ms;
 }
 
+/*
+ * Compte à rebours (accueil) : mêmes anneaux / halo que la propulsion,
+ * calés au centre avec l’année (fxLayer au-dessus du shell, overlay léger).
+ */
+body.year-countdown-active {
+  --fx-center-y: 48%;
+}
+
+body.year-countdown-active.view-home .fxLayer {
+  opacity: 1;
+  z-index: 5;
+  transition: opacity 220ms ease;
+}
+
+body.year-countdown-active .fxBlue {
+  animation: blueDrift 920ms ease-in-out infinite;
+}
+
+body.year-countdown-active .fxRingOne {
+  animation: ringSweep 1800ms linear infinite;
+  animation-delay: -1200ms;
+}
+
+body.year-countdown-active .fxRingTwo {
+  animation: ringSweep 1800ms linear infinite;
+  animation-delay: -600ms;
+}
+
+body.year-countdown-active .fxRingThree {
+  animation: ringSweep 1800ms linear infinite;
+  animation-delay: 0ms;
+}
+
+body.year-countdown-phase-mirror .fxRing {
+  border-color: rgba(200, 236, 255, 0.78);
+  box-shadow:
+    0 0 42px rgba(120, 190, 255, 0.55),
+    inset 0 0 28px rgba(200, 230, 255, 0.28);
+}
+
 .shell {
   width: min(880px, 100% - 2rem);
   margin: 0 auto;
@@ -737,11 +777,14 @@ a:focus-visible {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  background: rgba(6, 9, 17, 0.52);
-  backdrop-filter: blur(10px);
+  background:
+    radial-gradient(ellipse 72% 58% at 50% 46%, rgba(8, 13, 28, 0.08) 0%, rgba(6, 9, 17, 0.42) 52%, rgba(4, 7, 14, 0.62) 100%);
+  backdrop-filter: blur(6px) saturate(1.15);
 }
 
 .year-countdown-inner {
+  position: relative;
+  z-index: 1;
   text-align: center;
   padding: 1rem;
   max-width: 100%;
@@ -752,17 +795,20 @@ a:focus-visible {
   font-size: clamp(0.82rem, 2.6vw, 0.98rem);
   letter-spacing: 0.06em;
   text-transform: lowercase;
-  color: rgba(232, 238, 252, 0.7);
+  color: rgba(210, 228, 255, 0.82);
   font-weight: 500;
+  text-shadow: 0 1px 12px rgba(40, 90, 180, 0.45);
 }
 
 .year-countdown-year {
   font-size: clamp(2.75rem, 13vw, 5.25rem);
   font-weight: 700;
   line-height: 1.05;
-  color: #f0f5ff;
+  color: #f4f8ff;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 48px rgba(100, 150, 255, 0.38);
+  text-shadow:
+    0 0 56px rgba(120, 175, 255, 0.45),
+    0 0 20px rgba(80, 140, 255, 0.35);
 }
 
 .site-footer {
@@ -808,6 +854,13 @@ a:focus-visible {
   .fxBlue,
   .fxRing {
     animation: none !important;
+  }
+
+  body.year-countdown-active .fxRingOne,
+  body.year-countdown-active .fxRingTwo,
+  body.year-countdown-active .fxRingThree {
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scale(1.12);
   }
 
   .story-card.is-entering {
