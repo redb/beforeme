@@ -153,6 +153,21 @@
       </section>
 
       <section class="card">
+        <h2>Google Tag Manager</h2>
+        <p class="muted">
+          ID conteneur (format GTM-XXXXXXX). Sert au site public ; enregistrement réservé aux comptes admin.
+        </p>
+        <label>
+          ID conteneur GTM
+          <input id="gtm-id" type="text" placeholder="GTM-XXXXXXX" autocomplete="off" spellcheck="false" />
+        </label>
+        <div class="actions">
+          <button id="save-gtm" type="button">Enregistrer GTM</button>
+        </div>
+        <p id="gtm-status" class="muted status"></p>
+      </section>
+
+      <section class="card">
         <h2>Encart pub</h2>
         <div class="row">
           <label>
@@ -245,6 +260,7 @@
           missing_id_token: 'Pas de jeton de connexion. Recharge la page et reessaie.',
           id_token_too_long: 'Jeton invalide (trop long).',
           invalid_json: 'Requete invalide.',
+          invalid_gtm_id: 'ID GTM invalide : utilise le format GTM-XXXXXXX (lettres et chiffres).',
           'Session admin invalide': 'Reponse serveur incomplete (sessionToken ou email manquant).'
         };
         return map[key] || key;
@@ -268,8 +284,10 @@
 
       function setAdminLocked(locked) {
         const saveBtn = document.getElementById('save-ad');
+        const saveGtmBtn = document.getElementById('save-gtm');
         const loadBtn = document.getElementById('load-events');
         saveBtn.disabled = locked;
+        if (saveGtmBtn) saveGtmBtn.disabled = locked;
         loadBtn.disabled = locked;
       }
 
@@ -756,6 +774,40 @@
         gaTokenClient.requestAccessToken({ prompt: '' });
       }
 
+      function setGtmStatus(message, isError = false) {
+        const node = document.getElementById('gtm-status');
+        node.textContent = message;
+        node.className = isError ? 'status error' : 'muted status';
+      }
+
+      async function loadGtmConfig() {
+        const data = await fetchJson('/api/gtm-config');
+        document.getElementById('gtm-id').value = data.gtmId || '';
+        setGtmStatus('Config GTM chargée.');
+      }
+
+      async function saveGtmConfig() {
+        if (!isAdminAuthenticated) {
+          setGtmStatus('Connecte-toi avec Google pour enregistrer.', true);
+          return;
+        }
+
+        const raw = document.getElementById('gtm-id').value.trim();
+        if (raw && !/^GTM-[A-Z0-9]+$/.test(raw)) {
+          setGtmStatus(humanizeAdminApiError('invalid_gtm_id'), true);
+          return;
+        }
+
+        await fetchJson('/api/gtm-config', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gtmId: raw })
+        });
+
+        await loadGtmConfig();
+        setGtmStatus('GTM enregistré. Le site public charge le conteneur au prochain chargement de page.');
+      }
+
       function setAdStatus(message, isError = false) {
         const node = document.getElementById('ad-status');
         node.textContent = message;
@@ -866,6 +918,11 @@
         });
       }
 
+      document.getElementById('save-gtm').addEventListener('click', () => {
+        saveGtmConfig().catch((error) => {
+          setGtmStatus(humanizeAdminApiError(error.message) || error.message || 'Erreur GTM.', true);
+        });
+      });
       document.getElementById('save-ad').addEventListener('click', () => {
         saveAdConfig().catch((error) => {
           setAdStatus(error.message || 'Impossible d’enregistrer la pub.', true);
@@ -904,6 +961,9 @@
       updateAuthUi();
       loadAdConfig().catch((error) => {
         setAdStatus(error.message || 'Impossible de charger la config pub.', true);
+      });
+      loadGtmConfig().catch((error) => {
+        setGtmStatus(error.message || 'Impossible de charger la config GTM.', true);
       });
       verifyAdminSession()
         .then(async () => {

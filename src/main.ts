@@ -1,4 +1,5 @@
 import './style.css';
+import { initGtm } from './gtm';
 import { renderAdBreak } from './components/AdBreak';
 import { VideoBackground } from './components/VideoBackground';
 import { ReadingShade } from './components/ReadingShade';
@@ -1123,4 +1124,5 @@ window.addEventListener('focus', () => {
   ensureAdConfigLoaded(true);
 });
 
+initGtm();
 render();
