@@ -217,6 +217,7 @@
             <button id="load-events" type="button">Charger</button>
           </div>
         </div>
+        <p id="events-status" class="muted status" style="min-height: 1.25rem; margin: 8px 0 0"></p>
         <table>
           <thead>
             <tr>
@@ -862,39 +863,60 @@
         setAdStatus('Encart pub enregistré.');
       }
 
+      function setEventsStatus(message, isError = false) {
+        const node = document.getElementById('events-status');
+        if (!node) return;
+        node.textContent = message;
+        node.className = isError ? 'status error' : 'muted status';
+      }
+
       async function loadEvents() {
         if (!isAdminAuthenticated) {
           setAdminStatus('Connecte-toi avec Google pour charger les fiches.', true);
           return;
         }
 
-        const year = document.getElementById('year').value;
-        const data = await fetchJson(`/api/admin/events?year=${encodeURIComponent(year)}`);
+        setEventsStatus('Chargement…');
+        try {
+          const year = document.getElementById('year').value;
+          const data = await fetchJson(`/api/admin/events?year=${encodeURIComponent(year)}`);
 
-        const tbody = document.getElementById('events-body');
-        tbody.innerHTML = '';
+          const tbody = document.getElementById('events-body');
+          tbody.innerHTML = '';
 
-        for (const item of data.items || []) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
+          const items = data.items || [];
+          for (const item of items) {
+            const tr = document.createElement('tr');
+            const fact = item.fact != null ? String(item.fact) : '';
+            tr.innerHTML = `
             <td>${item.eventQid}</td>
             <td>${item.title}</td>
-            <td>${item.fact}</td>
-            <td><button data-year="${item.year}" data-qid="${item.eventQid}">Supprimer</button></td>
+            <td>${fact}</td>
+            <td><button type="button" data-year="${item.year}" data-lang="${item.lang || 'fr'}" data-qid="${item.eventQid}">Supprimer</button></td>
           `;
-          tbody.appendChild(tr);
-        }
+            tbody.appendChild(tr);
+          }
 
-        tbody.querySelectorAll('button[data-qid]').forEach((btn) => {
-          btn.addEventListener('click', async () => {
-            const y = btn.getAttribute('data-year');
-            const q = btn.getAttribute('data-qid');
-            await fetchJson(`/api/admin/events?year=${encodeURIComponent(y)}&lang=fr&eventQid=${encodeURIComponent(q)}`, {
-              method: 'DELETE'
+          setEventsStatus(items.length ? `${items.length} fiche(s) pour cette année.` : 'Aucune fiche en cache pour cette année.');
+
+          tbody.querySelectorAll('button[data-qid]').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+              const y = btn.getAttribute('data-year');
+              const q = btn.getAttribute('data-qid');
+              const lang = btn.getAttribute('data-lang') || 'fr';
+              await fetchJson(
+                `/api/admin/events?year=${encodeURIComponent(y)}&lang=${encodeURIComponent(lang)}&eventQid=${encodeURIComponent(q)}`,
+                {
+                  method: 'DELETE'
+                }
+              );
+              await loadEvents();
             });
-            await loadEvents();
           });
-        });
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : 'Erreur API';
+          setEventsStatus(msg, true);
+        }
       }
 
       function setupUpload() {

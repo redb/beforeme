@@ -1,6 +1,9 @@
 import { getPrismaClient } from '../../lib/prisma.js';
 import { requireAdminSession } from '../../lib/admin-auth.js';
 
+/** France (aligné sur le reste des APIs scène / cache) */
+const FRANCE_QID = 'Q142';
+
 function responseHeaders() {
   return {
     'Content-Type': 'application/json; charset=utf-8',
@@ -41,7 +44,7 @@ export async function onRequestGet(context) {
 
   try {
     const year = parseYear(context.params?.year || new URL(context.request.url).searchParams.get('year'));
-    const where = year ? { year, country: 'FR' } : { country: 'FR' };
+    const where = year ? { year, countryQid: FRANCE_QID } : { countryQid: FRANCE_QID };
 
     const client = getPrismaClient(context.env);
     const rows = await client.eventCache.findMany({
@@ -50,7 +53,7 @@ export async function onRequestGet(context) {
       take: 300,
       select: {
         year: true,
-        country: true,
+        countryQid: true,
         lang: true,
         eventQid: true,
         title: true,
@@ -88,9 +91,9 @@ export async function onRequestDelete(context) {
     const client = getPrismaClient(context.env);
     await client.eventCache.delete({
       where: {
-        year_country_lang_eventQid: {
+        year_countryQid_lang_eventQid: {
           year,
-          country: 'FR',
+          countryQid: FRANCE_QID,
           lang,
           eventQid
         }
