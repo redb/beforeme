@@ -1,7 +1,7 @@
 {
   "name": "beforeme",
   "private": true,
-  "version": "0.17.217",
+  "version": "0.17.218",
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/bump-version.mjs",
