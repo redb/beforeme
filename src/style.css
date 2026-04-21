@@ -893,3 +893,68 @@ a:focus-visible {
     padding-top: 1rem;
   }
 }
+
+/* ============================================================
+   Machine à remonter le temps — overlay d'animation
+   ============================================================ */
+
+.tm-animation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: tm-fade-in 0.25s ease-out forwards;
+}
+
+@keyframes tm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.tm-animation-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tm-counter {
+  font-family: 'Courier New', 'Courier', monospace;
+  font-size: clamp(72px, 18vw, 140px);
+  font-weight: 700;
+  color: #e8f8ff;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 30px rgba(100, 210, 255, 0.9),
+    0 0 80px rgba(80, 180, 255, 0.5),
+    0 0 120px rgba(60, 140, 220, 0.3);
+  line-height: 1;
+  min-width: 4ch;
+  text-align: center;
+  /* Empêche le layout shift quand les chiffres changent */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Flash plein écran (blanc naissance, bleu portail) */
+.tm-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 201;
+  pointer-events: none;
+  opacity: 0;
+  background: white; /* overridé dynamiquement */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-animation-overlay {
+    animation: none;
+  }
+  .tm-counter {
+    text-shadow: none;
+  }
+}

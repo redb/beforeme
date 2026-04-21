@@ -1,11 +1,20 @@
 import './style.css';
+import { runTimeMachine } from './lib/timeMachineAnimation';
+import { shareTimeMachine } from './lib/shareImage';
 import { initGtm } from './gtm';
 import { renderAdBreak } from './components/AdBreak';
 import { VideoBackground } from './components/VideoBackground';
 import { ReadingShade } from './components/ReadingShade';
 import { fetchAnecdoteSlot, resetAnecdoteSessionMemory, type AnecdoteScope, type AnecdoteSlot } from './lib/anecdoteApi';
 import { t, type Lang } from './lib/i18n';
-import type { CountryCode } from './lib/locale';
+import {
+  countryLabel,
+  countryOptions,
+  countryToQid,
+  detectCountry,
+  normalizeCountry,
+  type CountryCode
+} from './lib/locale';
 
 const app = (() => {
   const node = document.querySelector<HTMLDivElement>('#app');
@@ -24,8 +33,6 @@ if (versionBadge) {
 }
 
 const PUBLIC_LANG: Lang = 'fr';
-const PUBLIC_COUNTRY: CountryCode = 'FR';
-const PUBLIC_COUNTRY_LINE = 'en France';
 
 /** noindex sur les vues resultat (?year=) — l accueil reste indexable (canonical fixe dans index.html). */
 function applyRouteIndexingMeta(mode: 'home' | 'result') {
@@ -46,6 +53,7 @@ function applyRouteIndexingMeta(mode: 'home' | 'result') {
 interface StorySession {
   key: string;
   mirrorYear: number;
+  birthYear: number;
   lang: Lang;
   country: CountryCode;
   currentSlot: number;
@@ -381,15 +389,19 @@ function activateAdHtmlScripts(root: ParentNode = app) {
 function readRoute() {
   const params = new URLSearchParams(window.location.search);
   const year = parseYearParam(params.get('year'));
+  const country = normalizeCountry(params.get('country'));
 
-  return { lang: PUBLIC_LANG, country: PUBLIC_COUNTRY, year };
+  return { lang: PUBLIC_LANG, country, year };
 }
 
-function updateUrl(params: { year?: number }) {
+function updateUrl(params: { year?: number; country?: CountryCode }) {
   const query = new URLSearchParams();
 
   if (typeof params.year === 'number') {
     query.set('year', String(params.year));
+  }
+  if (params.country) {
+    query.set('country', params.country);
   }
 
   const nextQuery = query.toString();
@@ -409,7 +421,7 @@ function createSessionKey(mirrorYear: number, lang: Lang, country: CountryCode):
   return `${mirrorYear}|${country}|${lang}`;
 }
 
-function createSession(mirrorYear: number, lang: Lang, country: CountryCode): StorySession {
+function createSession(mirrorYear: number, birthYear: number, lang: Lang, country: CountryCode): StorySession {
   resetAnecdoteSessionMemory();
   const key = createSessionKey(mirrorYear, lang, country);
 
@@ -423,6 +435,7 @@ function createSession(mirrorYear: number, lang: Lang, country: CountryCode): St
   return {
     key,
     mirrorYear,
+    birthYear,
     lang,
     country,
     currentSlot: 1,
@@ -479,97 +492,14 @@ async function waitForPrefetchOrTimeout(task: Promise<void>, timeoutMs: number) 
   ]);
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
-}
-
 /** Durée max par phase de compte à rebours (répartie sur toutes les années affichées). */
-const COUNTDOWN_MAX_PHASE_MS = 1_400;
 /** Pause entre « jusqu’à la naissance » et « jusqu’à l’année miroir ». */
-const COUNTDOWN_PAUSE_MS = 320;
 
-async function animateYearRange(
-  yearEl: HTMLElement,
-  fromYear: number,
-  toYear: number,
-  maxDurationMs: number
-): Promise<void> {
-  if (fromYear < toYear) {
-    return;
-  }
-  if (fromYear === toYear) {
-    yearEl.textContent = String(toYear);
-    return;
-  }
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) {
-    yearEl.textContent = String(toYear);
-    await sleep(120);
-    return;
-  }
-  const steps = fromYear - toYear + 1;
-  const stepMs = Math.min(95, Math.max(22, Math.floor(maxDurationMs / Math.max(1, steps))));
-  for (let y = fromYear; y >= toYear; y--) {
-    yearEl.textContent = String(y);
-    if (y > toYear) {
-      await sleep(stepMs);
-    }
-  }
-}
-
-function mountYearCountdownOverlay(): {
-  root: HTMLElement;
-  yearEl: HTMLElement;
-  phaseEl: HTMLElement;
-} {
-  const root = document.createElement('div');
-  root.className = 'year-countdown-overlay';
-  root.setAttribute('role', 'status');
-  root.setAttribute('aria-live', 'polite');
-  const inner = document.createElement('div');
-  inner.className = 'year-countdown-inner';
-  const phaseEl = document.createElement('p');
-  phaseEl.className = 'year-countdown-phase';
-  const yearEl = document.createElement('div');
-  yearEl.className = 'year-countdown-year';
-  yearEl.textContent = String(CURRENT_YEAR);
-  inner.appendChild(phaseEl);
-  inner.appendChild(yearEl);
-  root.appendChild(inner);
-  document.body.appendChild(root);
-  return { root, yearEl, phaseEl };
-}
-
-async function runMirrorLaunchCountdown(lang: Lang, birthYear: number, mirrorYear: number): Promise<void> {
-  const { root, yearEl, phaseEl } = mountYearCountdownOverlay();
-  document.body.classList.add('year-countdown-active', 'year-countdown-phase-birth');
-  try {
-    phaseEl.textContent = t(lang, 'yearCountdownPhaseBirth');
-    await animateYearRange(yearEl, CURRENT_YEAR, birthYear, COUNTDOWN_MAX_PHASE_MS);
-    await sleep(COUNTDOWN_PAUSE_MS);
-
-    document.body.classList.remove('year-countdown-phase-birth');
-    document.body.classList.add('year-countdown-phase-mirror');
-    phaseEl.textContent = t(lang, 'yearCountdownPhaseMirror');
-    if (mirrorYear < birthYear) {
-      await animateYearRange(yearEl, birthYear - 1, mirrorYear, COUNTDOWN_MAX_PHASE_MS);
-    } else {
-      yearEl.textContent = String(mirrorYear);
-      await sleep(200);
-    }
-  } finally {
-    document.body.classList.remove('year-countdown-active', 'year-countdown-phase-birth', 'year-countdown-phase-mirror');
-    root.remove();
-  }
-}
-
-function ensureSession(mirrorYear: number, lang: Lang, country: CountryCode): StorySession {
+function ensureSession(mirrorYear: number, birthYear: number, lang: Lang, country: CountryCode): StorySession {
   const key = createSessionKey(mirrorYear, lang, country);
 
   if (!session || session.key !== key) {
-    session = createSession(mirrorYear, lang, country);
+    session = createSession(mirrorYear, birthYear, lang, country);
   }
 
   return session;
@@ -692,6 +622,14 @@ function renderHome(lang: Lang) {
   readingShade.setImmediate(0.65);
   const isCompactMobile = window.matchMedia('(max-width: 760px)').matches;
   const agePlaceholder = isCompactMobile ? t(lang, 'ageOrBirthYearPlaceholderMobile') : t(lang, 'ageOrBirthYearPlaceholder');
+  const params = new URLSearchParams(window.location.search);
+  const defaultCountry = normalizeCountry(params.get('country')) || detectCountry();
+  const countrySelectOptions = countryOptions(lang)
+    .map(
+      (o) =>
+        `<option value="${escapeHtml(o.value)}"${o.value === defaultCountry ? ' selected' : ''}>${escapeHtml(o.label)}</option>`
+    )
+    .join('');
 
   app.innerHTML = `
     <main class="shell">
@@ -703,6 +641,14 @@ function renderHome(lang: Lang) {
 
       <section class="card form-card">
         <form id="launch-form" novalidate>
+          <div class="single-input">
+            <label class="field">
+              <span>${escapeHtml(t(lang, 'birthCountryLabel'))}</span>
+              <select id="birth-country-select" name="birthCountry" aria-label="${escapeHtml(t(lang, 'birthCountryLabel'))}">
+                ${countrySelectOptions}
+              </select>
+            </label>
+          </div>
           <div class="single-input">
             <label class="field">
               <input
@@ -784,15 +730,52 @@ function renderHome(lang: Lang) {
     }
 
     errorNode.style.color = '';
+    const countrySelect = document.querySelector<HTMLSelectElement>('#birth-country-select');
+    const selectedCountry = normalizeCountry(countrySelect?.value);
     submitButton.disabled = true;
     submitButton.textContent = t(selectedLang, 'ctaLoading');
-    const prefetchTask = prefetchFirstSlot(mirrorYear, selectedLang, PUBLIC_COUNTRY);
-    await runMirrorLaunchCountdown(selectedLang, birthYear, mirrorYear);
+    const prefetchTask = prefetchFirstSlot(mirrorYear, selectedLang, selectedCountry);
+
+    // Animation machine à remonter le temps
+    await new Promise<void>((resolve) => {
+      runTimeMachine({
+        counterEl: (() => {
+          // Crée ou récupère l'overlay d'animation
+          let overlay = document.getElementById('tm-animation-overlay');
+          if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'tm-animation-overlay';
+            overlay.className = 'tm-animation-overlay';
+            overlay.innerHTML = `
+              <div class="tm-animation-inner">
+                <span id="tm-counter" class="tm-counter">${CURRENT_YEAR}</span>
+              </div>
+            `;
+            document.body.appendChild(overlay);
+          }
+          const flashEl = document.createElement('div');
+          document.getElementById('tm-flash')?.remove();
+          flashEl.id = 'tm-flash';
+          flashEl.className = 'tm-flash';
+          document.body.appendChild(flashEl);
+          return document.getElementById('tm-counter')!;
+        })(),
+        overlayEl: document.getElementById('tm-flash') ?? undefined,
+        birthYear,
+        mirrorYear,
+        onComplete: () => {
+          document.getElementById('tm-animation-overlay')?.remove();
+          document.getElementById('tm-flash')?.remove();
+          resolve();
+        }
+      });
+    });
+
     await waitForPrefetchOrTimeout(prefetchTask, FIRST_SCENE_PREFETCH_WAIT_MS);
     startTransition(() => {
       session = null;
       revealOnNextResult = true;
-      updateUrl({ year: mirrorYear });
+      updateUrl({ year: mirrorYear, country: selectedCountry });
       render();
     });
   });
@@ -806,9 +789,10 @@ function renderResult(
 ) {
   applyRouteIndexingMeta('result');
   setViewMode('result');
-  const storySession = ensureSession(mirrorYear, lang, country);
+  const birthYearFromMirror = (mirrorYear + CURRENT_YEAR) / 2;
+  const storySession = ensureSession(mirrorYear, birthYearFromMirror, lang, country);
   const ageBeforeBirth = computeAgeBeforeBirth(mirrorYear);
-  const yearLine = `${t(lang, 'resultYearLine').replace('{year}', String(mirrorYear))} ${PUBLIC_COUNTRY_LINE}`;
+  const yearLine = `${t(lang, 'resultYearLine').replace('{year}', String(mirrorYear))} — ${countryLabel(lang, country)}`;
   const beforeBirthLine = t(lang, 'resultBeforeBirthLine').replace('{age}', String(ageBeforeBirth));
   document.title = yearLine;
 
@@ -874,6 +858,9 @@ function renderResult(
   }
 
   loadSlot(storySession, storySession.currentSlot);
+  for (let s = 1; s <= 4; s++) {
+    loadSlot(storySession, s);
+  }
 
   const slotData = storySession.slotCache.get(storySession.currentSlot) ?? null;
   const isLoading = storySession.loadingSlots.has(storySession.currentSlot);
@@ -1003,9 +990,12 @@ function renderResult(
       const y = storySession.mirrorYear;
       const lang = storySession.lang;
       const country = storySession.country;
-      session = createSession(y, lang, country);
+      session = createSession(y, storySession.birthYear, lang, country);
       loadSlot(session, 1);
-      updateUrl({ year: y });
+      for (let s = 1; s <= 4; s++) {
+        loadSlot(session, s);
+      }
+      updateUrl({ year: y, country });
       revealOnNextResult = true;
       renderResult(y, lang, country);
       return;
@@ -1016,13 +1006,10 @@ function renderResult(
   });
 
   shareButton?.addEventListener('click', async () => {
-    const shareTitle = t(lang, 'shareTitle');
-    const shareText = t(lang, 'shareTextTemplate').replace('{year}', String(storySession.mirrorYear));
-    const shareUrl = `${window.location.origin}/share/${storySession.mirrorYear}`;
     const slotToShare = storySession.slotCache.get(storySession.currentSlot) ?? null;
     const entryId = slotToShare?.editorialId ?? slotToShare?.eventQid ?? null;
 
-    // Fire-and-forget — jamais bloquant, jamais affiché
+    // Fire-and-forget signal
     if (entryId) {
       void fetch('/api/share-signal', {
         method: 'POST',
@@ -1030,32 +1017,21 @@ function renderResult(
         body: JSON.stringify({
           entryId,
           year: storySession.mirrorYear,
-          country: 'Q142'
+          country: countryToQid(storySession.country)
         })
       }).catch(() => undefined);
     }
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl
-        });
-        return;
-      } catch {
-        // Fall back to clipboard when native sharing is cancelled or unavailable.
-      }
-    }
-
     try {
-      await navigator.clipboard.writeText(`${shareTitle}\n\n${shareText}\n\n${shareUrl}`);
-      storySession.shareFeedback = t(lang, 'shareCopied');
+      await shareTimeMachine({
+        mirrorYear: storySession.mirrorYear,
+        userBirthYear: storySession.birthYear,
+        lang
+      });
     } catch {
       storySession.shareFeedback = t(lang, 'shareFailed');
+      renderResult(storySession.mirrorYear, storySession.lang, storySession.country);
     }
-
-    renderResult(storySession.mirrorYear, storySession.lang, storySession.country);
   });
 
   const shouldAnimateStory = options.animateStory || storySession.pendingReveal;

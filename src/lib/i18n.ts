@@ -48,7 +48,8 @@ export type UiKey =
   | 'storyRetry'
   | 'ageConvertedHint'
   | 'yearCountdownPhaseBirth'
-  | 'yearCountdownPhaseMirror';
+  | 'yearCountdownPhaseMirror'
+  | 'birthCountryLabel';
 
 const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
   fr: {
@@ -100,7 +101,8 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     storyRetry: 'Réessayer',
     ageConvertedHint: 'Né(e) en {year} ? Corrige si besoin.',
     yearCountdownPhaseBirth: 'vers ta naissance',
-    yearCountdownPhaseMirror: 'vers ton année miroir'
+    yearCountdownPhaseMirror: 'vers ton année miroir',
+    birthCountryLabel: 'Pays des scènes (naissance / ancrage)'
   },
   en: {
     siteTitle: 'AvantMoi.com',
@@ -151,7 +153,8 @@ const UI_STRINGS: Record<Lang, Record<UiKey, string>> = {
     storyRetry: 'Retry',
     ageConvertedHint: 'Born in {year}? Correct if needed.',
     yearCountdownPhaseBirth: 'toward your birth year',
-    yearCountdownPhaseMirror: 'toward your mirror year'
+    yearCountdownPhaseMirror: 'toward your mirror year',
+    birthCountryLabel: 'Country for scenes (birth / anchor)'
   }
 };
 
